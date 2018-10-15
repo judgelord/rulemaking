@@ -569,8 +569,9 @@ UnifiedAgenda <- thusfar
 ######################################
 # Merge Unified Agenda and OIRA reports
 ##################################
-
+OIRA %<>% mutate(MAJOR_OIRA= MAJOR) %>% select(-MAJOR)
 regs <- merge(UnifiedAgenda, OIRA, by=c("RIN","STAGE"), all=TRUE)
+regs <- full_join(UnifiedAgenda, OIRA)
 
 for(i in 1:dim(regs)[1]){
   if(!grepl("-", regs$ANPRM_PUBLISHED[i])){regs$ANPRM_PUBLISHED[i] <- as.character(regs$ANPRM[i])}
@@ -617,6 +618,6 @@ if(F){
 
 if(F){
 save(OIRA, file = "data/OIRA.Rdata")
-save(UnifiedAgenda, "data/UnifiedAgenda.Rdata")
-save(regs, "data/OIRAandUA.Rdata")
+save(UnifiedAgenda, file = "data/UnifiedAgenda.Rdata")
+save(regs, file = "data/OIRAandUA.Rdata")
 }
