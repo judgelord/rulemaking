@@ -272,28 +272,28 @@ UnifiedAgenda$TIMETABLE_LIST %<>%
   gsub("ANPRM", "A.N.P.R.M.", .) %>%
   gsub("Second NPRM|Supplemental NPRM|SNPRM","S.N.P.R.M.", .)
 
-#####################################
-x
-%<>%
-  #  working on rewrite
-  mutate(STAGE = ifelse(
-    STAGE=="Long-Term Actions" |
-      STAGE=="Completed Actions" & 
-      grepl("withdraw|withdrawn", TIMETABLE_LIST, ignore.case = T)
-    , "Withdrawal", STAGE)) %>%
-  mutate(STAGE = ifelse(
-    grepl("interim final rule", TIMETABLE_LIST, ignore.case = T) &
-      !grepl("final rule{2,}", TIMETABLE_LIST, ignore.case = T)
-    , "Interim Final Rule", STAGE)) %>%
-  mutate(STAGE = ifelse(
-    STAGE=="Completed Actions" &
-      grepl("final rule", TIMETABLE_LIST, ignore.case = T)
-    , "Final Rule", STAGE)) %>%
-  mutate(STAGE = ifelse(
-    grepl("final rule", STAGE, ignore.case = T) &&
-      grepl("final rule", TIMETABLE_LIST, ignore.case = T) &&
-      sum(str_count(TIMETABLE_LIST, "Final Rule"))>sum(str_count(TIMETABLE_LIST, "Interim Final Rule"))
-    , "Final Rule", STAGE))
+##############################################################################################
+#   #  working on rewrite with dplyr #
+######################################
+# UnifiedAgenda %<>%
+#   mutate(STAGE = ifelse(
+#     STAGE=="Long-Term Actions" |
+#       STAGE=="Completed Actions" & 
+#       grepl("withdraw|withdrawn", TIMETABLE_LIST, ignore.case = T)
+#     , "Withdrawal", STAGE)) %>%
+#   mutate(STAGE = ifelse(
+#     grepl("interim final rule", TIMETABLE_LIST, ignore.case = T) &
+#       !grepl("final rule{2,}", TIMETABLE_LIST, ignore.case = T)
+#     , "Interim Final Rule", STAGE)) %>%
+#   mutate(STAGE = ifelse(
+#     STAGE=="Completed Actions" &
+#       grepl("final rule", TIMETABLE_LIST, ignore.case = T)
+#     , "Final Rule", STAGE)) %>%
+#   mutate(STAGE = ifelse(
+#     grepl("final rule", STAGE, ignore.case = T) &&
+#       grepl("final rule", TIMETABLE_LIST, ignore.case = T) &&
+#       sum(str_count(TIMETABLE_LIST, "Final Rule"))>sum(str_count(TIMETABLE_LIST, "Interim Final Rule"))
+#     , "Final Rule", STAGE))
 
 ###################################################################
 
