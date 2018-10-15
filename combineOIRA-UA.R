@@ -1,23 +1,23 @@
 source("setup.R")
 
 # To skip downloading R packages and XML files from reginfo.gov
-DownloadNow = T
+DownloadNow = FALSE
 # To skip parsing XML files
-ParseNow = T
+ParseNow = FALSE
 
 #################################################################
-# Get reports from http://www.reginfo.gov/public/do/XMLReportList
+# Get OIRA reports from http://www.reginfo.gov/public/do/XMLReportList
 #################################################################
 if(DownloadNow){
   # At this time the .zip archive on reginfo.gov included 1981-2014
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=PREVIOUS_YEAR_EO_RULE_COMPLETED.zip", "reginfo.zip")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=PREVIOUS_YEAR_EO_RULE_COMPLETED.zip", "reports/reginfo.zip")
   # 2016
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=EO_RULE_COMPLETED_2016.xml","EO_RULE_COMPLETED_2015.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=EO_RULE_COMPLETED_2016.xml","reports/EO_RULE_COMPLETED_2015.xml")
   # 2018 completed
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=EO_RULE_COMPLETED_YTD.xml","EO_RULE_COMPLETED_YTD.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=EO_RULE_COMPLETED_YTD.xml","reports/EO_RULE_COMPLETED_YTD.xml")
   # under review
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=EO_RULES_UNDER_REVIEW.xml", "EO_RULES_UNDER_REVIEW.xml")
-  unzip("reginfo.zip")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=EO_RULES_UNDER_REVIEW.xml", "reports/EO_RULES_UNDER_REVIEW.xml")
+  unzip("reports/reginfo.zip")
 }
 
 files <- 
@@ -186,53 +186,53 @@ OIRA %<>% arrange(desc(DATE_RECEIVED)) %>%
 # Unified Agenda data https://www.reginfo.gov/public/do/eAgendaXmlReport
 ###################################################################
 if(DownloadNow){
-  download.file("https://www.reginfo.gov/public/do/XMLViewFileAction?f=2018-SPRING-RIN-DATA.xml","REGINFO_RIN_DATA_201804.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201704.xml","REGINFO_RIN_DATA_201704.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201710.xml","REGINFO_RIN_DATA_201710.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201704.xml","REGINFO_RIN_DATA_201704.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201610.xml","REGINFO_RIN_DATA_201610.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201604.xml","REGINFO_RIN_DATA_201604.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201510.xml","REGINFO_RIN_DATA_201510.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201504.xml","REGINFO_RIN_DATA_201504.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201410.xml","REGINFO_RIN_DATA_201510.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201404.xml","REGINFO_RIN_DATA_201504.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201310.xml","REGINFO_RIN_DATA_201310.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201304.xml","REGINFO_RIN_DATA_201304.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_2012.xml","REGINFO_RIN_DATA_2012.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201110.xml","REGINFO_RIN_DATA_201110.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201104.xml","REGINFO_RIN_DATA_201104.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201010.xml","REGINFO_RIN_DATA_201010.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201004.xml","REGINFO_RIN_DATA_201004.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200910.xml","REGINFO_RIN_DATA_200910.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200904.xml","REGINFO_RIN_DATA_200904.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200810.xml","REGINFO_RIN_DATA_200810.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200804.xml","REGINFO_RIN_DATA_200804.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200710.xml","REGINFO_RIN_DATA_200710.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200704.xml","REGINFO_RIN_DATA_200704.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200610.xml","REGINFO_RIN_DATA_200610.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200604.xml","REGINFO_RIN_DATA_200604.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200510.xml","REGINFO_RIN_DATA_200510.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200504.xml","REGINFO_RIN_DATA_200504.xml")
+  download.file("https://www.reginfo.gov/public/do/XMLViewFileAction?f=2018-SPRING-RIN-DATA.xml","reports/REGINFO_RIN_DATA_201804.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201704.xml","reports/REGINFO_RIN_DATA_201704.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201710.xml","reports/REGINFO_RIN_DATA_201710.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201704.xml","reports/REGINFO_RIN_DATA_201704.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201610.xml","reports/REGINFO_RIN_DATA_201610.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201604.xml","reports/REGINFO_RIN_DATA_201604.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201510.xml","reports/REGINFO_RIN_DATA_201510.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201504.xml","reports/REGINFO_RIN_DATA_201504.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201410.xml","reports/REGINFO_RIN_DATA_201510.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201404.xml","reports/REGINFO_RIN_DATA_201504.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201310.xml","reports/REGINFO_RIN_DATA_201310.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201304.xml","reports/REGINFO_RIN_DATA_201304.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_2012.xml","reports/REGINFO_RIN_DATA_2012.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201110.xml","reports/REGINFO_RIN_DATA_201110.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201104.xml","reports/REGINFO_RIN_DATA_201104.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201010.xml","reports/REGINFO_RIN_DATA_201010.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201004.xml","reports/REGINFO_RIN_DATA_201004.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200910.xml","reports/REGINFO_RIN_DATA_200910.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200904.xml","reports/REGINFO_RIN_DATA_200904.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200810.xml","reports/REGINFO_RIN_DATA_200810.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200804.xml","reports/REGINFO_RIN_DATA_200804.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200710.xml","reports/REGINFO_RIN_DATA_200710.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200704.xml","reports/REGINFO_RIN_DATA_200704.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200610.xml","reports/REGINFO_RIN_DATA_200610.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200604.xml","reports/REGINFO_RIN_DATA_200604.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200510.xml","reports/REGINFO_RIN_DATA_200510.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200504.xml","reports/REGINFO_RIN_DATA_200504.xml")
   ############################## there is an error in the 2004 data related to RIN 1084-AA00 ###################
-  #download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200410.xml","REGINFO_RIN_DATA_200410.xml")
-  #download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200404.xml","REGINFO_RIN_DATA_200404.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200310.xml","REGINFO_RIN_DATA_200310.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200304.xml","REGINFO_RIN_DATA_200304.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200210.xml","REGINFO_RIN_DATA_200210.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200204.xml","REGINFO_RIN_DATA_200204.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200110.xml","REGINFO_RIN_DATA_200110.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200104.xml","REGINFO_RIN_DATA_200104.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200010.xml","REGINFO_RIN_DATA_200010.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200004.xml","REGINFO_RIN_DATA_200004.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199910.xml","REGINFO_RIN_DATA_199910.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199904.xml","REGINFO_RIN_DATA_199904.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199810.xml","REGINFO_RIN_DATA_199810.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199804.xml","REGINFO_RIN_DATA_199804.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199710.xml","REGINFO_RIN_DATA_199710.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199704.xml","REGINFO_RIN_DATA_199704.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199610.xml","REGINFO_RIN_DATA_199610.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199604.xml","REGINFO_RIN_DATA_199604.xml")
-  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199510.xml","REGINFO_RIN_DATA_199510.xml")
+  #download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200410.xml","reports/REGINFO_RIN_DATA_200410.xml")
+  #download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200404.xml","reports/REGINFO_RIN_DATA_200404.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200310.xml","reports/REGINFO_RIN_DATA_200310.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200304.xml","reports/REGINFO_RIN_DATA_200304.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200210.xml","reports/REGINFO_RIN_DATA_200210.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200204.xml","reports/REGINFO_RIN_DATA_200204.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200110.xml","reports/REGINFO_RIN_DATA_200110.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200104.xml","reports/REGINFO_RIN_DATA_200104.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200010.xml","reports/REGINFO_RIN_DATA_200010.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_200004.xml","reports/REGINFO_RIN_DATA_200004.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199910.xml","reports/REGINFO_RIN_DATA_199910.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199904.xml","reports/REGINFO_RIN_DATA_199904.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199810.xml","reports/REGINFO_RIN_DATA_199810.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199804.xml","reports/REGINFO_RIN_DATA_199804.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199710.xml","reports/REGINFO_RIN_DATA_199710.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199704.xml","reports/REGINFO_RIN_DATA_199704.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199610.xml","reports/REGINFO_RIN_DATA_199610.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199604.xml","reports/REGINFO_RIN_DATA_199604.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199510.xml","reports/REGINFO_RIN_DATA_199510.xml")
 }
 
 files <- 
@@ -341,6 +341,7 @@ for(i in 1:dim(UnifiedAgenda)[1]){
 
 
 # correct stages
+# (only done for DOT 2007 - 2017 so far)
 UnifiedAgenda$STAGE[which(UnifiedAgenda$UnifiedAgendaDate=="2007-10-01" & UnifiedAgenda$RIN=="2105-AD63")] <- "Proposed Rule"
 UnifiedAgenda$STAGE[which(UnifiedAgenda$UnifiedAgendaDate=="2009-04-01" & UnifiedAgenda$RIN=="2105-AD72")] <- "Prerule"
 UnifiedAgenda$STAGE[which(UnifiedAgenda$UnifiedAgendaDate=="2007-04-01" & UnifiedAgenda$RIN=="2120-AG87")] <- "Proposed Rule"
