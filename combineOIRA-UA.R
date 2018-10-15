@@ -1,9 +1,9 @@
-
+source("setup.R")
 
 # To skip downloading R packages and XML files from reginfo.gov
-DownloadNow = FALSE
+DownloadNow = T
 # To skip parsing XML files
-ParseNow = FALSE
+ParseNow = T
 
 #################################################################
 # Get reports from http://www.reginfo.gov/public/do/XMLReportList
@@ -13,7 +13,7 @@ if(DownloadNow){
   download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=PREVIOUS_YEAR_EO_RULE_COMPLETED.zip", "reginfo.zip")
   # 2016
   download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=EO_RULE_COMPLETED_2016.xml","EO_RULE_COMPLETED_2015.xml")
-  # 2017 completed
+  # 2018 completed
   download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=EO_RULE_COMPLETED_YTD.xml","EO_RULE_COMPLETED_YTD.xml")
   # under review
   download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=EO_RULES_UNDER_REVIEW.xml", "EO_RULES_UNDER_REVIEW.xml")
@@ -34,7 +34,6 @@ if(ParseNow){
   OIRAraw <- plyr::ldply(files, parse_xml)
   # to restore dataframe without re-parsing
   OIRA <- OIRAraw
-  save.image("regs.Rdata")
 }
 
 ##################################################################################################
@@ -184,9 +183,12 @@ OIRA %<>% arrange(desc(DATE_RECEIVED)) %>%
 
 
 ####################################################################
-# Unified Agenda data http://www.reginfo.gov/public/jsp/XML/eAgendaXmlReport.jsp 
+# Unified Agenda data https://www.reginfo.gov/public/do/eAgendaXmlReport
 ###################################################################
 if(DownloadNow){
+  download.file("https://www.reginfo.gov/public/do/XMLViewFileAction?f=2018-SPRING-RIN-DATA.xml","REGINFO_RIN_DATA_201804.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201704.xml","REGINFO_RIN_DATA_201704.xml")
+  download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201710.xml","REGINFO_RIN_DATA_201710.xml")
   download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201704.xml","REGINFO_RIN_DATA_201704.xml")
   download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201610.xml","REGINFO_RIN_DATA_201610.xml")
   download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_201604.xml","REGINFO_RIN_DATA_201604.xml")
@@ -246,7 +248,6 @@ if(ParseNow){
   UnifiedAgendaRaw <- plyr::ldply(files, parse_xml)
   # so one can restore dataframe without re-parsing
   UnifiedAgenda <- UnifiedAgendaRaw
-  save.image("regs.Rdata")
 }
 
 
@@ -272,7 +273,8 @@ UnifiedAgenda$TIMETABLE_LIST %<>%
   gsub("Second NPRM|Supplemental NPRM|SNPRM","S.N.P.R.M.", .)
 
 #####################################
-x %<>%
+x
+%<>%
   #  working on rewrite
   mutate(STAGE = ifelse(
     STAGE=="Long-Term Actions" |
@@ -601,13 +603,19 @@ regs %<>% mutate(NPRMtoWithdrawal = as.numeric(as.Date(WITHDRAWAL) - as.Date(NPR
 
 if(F){
   # write out UA
-  write.csv(UnifiedAgenda, file="Data/Unified Agenda.csv")
+  write.csv(UnifiedAgenda, file="Unified Agenda.csv")
   
   # write out OIRA
-  write.csv(OIRA, file="Data/OIRA.csv")
+  write.csv(OIRA, file="OIRA.csv")
   
   # write out combined
-  write.csv(regs, file="Data/OIRA and UA.csv")
+  write.csv(regs, file="OIRA and UA.csv")
 
-  save.image("regs.Rdata")
+  
+}
+
+if(F){
+save(OIRA, file = "data/OIRA.Rdata")
+save(UnifiedAgenda, "data/UnifiedAgenda.Rdata")
+save(regs, "data/OIRAandUA.Rdata")
 }
