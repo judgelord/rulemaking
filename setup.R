@@ -19,9 +19,11 @@ requires <- c("gmailr",
               "stringi",
               "stringr", 
               "here",
+              "gridExtra",
               "tidyverse")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
 install.packages(c(requires[to_install], "NA"), repos = "https://cloud.r-project.org/" )
+rm(requires, to_install)
 
 library(tidyverse)
 library(dplyr) # in case tydyverse fails (problem on linux)
@@ -37,6 +39,7 @@ library(visreg)
 library(reshape2)
 library(scales)
 library(here)
+library(gridExtra)
 
 
 # function to fill NAs
