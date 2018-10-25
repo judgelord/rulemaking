@@ -7,6 +7,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, fig.width = 8)
 ```
 
+# Data
 ```{r data}
 library(here)
 library(gridExtra)
@@ -37,10 +38,22 @@ d <- full_join(regs.gov, regs)
 
 - Shiny app to make datasets with search terms via regulations.gov API
 
+```{r summary-table}
+count <- d %>% filter(year > 1993, !is.na(commentStartDate)) %>%  filter(documentType == "Proposed Rule") %>% #filter(numberOfCommentsReceived > 0) %>% 
+  group_by(documentType, agencyAcronym) %>%
+  mutate(mean = round(mean(numberOfCommentsReceived))) %>% 
+  mutate(median = median(numberOfCommentsReceived)) %>% 
+  mutate(max = max(numberOfCommentsReceived)) %>%
+  mutate(z = ifelse(numberOfCommentsReceived==0, T, F)) %>% 
+  mutate(zero = sum(numberOfCommentsReceived == 0)) %>%
+  mutate(total = n()) %>%
+  group_by(z, agencyAcronym, documentType) %>% 
+  mutate(medianW.O.zero = median(numberOfCommentsReceived)) %>% 
+  ungroup() %>% group_by(documentType, agencyAcronym) %>% mutate(medianW.O.zero = max(medianW.O.zero)) %>% 
+   group_by(agencyAcronym, documentType, mean, median, max, zero, medianW.O.zero) %>% tally() %>% arrange(-n)
+```
 
 
-
-# Data
 
 ```{r type-comment-density, fig.height = 6.5}
 # TYPEpoint log log 
@@ -50,23 +63,21 @@ count <- d %>% filter(year > 1993, !is.na(commentStartDate)) %>% # filter(docume
   mutate(median = median(numberOfCommentsReceived)) %>% 
   mutate(zero = sum(numberOfCommentsReceived == 0)) %>%
   mutate(total = n()) %>%
-   group_by(numberOfCommentsReceived, documentType, mean, median, zero, total) %>% tally() %>% arrange(numberOfCommentsReceived) %>%
- #  summarize(unique(zero))
+   group_by(numberOfCommentsReceived, documentType, mean, median, zero, total) %>% tally() %>% arrange(numberOfCommentsReceived) %>% 
+  filter(numberOfCommentsReceived > 0) %>%
   ggplot() +
-  geom_point(aes(
-    x = numberOfCommentsReceived, 
+  geom_point(aes(x = numberOfCommentsReceived, 
     y = n,
     color = documentType, fill = documentType),
     alpha = .2) +
   geom_vline(aes(xintercept = mean, color = documentType), linetype="dashed") +
   geom_label(aes(x = mean, y = zero, label = paste(documentType, "mean =", mean, "comments"), color = documentType), check_overlap = TRUE, vjust = -.1) +
   geom_text(aes(x = mean, y = zero, label = paste0(zero,"/", total, " = ", round(zero/total*100),"%", " have no comments"), color = documentType), check_overlap = TRUE, vjust = 1) +
-  scale_x_continuous(trans = "log10",
-                     breaks = trans_breaks("log10", function(x) 10^x),
-                     labels = trans_format("log10", math_format(10^.x) ) ) + 
-  scale_y_continuous(trans = "log10",
-                     breaks = trans_breaks("log10", function(x) 10^x),
-                     labels = trans_format("log10", math_format(10^.x) ) ) + 
+  scale_x_log10(limits = c(1,10^7),
+                breaks = c(0,1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
+                     labels = c("0", "1", "10", "100", "1k", "10k", "100k", "1m","10m") ) + 
+  scale_y_log10(breaks = c(0, 1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
+                     labels = c("0", "1", "10", "100", "1k", "10k", "100k", "1m","10m") ) + 
   labs(#title = paste("All regulations.gov documents open for public comment 1994-2017"),#, sum(d$documentType == "Proposed Rule"),"proposed rules"),
        x = "Number of Comments", 
        y = "Number of Documents", 
@@ -76,38 +87,34 @@ count <- d %>% filter(year > 1993, !is.na(commentStartDate)) %>% # filter(docume
 
 
   
-  # TYPE DENSITY LOG LOG 
-density <-  d %>% filter(year > 1993, !is.na(commentStartDate)) %>% # filter(documentType == "Proposed Rule") %>% #filter(numberOfCommentsReceived > 0) %>% 
+# TYPE DENSITY LOG LOG 
+density <-    d %>% filter(year > 1993, !is.na(commentStartDate)) %>% # filter(documentType == "Proposed Rule") %>% #filter(numberOfCommentsReceived > 0) %>% 
     group_by(documentType) %>%
     mutate(mean = round(mean(numberOfCommentsReceived))) %>% 
     mutate(median = median(numberOfCommentsReceived)) %>% 
     mutate(zero = sum(numberOfCommentsReceived == 0)) %>%
-    mutate(total = n()) %>%
-    #  summarize(unique(zero))
+    mutate(total = n()) %>% filter(numberOfCommentsReceived > 0) %>% 
     ggplot() +
-    geom_density(aes(
-      x = numberOfCommentsReceived, 
-      #y = ..count..,
+    geom_histogram(aes(x = numberOfCommentsReceived, 
       color = documentType, fill = documentType),
-      alpha = .2, position = "identity") +
+      alpha = .2, position = "dodge", binwidth = 1, stat = "bin") +
     geom_vline(aes(xintercept = mean, color = documentType), linetype="dashed") +
 #    geom_label(aes(x = mean, y = zero, label = paste(documentType, "mean =", mean, "comments"), color = documentType), check_overlap = TRUE, vjust = -.1) +
 #    geom_text(aes(x = mean, y = zero, label = paste0(zero,"/", total, " = ", round(zero/total*100),"%", " have no comments"), color = documentType), check_overlap = TRUE, vjust = 1) +
-    scale_x_continuous(trans = "log10",
-                       breaks = trans_breaks("log10", function(x) 10^x),
-                       labels = trans_format("log10", math_format(10^.x) ) ) + 
-#    scale_y_continuous(trans = "log10",
-#                       breaks = trans_breaks("log10", function(x) 10^x),
-#                       labels = trans_format("log10", math_format(10^.x) ) ) + 
-    labs(#title = paste("All regulations.gov documents accepting public comments, 1994-2017"),#, sum(d$documentType == "Proposed Rule"),"proposed rules"),
-         x = "Number of Comments", 
-         y = "Density", 
-         color = "", fill = "") + 
+    # scale_x_log10() +
+  scale_x_log10(limits = c(1,10^7),
+                breaks = c(0,1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
+                     labels = c("0", "1", "10", "100", "1k", "10k", "100k", "1m","10m") ) + 
+  scale_y_continuous(breaks = c(0, 1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
+                     labels = c("0", "", "", "", "1k", "10k", "100k", "1m","10m") ) +
+  labs(x = "Number of Comments", 
+       y = "Density", 
+       color = "", fill = "") + 
     theme_minimal() +
-  theme(legend.position="none", 
-        axis.title.x = element_blank(),
-        axis.text.x = element_blank(),
-        panel.grid = element_blank())
+  theme(legend.position="none",
+        panel.grid.major.x = element_blank(), 
+        axis.title.x = element_blank() )#,
+        #axis.text.x = element_blank())
 
 grid.arrange(density, count, ncol = 1, heights=c(1, 4))
 ```
