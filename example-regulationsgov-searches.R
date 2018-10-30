@@ -23,15 +23,15 @@ n = 2000
 ## PS: Public Submission
 
 # Search 
-d <- search.docs(documenttype = "N, PR, FR" , 
-                 n = 2000)
+d <- search.docs(documenttype = "PS" , 
+                 n = 1000)
 
 d$postedDate %<>% as.Date()
 d$commentStartDate %<>% as.Date()
 
 ggplot(d) + geom_histogram(aes(x = postedDate, 
                               fill = documentType))
-
+names(d)
 
 # Select agencies, again seperating multiple agencies with a comma and a space
 # Search
@@ -62,4 +62,19 @@ ggplot(d) + geom_histogram(aes(x = postedDate,
 
 # keywords 
 ## Note that keyword serches return an additional feature "summary" which is text before and after
-search.keywords("environmental justicex")
+search.keywords(keywords = "environmental justice",
+                documenttype = "PS",
+                n = 2000)
+
+d$postedDate %<>% as.Date()
+d$commentStartDate %<>% as.Date()
+
+ggplot(d) + geom_histogram(aes(x = postedDate, 
+                               fill = documentType)) +  theme_minimal() 
+
+
+
+
+
+
+

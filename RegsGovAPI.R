@@ -16,7 +16,8 @@ order <- "DESC" # DESC: Decending, ASC: Ascending
 sortby <- "postedDate" #docketId (Docket ID) docId (Document ID) title (Title) postedDate (Posted Date) agency (Agency) documentType (Document Type) submitterName (Submitter Name) organization (Organization)
 page <- c(0, seq(1000)*rpp) # up to 1,000,0000 results
 status <- "O" # O for open docket
-keywords <- "all"
+n <- 2000 # max number of results
+start <- 1000 # result number on which to resume partial search (e.g. due to api limits )
 documenttype <- "N%2BPR%2BFR%2BPS%2BSR%2BO"
 ## N: Notice, 
 ## PR: Proposed Rule, 
@@ -39,7 +40,7 @@ search.docs <- function(documenttype, n) {
                  "&sb=", sortby, 
                  "&dct=", documenttype)
   
-  path1 <- paste0(path, "&po=", page[1]) # page 1
+  path1 <- paste0(path, "&po=", page[round(start/1000)]) # page 1
   
   ######################
   # for > 1000 results #
@@ -51,7 +52,7 @@ search.docs <- function(documenttype, n) {
   all <- as.data.frame(content[[1]])
   # loop over and bind additional pages 
   if(n>=2000){
-  for(i in 2:round(n/1000)){
+  for(i in round(start/1000)+1:round(n/1000)){
     #tryCatch({
     raw.result <- GET(url = url, path = paste0(path, "&po=", page[i]))
     if(raw.result$status_code == 200){
@@ -88,7 +89,7 @@ path <- paste0("/regulations/v3/documents?api_key=", api_key,
                "&sb=", sortby, 
                "&dct=", documenttype)
 
-path1 <- paste0(path, "&po=", page[1]) # page 1
+path1 <- paste0(path, "&po=", page[round(start/1000)]) # page 1
 
 ######################
 # for > 1000 results #
@@ -100,7 +101,7 @@ content <- fromJSON(rawToChar(raw.result$content))
 all <- as.data.frame(content[[1]])
 # loop over and bind additional pages 
 if(n>=2000){
-for(i in 2:round(n/1000)){
+for(i in round(start/1000)+1:round(n/1000)){
   #tryCatch({
   raw.result <- GET(url = url, path = paste0(path, "&po=", page[i]))
   if(raw.result$status_code == 200){
@@ -129,14 +130,14 @@ path <- paste0("/regulations/v3/documents?api_key=", api_key,
                "&so=", order, 
                "&sb=", sortby, 
                "&dct=", documenttype)
-path1 <- paste0(path, "&po=", page[1]) # page 1
+path1 <- paste0(path, "&po=", page[round(start/1000)]) # page 1
 raw.result <- GET(url = url, path = path1)
 raw.result$status_code == 200
 content <- fromJSON(rawToChar(raw.result$content))
 all <- as.data.frame(content[[1]])
 # loop over and bind additional pages 
 if(n>=2000){
-  for(i in 2:round(n/1000)){
+  for(i in round(start/1000)+1:round(n/1000)){
     #tryCatch({
     raw.result <- GET(url = url, path = paste0(path, "&po=", page[i]))
     if(raw.result$status_code == 200){
@@ -165,7 +166,9 @@ if(raw.result$status_code != 200){ print(paste("Error: status code =", raw.resul
 # KEYWORD SEARCH #
 ##################
 # create path function for keyword searches, comment out things like agency or status
-search.keywords <- function(documenttype, keywords) {
+search.keywords <- function(documenttype, keywords, n) {
+  keywords <- gsub(" ", "%2B", keywords)
+  documenttype <- gsub(", ", "%2B", documenttype)
   
   regs.gov.path <- function(documenttype, search){
     paste0("/regulations/v3/documents?api_key=", api_key, 
@@ -178,17 +181,15 @@ search.keywords <- function(documenttype, keywords) {
            "&dct=", documenttype)
   }
 
-keywords <- gsub(" ", "%2B", keywords)
-documenttype <- gsub(", ", "%2B", documenttype)
-
-# clear path
-path <- NA
+# clear paths
+paths <- NA
 
 # make a vector of paths for each keyword
 for(i in 1:length(keywords)){
-  path[i] <- regs.gov.path(
+  paths[i] <- regs.gov.path(
     documenttype = documenttype, # "N%2BPR%2BFR%2BPS%2BSR%2BO" # N%2BPR%2BFR%2BPS%2BSR%2BO = all docs, N: Notice PR: Proposed Rule FR: Rule O: Other SR: Supporting & Related Material PS: Public Submission
     search = keywords[i])
+  return(paths)
 }
 
 
@@ -196,15 +197,15 @@ for(i in 1:length(keywords)){
 ######################
 # function for each keyword path 
 ######################
-search.keyword <- function(keywords, documenttype) {
+search.keyword <- function(path) {
   # initialize with page 1
   rpp <- 1000
   page <- c(0, seq(1000)*rpp)
-  raw.result <- GET(url = url, path = paste0(path, "&po=", page[1]))
+  raw.result <- GET(url = url, path = paste0(path, "&po=", page[round(start/1000)]))
   content <- fromJSON(rawToChar(raw.result$content))
   d <- as.data.frame(content[[1]])
   # loop over and bind additional pages 
-  for(i in 2:100){ # up to 10k results. MAY NEED TO CHANGE THIS BUT KEPT LOW TO AVOID LIMIT
+  for(i in round(start/1000)+1:round(n/1000)){ # up to 10k results. MAY NEED TO CHANGE THIS BUT KEPT LOW TO AVOID LIMIT
     # tryCatch({
     if(raw.result$status_code == 200){ # only try pull if previous call was good
       raw.result <- GET(url = url, path = paste0(path, "&po=", page[i]))
@@ -217,13 +218,13 @@ search.keyword <- function(keywords, documenttype) {
     # }, error = function(err) {print(i)})  # may not need tryCatch because rbind throughs an error
   } # end loop
   return(d)
-} # end function
+} # end keyword function
 
 
 ###################
 # get keyword 1  #
 ##################
-d <- search.keyword(path[1])
+d <- search.keyword(paths[1])
 
 # rename search results column
 names(d)[names(d) == 'summary'] <- gsub("%22|%2B", "", keywords[1])
@@ -231,10 +232,11 @@ names(d)[names(d) == 'summary'] <- gsub("%22|%2B", "", keywords[1])
 ###################################
 # repeat and merge any additional keywords #
 ###################################
-if(length(keywords > 1)){
-for(i in 2:length(path)){
-  names(d)[names(d) == 'summary'] <- gsub("%22|%2B", keywords[i])
-  d <- full_join(d, search.keywords(path[i]))
+if(length(keywords) > 1){
+for(i in 2:length(paths)){
+  temp <- search.keywords(paths[i])
+  names(temp)[names(temp) == 'summary'] <- gsub("%22|%2B", " ", keywords[i])
+  d <- full_join(d, temp)
 }
 }
 # clean up strings 
@@ -293,7 +295,7 @@ return(d)
 
 # # Beginner example 
 # # path to first page of up to 1000 results for first search term
-# path1 <- paste0(path[1], "&po=", page[1]) # page 1
+# path1 <- paste0(path[1], "&po=", page[round(start/1000)]) # page 1
 # 
 # 
 # # Execute API call for up to 1000 results from first term 
