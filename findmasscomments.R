@@ -8,6 +8,8 @@ d <- search.docs(documenttype = "PS", n = 1000)
 # initialize
 start <- 1
 
+##################################################################################
+# if resuming saved results: load("comments.Rdata")
 # loop until api fails
 while(raw.result$status_code == 200){
   
@@ -34,37 +36,39 @@ d %<>% full_join(as.data.frame(content[[1]]))
 start <- start + 1
 }
 # loop over and bind additional pages 
-save(d, file = "comments.Rdata")
+save(d, file = "data/comments.Rdata")
 
 
 
 
+# format
+d$numberOfCommentsReceived %<>% as.numeric()
+d$postedDate %<>% as.Date()
+d$commentStartDate %<>% as.Date()
+
+# docket vars 
+d %<>% group_by(docketId) %>% 
+  mutate(numberOfCommentsUnique = n()) %>% 
+  mutate(numberOfCommentsTotal = sum(numberOfCommentsReceived)) %>% 
+  mutate(support = grepl(" support ", commentText) ) %>% 
+  mutate(support = grepl(" oppose ", commentText) ) %>% 
+  ungroup() %>% arrange(desc(numberOfCommentsReceived))
+
+select(d, organization, numberOfCommentsReceived, numberOfCommentsUnique, numberOfCommentsTotal, agencyAcronym, title)
 
 
-# top comments
-top <- all %>% filter(numberOfCommentsReceived > 1) %>% arrange(desc(numberOfCommentsReceived))
-cbind(top$documentId, top$numberOfCommentsReceived, top$title)
-top$documentId
+head(d$commentText[which(grepl(" support ", d$commentText))])
 
-top$doc <- c("Mass Mail E1",
+
+head(d$commentText)
+
+
+            c("Mass Mail E1",
              "Mass Mail E10",
              "Mass Mail E2",
              "Mass Mail E3")
 
-# 
-
-top$numberOfCommentsReceived %<>% as.numeric()
-
-(sum(top$numberOfCommentsReceived) -
-    940 )/sum(top$numberOfCommentsReceived)
-
-sum(top$numberOfCommentsReceived)
-
-sum(grepl("support", all$commentText))
-sum(grepl("support", all$commentText))
-
-
-head(all$commentText[which(grepl("support", all$commentText))])
+            
 
 
 
