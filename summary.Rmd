@@ -8,7 +8,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.width = 8)
 ```
 
 # Data
-```{r data}
+```{r rules-data}
 library(here)
 library(gridExtra)
 source(here("setup.R"))
@@ -283,3 +283,47 @@ density <-  d %>% filter(year > 1993, !is.na(commentStartDate), !is.na(PRIORITY_
 grid.arrange(density, count, ncol = 1, heights=c(1, 4))
   
 ```
+
+
+
+
+
+
+```{r commets-data}
+
+
+# format
+d$numberOfCommentsReceived %<>% as.numeric()
+d$postedDate %<>% as.Date()
+d$commentStartDate %<>% as.Date()
+
+# docket vars 
+d %<>% group_by(docketId) %>% 
+  mutate(numberOfCommentsUnique = n()) %>% 
+  mutate(numberOfCommentsTotal = sum(numberOfCommentsReceived)) %>% 
+  mutate(position.support = grepl(" support ", commentText) ) %>% 
+  mutate(position.oppose = grepl(" oppose ", commentText) ) %>% 
+  mutate(position.complex = grepl(" support ", commentText) & grepl(" oppose ", commentText) ) %>% 
+  ungroup() %>% arrange(desc(numberOfCommentsReceived))
+
+# select(d, organization, numberOfCommentsReceived, numberOfCommentsUnique, numberOfCommentsTotal, agencyAcronym, title)
+
+```
+
+Comments with the word "support": 
+`r head(d$commentText[which(grepl(" support ", d$commentText))])`
+
+Comments with the word "oppose": 
+`r head(d$commentText[which(grepl(" oppose ", d$commentText))])`
+
+Comments with the both "support" and "oppose": 
+`r head(d$position.complex)`
+
+Mass comments:
+`head(d$commentText)`
+
+
+
+
+
+            
