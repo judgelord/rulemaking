@@ -1,9 +1,32 @@
+# This script gets all comments from regulations.gov
 
+## load packages
+source("setup.R")
 
-# get all comments
-documenttype <- "PS"
+## get API call functions 
+source("RegsGovAPI.R")
 
-d <- search.docs(documenttype = "PS", n = 1000)
+## add your API Key
+source("api-key.R") 
+api_key <- api_key
+
+## initial API call
+raw.result <- GET(
+  url = url,
+  path = paste0(
+    "/regulations/v3/documents?api_key=", api_key,
+    "&rpp=", rpp,
+    "&so=", order,
+    "&sb=", sortby,
+    "&dct=", "PS",
+    "&po=", page[start]
+  )
+)
+raw.result$status_code
+
+# extract content to list
+content <- fromJSON(rawToChar(raw.result$content))
+d <- as.data.frame(content[[1]])
 
 # initialize
 start <- 1
@@ -21,10 +44,11 @@ raw.result <- GET(
     "&rpp=", rpp,
     "&so=", order,
     "&sb=", sortby,
-    "&dct=", documenttype,
+    "&dct=", "PS",
     "&po=", page[start]
   )
 )
+raw.result$status_code
 
 # extract content to list
 content <- fromJSON(rawToChar(raw.result$content))
@@ -36,7 +60,7 @@ d %<>% full_join(as.data.frame(content[[1]]))
 start <- start + 1
 }
 # loop over and bind additional pages 
-save(d, file = "data/comments.Rdata")
+save(d, start, file = "data/comments.Rdata")
 
 
 
