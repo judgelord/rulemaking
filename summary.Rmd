@@ -1,17 +1,24 @@
 ---
 title: "summary"
-output: html_document
+output: 
+   html_document:
+    toc: true
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.width = 8)
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = F, 
+                      fig.width=8.5, fig.align = 'center', fig.path='Figs/',
+                      warning=FALSE, message=FALSE)
 ```
 
 # Data
 ```{r rules-data}
 library(here)
-library(gridExtra)
+# load required packages
 source(here("setup.R"))
+
 # load all regulations.gov rules as "d"
 load(here("data/AllRegsGovRules.Rdata"))
 regs.gov <- d
@@ -34,12 +41,9 @@ load(here("data/OIRAandUA.Rdata"))
 d <- full_join(regs.gov, regs)
 ```
 
-# To do:
-
-- Shiny app to make datasets with search terms via regulations.gov API
 
 ```{r summary-table}
-count <- d %>% filter(year > 1993, !is.na(commentStartDate)) %>%  filter(documentType == "Proposed Rule") %>% #filter(numberOfCommentsReceived > 0) %>% 
+count <- d %>% filter(year > 1993, !is.na(commentStartDate)) %>%  filter(documentType == "Proposed Rule") %>% 
   group_by(documentType, agencyAcronym) %>%
   mutate(mean = round(mean(numberOfCommentsReceived))) %>% 
   mutate(median = median(numberOfCommentsReceived)) %>% 
@@ -54,10 +58,28 @@ count <- d %>% filter(year > 1993, !is.na(commentStartDate)) %>%  filter(documen
 ```
 
 
+```{r comments-per-year, fig.height = 4}
+d %>% filter(year > 2005, !is.na(commentStartDate)) %>% 
+  filter(documentType == "Proposed Rule") %>%
+  group_by(year) %>% 
+  mutate(rank = row_number(numberOfCommentsReceived)) %>% 
+  ggplot() +
+  geom_col(aes(y = numberOfCommentsReceived, x = rank, color = numberOfCommentsReceived)) +
+  geom_point(aes(y = numberOfCommentsReceived, x = rank, color = numberOfCommentsReceived), shape = 18) +
+  scale_color_gradient(low="blue", high="red")+
+  scale_y_log10(breaks = c(0, 1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
+                     labels = c("0", "1", "10", "100", "1k", "10k", "100k", "1m","10m") ) + 
+  labs(x = "Proposed Rules on Regulations.gov Ranked by Number of Comments",
+       y = "Number of Comments (Log scale)", 
+       color = "", fill = "") + 
+  facet_wrap(~ year, ncol = 6)+
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45))
+```
 
 ```{r type-comment-density, fig.height = 6.5}
 # TYPEpoint log log 
-count <- d %>% filter(year > 1993, !is.na(commentStartDate)) %>% # filter(documentType == "Proposed Rule") %>% #filter(numberOfCommentsReceived > 0) %>% 
+count <- d %>% filter(year > 1993, !is.na(commentStartDate)) %>% # filter(documentType == "Proposed Rule")
   group_by(documentType) %>%
   mutate(mean = round(mean(numberOfCommentsReceived))) %>% 
   mutate(median = median(numberOfCommentsReceived)) %>% 
@@ -301,9 +323,10 @@ d$commentStartDate %<>% as.Date()
 d %<>% group_by(docketId) %>% 
   mutate(numberOfCommentsUnique = n()) %>% 
   mutate(numberOfCommentsTotal = sum(numberOfCommentsReceived)) %>% 
-  mutate(position.support = grepl(" support ", commentText) ) %>% 
-  mutate(position.oppose = grepl(" oppose ", commentText) ) %>% 
-  mutate(position.complex = grepl(" support ", commentText) & grepl(" oppose ", commentText) ) %>% 
+  # FIXME need to merge in comment data 
+  # mutate(position.support = grepl(" support ", commentText) ) %>% 
+  # mutate(position.oppose = grepl(" oppose ", commentText) ) %>% 
+  # mutate(position.complex = grepl(" support ", commentText) & grepl(" oppose ", commentText) ) %>% 
   ungroup() %>% arrange(desc(numberOfCommentsReceived))
 
 # select(d, organization, numberOfCommentsReceived, numberOfCommentsUnique, numberOfCommentsTotal, agencyAcronym, title)
@@ -324,6 +347,11 @@ Mass comments:
 
 
 
+
+
+# To do:
+
+- Shiny app to make datasets with search terms via regulations.gov API
 
 
             
