@@ -354,7 +354,8 @@ d %>%
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
   geom_col(aes(x = year, y = yearTotal, fill = mass) ) + 
-  labs(x = Year, 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "Year", 
        y = paste("Total Public Comments, N =", sum(d$numberOfCommentsReceived)),
        fill = "") + 
   theme_minimal()
