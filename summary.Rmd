@@ -311,27 +311,46 @@ grid.arrange(density, count, ncol = 1, heights=c(1, 4))
 
 
 
-```{r commets-data}
+```{r comments-data}
+# loads comments as d
+load(here("data/comments.Rdata"))
 
-
-# format
-d$numberOfCommentsReceived %<>% as.numeric()
 d$postedDate %<>% as.Date()
 d$commentStartDate %<>% as.Date()
+d$year <- as.numeric(substr(d$postedDate, 1, 4))
+d$numberOfCommentsReceived %<>% as.numeric()
+
 
 # docket vars 
 d %<>% group_by(docketId) %>% 
-  mutate(numberOfCommentsUnique = n()) %>% 
-  mutate(numberOfCommentsTotal = sum(numberOfCommentsReceived)) %>% 
-  # FIXME need to merge in comment data 
-  # mutate(position.support = grepl(" support ", commentText) ) %>% 
-  # mutate(position.oppose = grepl(" oppose ", commentText) ) %>% 
-  # mutate(position.complex = grepl(" support ", commentText) & grepl(" oppose ", commentText) ) %>% 
+  mutate(docketUnique = n()) %>% 
+  mutate(docketTotal = sum(numberOfCommentsReceived)) %>% 
   ungroup() %>% arrange(desc(numberOfCommentsReceived))
+
+# year vars
+d %<>% group_by(year) %>% 
+  mutate(docketsPerYear = n()) %>% 
+  mutate(yearTotal = sum(numberOfCommentsReceived)) %>% 
+  mutate(mass = ifelse(numberOfCommentsReceived>1, "Mass Comment Campaign", "Unique Comments")) %>% 
+  ungroup() %>% arrange(desc(numberOfCommentsReceived))
+
+d %<>%   # FIXME need to merge in comment data 
+  mutate(position.support = grepl(" support ", commentText) ) %>% 
+  mutate(position.oppose = grepl(" oppose ", commentText) ) %>% 
+  mutate(position.complex = grepl(" support ", commentText) & grepl(" oppose ", commentText) ) 
 
 # select(d, organization, numberOfCommentsReceived, numberOfCommentsUnique, numberOfCommentsTotal, agencyAcronym, title)
 
 ```
+
+```{r mass-comments}
+d %>% 
+  group_by(year, mass) %>% 
+  summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
+  ggplot() + 
+  geom_col(aes(x = year, y = yearTotal, fill = mass) )
+```
+
 
 Comments with the word "support": 
 `r head(d$commentText[which(grepl(" support ", d$commentText))])`
