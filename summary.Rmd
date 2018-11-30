@@ -314,30 +314,34 @@ grid.arrange(density, count, ncol = 1, heights=c(1, 4))
 ```{r comments-data}
 # loads comments as d
 load(here("data/comments.Rdata"))
+# mass comments to the top
+d %<>% arrange(desc(numberOfCommentsReceived))  %>% 
+  mutate(mass = ifelse(numberOfCommentsReceived>1, "Mass Comment Campaign", "Unique Comments"))
 
+# format vars
 d$postedDate %<>% as.Date()
 d$commentStartDate %<>% as.Date()
 d$year <- as.numeric(substr(d$postedDate, 1, 4))
 d$numberOfCommentsReceived %<>% as.numeric()
 
-
 # docket vars 
 d %<>% group_by(docketId) %>% 
   mutate(docketUnique = n()) %>% 
   mutate(docketTotal = sum(numberOfCommentsReceived)) %>% 
-  ungroup() %>% arrange(desc(numberOfCommentsReceived))
+  ungroup() 
 
 # year vars
 d %<>% group_by(year) %>% 
   mutate(docketsPerYear = n()) %>% 
   mutate(yearTotal = sum(numberOfCommentsReceived)) %>% 
-  mutate(mass = ifelse(numberOfCommentsReceived>1, "Mass Comment Campaign", "Unique Comments")) %>% 
-  ungroup() %>% arrange(desc(numberOfCommentsReceived))
+  ungroup() 
 
 d %<>%   # FIXME need to merge in comment data 
-  mutate(position.support = grepl(" support ", commentText) ) %>% 
-  mutate(position.oppose = grepl(" oppose ", commentText) ) %>% 
-  mutate(position.complex = grepl(" support ", commentText) & grepl(" oppose ", commentText) ) 
+  mutate(position = ifelse(grepl(" support ", commentText), "support", NA )) %>% 
+  mutate(position = ifelse(grepl(" oppose ", commentText), "oppose", position )) %>% 
+    mutate(position = ifelse(grepl(" support ", commentText) & grepl(" oppose ", commentText), "support and oppose", NA )) 
+
+
 
 # select(d, organization, numberOfCommentsReceived, numberOfCommentsUnique, numberOfCommentsTotal, agencyAcronym, title)
 
@@ -345,23 +349,32 @@ d %<>%   # FIXME need to merge in comment data
 
 ```{r mass-comments}
 d %>% 
+  filter(year > 2005) %>% 
   group_by(year, mass) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
-  geom_col(aes(x = year, y = yearTotal, fill = mass) )
+  geom_col(aes(x = year, y = yearTotal, fill = mass) ) + 
+  labs(x = Year, 
+       y = paste("Total Public Comments, N =", sum(d$numberOfCommentsReceived)),
+       fill = "") + 
+  theme_minimal()
 ```
 
 
-Comments with the word "support": 
+### Comments with the word "support": 
+
 `r head(d$commentText[which(grepl(" support ", d$commentText))])`
 
-Comments with the word "oppose": 
+### Comments with the word "oppose": 
+
 `r head(d$commentText[which(grepl(" oppose ", d$commentText))])`
 
-Comments with the both "support" and "oppose": 
+### Comments with the both "support" and "oppose": 
+
 `r head(d$position.complex)`
 
-Mass comments:
+### Mass comments:
+
 `head(d$commentText)`
 
 
