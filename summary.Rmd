@@ -11,7 +11,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE, 
                       cache = FALSE, 
                       fig.width=8.5, fig.align = 'center', fig.path='Figs/',
-                      warning=TRUE, message=FALSE)
+                      warning=FALSE, message=FALSE)
 ```
 
 # Data
@@ -340,7 +340,7 @@ d <- all
 # mass comments to the top
 d %<>% arrange(desc(numberOfCommentsReceived))  %>% 
   # make a variable indicating comment is unique
-  mutate(mass = ifelse(numberOfCommentsReceived > 1, "Mass Comment Campaign", "Unique Comments"))
+  mutate(mass = ifelse(numberOfCommentsReceived > 1, "Mass Comments", "Unique Comments"))
 
 # format data
 d$postedDate %<>% as.Date()
@@ -367,17 +367,17 @@ d %<>%
 
 ```{r mass-comments, fig.height=3, fig.width=6}
 d %>% 
-  #filter(year > 2005) %>% 
+  filter(year > 2005) %>% 
   group_by(year, mass) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
   geom_col(aes(x = year, y = yearTotal, fill = mass) ) + 
   scale_y_continuous(labels = scales::comma) + 
   labs(x = "", 
-       y = paste("Total Public Comments, N =", round(sum(d$numberOfCommentsReceived)/100000, 1), "million"),
+       y = paste("Public Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
        fill = "") + 
   theme_minimal() + 
-  theme(panel.grid.major.x = element_blank())
+  theme(panel.grid.x = element_blank())
 ```
 
 
