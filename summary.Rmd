@@ -375,7 +375,7 @@ d %>%
 
 ### Comments with the both "support" and "oppose": 
 
-r head(filter(d, position == "support and oppose"))
+`r head(filter(d, position == "support and oppose"))`
 
 ### Example mass comments:
 
