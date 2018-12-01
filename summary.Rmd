@@ -338,6 +338,8 @@ grid.arrange(density, count, ncol = 1, heights=c(1, 4))
 # load comments as all
 load(here("data/allcomments.Rdata"))
 d <- all
+# load(here("data/allcomments-sample.Rdata")) # for testing on small sample 
+
 
 # mass comments to the top
 d %<>% arrange(desc(numberOfCommentsReceived))  %>% 
@@ -442,10 +444,10 @@ r head(filter(d, position == "support and oppose"))
 
 ### Top mobilizers
 
-`r d$organization[which(d$numberOfCommentsReceived > 99)]`
+`r d$organization[which(d$numberOfCommentsReceived > 99 & !is.na(d$organization))]`
 
 ### American Petroleum Institute, breaking a perceived consensus
-`r d[which(d$organization=="American Petroleum Institute"), ]`
+r `d[which(d$numberOfCommentsReceived > 99 & d$organization=="American Petroleum Institute"), 6:13]`
 
 
 
