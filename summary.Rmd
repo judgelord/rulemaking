@@ -315,13 +315,14 @@ grid.arrange(density, count, ncol = 1, heights=c(1, 4))
 ```{r comments-data}
 # loads comments as d
 load(here("data/allcomments.Rdata"))
+d <- all
 # mass comments to the top
 d %<>% arrange(desc(numberOfCommentsReceived))  %>% 
-  mutate(mass = ifelse(numberOfCommentsReceived>1, "Mass Comment Campaign", "Unique Comments"))
+  # make a variable indicating comment is unique
+  mutate(mass = ifelse(numberOfCommentsReceived > 1, "Mass Comment Campaign", "Unique Comments"))
 
-# format vars
+# format data
 d$postedDate %<>% as.Date()
-d$commentStartDate %<>% as.Date()
 d$year <- as.numeric(substr(d$postedDate, 1, 4))
 d$numberOfCommentsReceived %<>% as.numeric()
 
@@ -337,7 +338,7 @@ d %<>% group_by(year) %>%
   mutate(yearTotal = sum(numberOfCommentsReceived)) %>% 
   ungroup() 
 
-d %<>%   # FIXME need to merge in comment data 
+d %<>%  
   mutate(position = ifelse(grepl(" support ", commentText), "support", NA )) %>% 
   mutate(position = ifelse(grepl(" oppose ", commentText), "oppose", position )) %>% 
     mutate(position = ifelse(grepl(" support ", commentText) & grepl(" oppose ", commentText), "support and oppose", NA )) 
@@ -350,7 +351,7 @@ d %<>%   # FIXME need to merge in comment data
 
 ```{r mass-comments, fig.height=3, fig.width=6}
 d %>% 
-  filter(year > 2005) %>% 
+  #filter(year > 2005) %>% 
   group_by(year, mass) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
@@ -374,7 +375,7 @@ d %>%
 
 ### Comments with the both "support" and "oppose": 
 
-`r head(d$position.complex)`
+r head(filter(d, position == "support and oppose"))
 
 ### Example mass comments:
 
