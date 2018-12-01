@@ -364,9 +364,9 @@ d %<>% group_by(year) %>%
   ungroup() 
 
 d %<>%  
-  mutate(position = ifelse(grepl(" support ", commentText), "support", NA )) %>% 
-  mutate(position = ifelse(grepl(" oppose ", commentText), "oppose", position )) %>% 
-    mutate(position = ifelse(grepl(" support ", commentText) & grepl(" oppose ", commentText), "support and oppose", position )) 
+  mutate(position = ifelse(grepl(" support ", commentText), "Contains \"support\"", NA )) %>% 
+  mutate(position = ifelse(grepl(" oppose ", commentText), "Contains \"oppose\"", position )) %>% 
+    mutate(position = ifelse(grepl(" support ", commentText) & grepl(" oppose ", commentText), "\"support\" and \"oppose\"", position )) 
 ```
 
 ```{r comments-mass-vs-unique, fig.height=3, fig.width=6}
@@ -407,7 +407,7 @@ d %>%
 
 ```{r comments-mass-support-vs-oppose, fig.height=3, fig.width=6}
 d %>% 
-  filter(year > 2005, !is.na(position), position != "support and oppose") %>% 
+  filter(year > 2005, !is.na(position), position != "\"support\" and \"oppose\"") %>% 
   group_by(year, position, mass) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
@@ -418,7 +418,7 @@ d %>%
   labs(x = "", 
        y = paste("Public Comments"),
        fill = "") + 
-  facet_grid(position ~.) +
+  facet_wrap("position", strip.position="top", ncol = 1) +
   theme_minimal() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
@@ -444,10 +444,10 @@ r head(filter(d, position == "support and oppose"))
 
 ### Top mobilizers
 
-`r d$organization[which(d$numberOfCommentsReceived > 99 & !is.na(d$organization))]`
+`r unique(d$organization[which(d$numberOfCommentsReceived > 99 & !is.na(d$organization))])`
 
 ### American Petroleum Institute, breaking a perceived consensus
-r `d[which(d$numberOfCommentsReceived > 99 & d$organization=="American Petroleum Institute"), 6:13]`
+`r d[which(d$numberOfCommentsReceived > 99 & d$organization=="American Petroleum Institute"), 6:13]`
 
 
 
