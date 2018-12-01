@@ -38,14 +38,14 @@ regs.gov  %<>% mutate(RIN = rin)
 
 # loads as "regs"
 load(here("data/OIRAandUA.Rdata"))
-
 d <- full_join(regs.gov, regs)
 ```
 
 
 ```{r summary-table}
 count <- d %>% 
-  filter(year > 1993,!is.na(commentStartDate)) %>%
+  filter(year > 1993) %>% 
+  filter(!is.na(commentStartDate)) %>%
   filter(documentType == "Proposed Rule") %>%
   group_by(documentType, agencyAcronym) %>%
   mutate(mean = round(mean(numberOfCommentsReceived))) %>%
@@ -116,7 +116,7 @@ count <- d %>%
                 y = zero, 
                 label = paste0(zero,"/", total, " = ", round(zero/total*100),"%", " have no comments"), 
                 color = documentType), check_overlap = TRUE, vjust = 1) +
-  scale_x_log10(limits = c(0,10^7),
+  scale_x_log10(limits = c(1,10^7),
                 breaks = c(0,1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
                 labels = c("0", "1", "10", "100", "1k", "10k", "100k", "1m","10m") ) + 
   scale_y_log10(breaks = c(0, 1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
