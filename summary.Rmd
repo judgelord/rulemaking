@@ -384,7 +384,7 @@ d %>%
         axis.text.x = element_text(angle = 45))
 ```
 
-```{r comments-support-vs-oppose, fig.height=3, fig.width=6, eval= FALSE}
+```{r comments-support-vs-oppose, fig.height=3, fig.width=6}
 d %>% 
   filter(year > 2005, !is.na(position)) %>% 
   group_by(year, position) %>% 
@@ -403,9 +403,9 @@ d %>%
         axis.text.x = element_text(angle = 45))
 ```
 
-```{r comments-mass-support-vs-oppose, fig.height=3}
+```{r comments-mass-support-vs-oppose, fig.height=3, fig.width=6}
 d %>% 
-  filter(year > 2005, !is.na(position)) %>% 
+  filter(year > 2005, !is.na(position), position != "support and oppose") %>% 
   group_by(year, position, mass) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
@@ -416,7 +416,7 @@ d %>%
   labs(x = "", 
        y = paste("Public Comments"),
        fill = "") + 
-  facet_grid(.~ position) +
+  facet_grid(position ~.) +
   theme_minimal() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
@@ -442,10 +442,10 @@ r head(filter(d, position == "support and oppose"))
 
 ### Top mobilizers
 
-`r d$organization[which(d$numberOfCommentsReceied > 99 & !is.na(d$organization))]`
+`r d$organization[which(d$numberOfCommentsReceived > 99 & !is.na(d$organization))]`
 
 ### American Petroleum Institute, breaking a perceived consensus
-`r head(d$commentText[which(d$organization=="American Petroleum Institute")])`
+`r d[which(d$organization=="American Petroleum Institute"), ]`
 
 
 
