@@ -8,6 +8,8 @@ output:
 
 ```{r setup, include=FALSE}
 # R -e "rmarkdown::render('summary.Rmd')"
+# git add summary.html
+
 knitr::opts_chunk$set(echo = TRUE, 
                       cache = FALSE, 
                       fig.width=8.5, fig.align = 'center', fig.path='Figs/',
@@ -382,7 +384,7 @@ d %>%
         axis.text.x = element_text(angle = -45))
 ```
 
-```{r comments-support-vs-oppose, fig.height=3, fig.width=6}
+```{r comments-support-vs-oppose, fig.height=3, fig.width=6, eval= FALSE}
 d %>% 
   filter(year > 2005, !is.na(position)) %>% 
   group_by(year, position) %>% 
@@ -395,6 +397,26 @@ d %>%
   labs(x = "", 
        y = paste("Public Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
        fill = "") + 
+  theme_minimal() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_text(angle = -45))
+```
+
+```{r comments-mass-support-vs-oppose, fig.height=3, fig.width=6}
+d %>% 
+  filter(year > 2005, !is.na(position)) %>% 
+  group_by(year, position, mass) %>% 
+  summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
+  ggplot() + 
+  geom_col(aes(x = factor(year), 
+               y = yearTotal, 
+               fill = mass) ) + 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "", 
+       y = paste("Public Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       fill = "") + 
+  facet_grid(position ~.) +
   theme_minimal() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
@@ -423,7 +445,7 @@ r head(filter(d, position == "support and oppose"))
 `r d$organization[which(d$numberOfCommentsReceied > 99 & !is.na(d$organization))]`
 
 ### American Petroleum Institute, breaking a perceived consensus
-`r head(d[which(organization=="American Petroleum Institute")])`
+`r head(d[which(d$organization=="American Petroleum Institute")])`
 
 
 
