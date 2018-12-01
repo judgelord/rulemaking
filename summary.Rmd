@@ -364,7 +364,7 @@ d %<>% group_by(year) %>%
 d %<>%  
   mutate(position = ifelse(grepl(" support ", commentText), "support", NA )) %>% 
   mutate(position = ifelse(grepl(" oppose ", commentText), "oppose", position )) %>% 
-    mutate(position = ifelse(grepl(" support ", commentText) & grepl(" oppose ", commentText), "support and oppose", NA )) 
+    mutate(position = ifelse(grepl(" support ", commentText) & grepl(" oppose ", commentText), "support and oppose", position )) 
 ```
 
 ```{r comments-mass-vs-unique, fig.height=3, fig.width=6}
@@ -381,7 +381,7 @@ d %>%
   theme_minimal() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
-        axis.text.x = element_text(angle = -45))
+        axis.text.x = element_text(angle = 45))
 ```
 
 ```{r comments-support-vs-oppose, fig.height=3, fig.width=6, eval= FALSE}
@@ -400,7 +400,7 @@ d %>%
   theme_minimal() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
-        axis.text.x = element_text(angle = -45))
+        axis.text.x = element_text(angle = 45))
 ```
 
 ```{r comments-mass-support-vs-oppose, fig.height=3, fig.width=6}
@@ -420,7 +420,7 @@ d %>%
   theme_minimal() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
-        axis.text.x = element_text(angle = -45))
+        axis.text.x = element_text(angle = 45))
 ```
 
 
