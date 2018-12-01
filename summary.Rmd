@@ -442,7 +442,7 @@ r head(filter(d, position == "support and oppose"))
 
 ### Top mobilizers
 
-`r d$organization[which(d$numberOfCommentsReceived > 99 & !is.na(d$organization))]`
+`r d$organization[which(d$numberOfCommentsReceived > 99)]`
 
 ### American Petroleum Institute, breaking a perceived consensus
 `r d[which(d$organization=="American Petroleum Institute"), ]`
