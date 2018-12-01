@@ -403,7 +403,7 @@ d %>%
         axis.text.x = element_text(angle = 45))
 ```
 
-```{r comments-mass-support-vs-oppose, fig.height=3, fig.width=6}
+```{r comments-mass-support-vs-oppose, fig.height=3}
 d %>% 
   filter(year > 2005, !is.na(position)) %>% 
   group_by(year, position, mass) %>% 
@@ -414,9 +414,9 @@ d %>%
                fill = mass) ) + 
   scale_y_continuous(labels = scales::comma) + 
   labs(x = "", 
-       y = paste("Public Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       y = paste("Public Comments"),
        fill = "") + 
-  facet_grid(position ~.) +
+  facet_grid(.~ position) +
   theme_minimal() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
