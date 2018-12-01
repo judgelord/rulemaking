@@ -7,10 +7,11 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+# R -e "rmarkdown::render('summary.Rmd')"
 knitr::opts_chunk$set(echo = TRUE, 
-                      cache = F, 
+                      cache = FALSE, 
                       fig.width=8.5, fig.align = 'center', fig.path='Figs/',
-                      warning=FALSE, message=FALSE)
+                      warning=TRUE, message=FALSE)
 ```
 
 # Data
@@ -313,7 +314,7 @@ grid.arrange(density, count, ncol = 1, heights=c(1, 4))
 
 ```{r comments-data}
 # loads comments as d
-load(here("data/comments.Rdata"))
+load(here("data/allcomments.Rdata"))
 # mass comments to the top
 d %<>% arrange(desc(numberOfCommentsReceived))  %>% 
   mutate(mass = ifelse(numberOfCommentsReceived>1, "Mass Comment Campaign", "Unique Comments"))
@@ -347,7 +348,7 @@ d %<>%   # FIXME need to merge in comment data
 
 ```
 
-```{r mass-comments}
+```{r mass-comments, fig.height=3, fig.width=6}
 d %>% 
   filter(year > 2005) %>% 
   group_by(year, mass) %>% 
@@ -355,10 +356,11 @@ d %>%
   ggplot() + 
   geom_col(aes(x = year, y = yearTotal, fill = mass) ) + 
   scale_y_continuous(labels = scales::comma) + 
-  labs(x = "Year", 
-       y = paste("Total Public Comments, N =", sum(d$numberOfCommentsReceived)),
+  labs(x = "", 
+       y = paste("Total Public Comments, N =", round(sum(d$numberOfCommentsReceived)/100000, 1), "million"),
        fill = "") + 
-  theme_minimal()
+  theme_minimal() + 
+  theme(panel.grid.major.x = element_blank())
 ```
 
 
@@ -374,9 +376,13 @@ d %>%
 
 `r head(d$position.complex)`
 
-### Mass comments:
+### Example mass comments:
 
-`head(d$commentText)`
+`r head(d$commentText)`
+
+### Top mobilizers
+
+`r d$organization[1:100]`
 
 
 
