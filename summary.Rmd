@@ -365,20 +365,40 @@ d %<>%
     mutate(position = ifelse(grepl(" support ", commentText) & grepl(" oppose ", commentText), "support and oppose", NA )) 
 ```
 
-```{r mass-comments, fig.height=3, fig.width=6}
+```{r comments-mass-vs-unique, fig.height=3, fig.width=6}
 d %>% 
   filter(year > 2005) %>% 
   group_by(year, mass) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
-  geom_col(aes(x = year, y = yearTotal, fill = mass) ) + 
+  geom_col(aes(x = factor(year), y = yearTotal, fill = mass) ) + 
   scale_y_continuous(labels = scales::comma) + 
   labs(x = "", 
        y = paste("Public Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
        fill = "") + 
   theme_minimal() + 
   theme(panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank())
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_text(angle = -45))
+```
+
+```{r comments-support-vs-oppose, fig.height=3, fig.width=6}
+d %>% 
+  filter(year > 2005, !is.na(position)) %>% 
+  group_by(year, position) %>% 
+  summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
+  ggplot() + 
+  geom_col(aes(x = factor(year), 
+               y = yearTotal, 
+               fill = position) ) + 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "", 
+       y = paste("Public Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       fill = "") + 
+  theme_minimal() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_text(angle = -45))
 ```
 
 
@@ -400,7 +420,7 @@ r head(filter(d, position == "support and oppose"))
 
 ### Top mobilizers
 
-`r d$organization[which(d$numberOfCommentsReceied > 99 & !is.na(d$organization]`
+`r d$organization[which(d$numberOfCommentsReceied > 99 & !is.na(d$organization)]`
 
 ### American Petroleum Institute, breaking a perceived consensus
 `r head(d[which(organization=="American Petroleum Institute")])`

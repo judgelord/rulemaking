@@ -1,5 +1,5 @@
 
-## Example searches using API call functions ##
+## Example searches using API call functions to copy to .Rmd
 
 ## load packages
 source("setup.R")
@@ -25,13 +25,14 @@ n = 2000
 # Search 
 d <- search.docs(documenttype = "PS" , 
                  n = 1000)
+names(d)
 
 d$postedDate %<>% as.Date()
 d$commentStartDate %<>% as.Date()
 
 ggplot(d) + geom_histogram(aes(x = postedDate, 
                               fill = documentType))
-names(d)
+
 
 # Select agencies, again seperating multiple agencies with a comma and a space
 # Search
@@ -42,11 +43,15 @@ d <- search.agency.docs(agency = "SEC, FAA, FRA",
 d$postedDate %<>% as.Date()
 d$commentStartDate %<>% as.Date()
 
-ggplot(d) + geom_histogram(aes(x = postedDate,
-                               fill = agencyAcronym)) + theme_minimal()
+# plot histogram by by agency over time
+ggplot(d) + 
+  geom_histogram(aes(x = postedDate, fill = agencyAcronym)) + 
+  theme_minimal()
 
-# Select docket
+
+# Select a docket
 docket <- "EPA-HQ-OAR-2017-0355"
+
 # Search
 d <- search.docket(docket = "EPA-HQ-OAR-2017-0355", 
              documenttype = "PS",
@@ -55,22 +60,22 @@ d <- search.docket(docket = "EPA-HQ-OAR-2017-0355",
 d$postedDate %<>% as.Date()
 d$commentStartDate %<>% as.Date()
 
-ggplot(d) + geom_histogram(aes(x = postedDate, 
-                               fill = documentType)) +  theme_minimal() +
+ggplot(d) + geom_histogram(aes(x = postedDate, fill = documentType)) +  
+  theme_minimal() +
   labs(title = docket)
 
 
-# keywords 
-## Note that keyword serches return an additional feature "summary" which is text before and after
-search.keywords(keywords = "environmental justice",
+# Keyword(s) search
+## Note: keyword serches return an additional feature "summary" which is text before and after the keyword in the comment text
+d <- search.keywords(keywords = "environmental justice",
                 documenttype = "PS",
                 n = 2000)
 
 d$postedDate %<>% as.Date()
 d$commentStartDate %<>% as.Date()
 
-ggplot(d) + geom_histogram(aes(x = postedDate, 
-                               fill = documentType)) +  theme_minimal() 
+ggplot(d) + geom_histogram(aes(x = postedDate, fill = documentType)) +  
+  theme_minimal() 
 
 
 

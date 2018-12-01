@@ -9,17 +9,15 @@ sum(is.na(regs$UnifiedAgendaDate))
 regs %<>%
   dplyr::group_by(RIN) %>%
   dplyr::top_n(n = 1, UnifiedAgendaDate) %>%
-  dplyr::ungroup()# %>%
+  dplyr::ungroup()
 
-
-
-# MOVE OR DELETE THIS #################################
+# MOVE OR DELETE ABOVE #################################
 
 
 
 
 ##############################################################
-########### THIS IS WHAT BELONGS IN THIS FILE ################
+########### BELOW BELONGS IN THIS FILE ################
 
 ############# FIX THIS TO BE A VAR RATHER THAN SUBSET ##################
 transportation <- regs[which(grepl("^21", regs$RIN)),]
@@ -115,8 +113,8 @@ length(transportation$RIN)
 
 
 ##############################################################
-
-# POTTER DATA (I THINK)
+# MOVE BELOW TO DOT REPO
+# POTTER DATA
 ggplot(x %>% filter(grepl("^21", RIN))) +
   ggtitle('Significant DOT Rulemaking Projects 1994-2014 (N = 21,387)') + 
   xlab("RIN")+
