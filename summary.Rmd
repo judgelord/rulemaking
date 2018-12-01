@@ -445,7 +445,7 @@ r head(filter(d, position == "support and oppose"))
 `r d$organization[which(d$numberOfCommentsReceied > 99 & !is.na(d$organization))]`
 
 ### American Petroleum Institute, breaking a perceived consensus
-`r head(d[which(d$organization=="American Petroleum Institute"),])`
+`r head(d$commentText[which(d$organization=="American Petroleum Institute")])`
 
 
 
