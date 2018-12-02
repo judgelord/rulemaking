@@ -64,7 +64,7 @@ count <- d %>%
   tally() %>% arrange(-n)
 ```
 
-```{r comments-per-year, fig.height = 2, fig.width=2}
+```{r rules-comments-per-year, fig.height = 3.5, fig.width=3.5}
 d %>% filter(year > 2003, !is.na(postedDate),
              numberOfCommentsReceived>10,
              !is.na(numberOfCommentsReceived)) %>% 
@@ -85,7 +85,7 @@ d %>% filter(year > 2003, !is.na(postedDate),
   theme(legend.position = "none",
         axis.text.x = element_text(angle = 45))
 ```
-```{r comments-ranked-per-year, fig.height = 4}
+```{r rules-ranked-comments-per-year, fig.height = 2}
 d %>% filter(year > 2005, !is.na(commentStartDate)) %>% 
   filter(documentType == "Proposed Rule") %>%
   group_by(year) %>% 
@@ -389,7 +389,31 @@ d %<>%
     mutate(position = ifelse(grepl(" support ", commentText) & grepl(" oppose ", commentText), "\"support\" and \"oppose\"", position )) 
 ```
 
-```{r comments-mass-vs-unique, fig.height=3, fig.width=6}
+
+
+
+```{r comments-per-year, fig.height=3, fig.width=6}
+d %>% 
+  filter(year > 2005) %>% 
+  group_by(year) %>% 
+  summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
+  ggplot() + 
+  geom_col(aes(x = factor(year), y = yearTotal) ) + 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "", 
+       y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       fill = "") + 
+  theme_minimal() + 
+  theme_gray() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_text(angle = 45))
+```
+
+
+
+
+```{r comments-mass-vs-unique, fig.height=3, fig.width=3}
 d %>% 
   filter(year > 2005) %>% 
   group_by(year, mass) %>% 
@@ -398,15 +422,16 @@ d %>%
   geom_col(aes(x = factor(year), y = yearTotal, fill = mass) ) + 
   scale_y_continuous(labels = scales::comma) + 
   labs(x = "", 
-       y = paste("Public Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
        fill = "") + 
   theme_minimal() + 
+  theme_gray() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
 ```
 
-```{r comments-support-vs-oppose, fig.height=3, fig.width=6}
+```{r comments-support-vs-oppose, fig.height=3, fig.width=4}
 d %>% 
   filter(year > 2005, !is.na(position)) %>% 
   group_by(year, position) %>% 
@@ -417,7 +442,7 @@ d %>%
                fill = position) ) + 
   scale_y_continuous(labels = scales::comma) + 
   labs(x = "", 
-       y = paste("Public Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
        fill = "") + 
   theme_minimal() + 
   theme(panel.grid.major.x = element_blank(),
@@ -425,7 +450,7 @@ d %>%
         axis.text.x = element_text(angle = 45))
 ```
 
-```{r comments-mass-support-vs-oppose, fig.height=3, fig.width=6}
+```{r comments-mass-support-vs-oppose, fig.height=3, fig.width=4}
 d %>% 
   filter(year > 2005, !is.na(position), position != "\"support\" and \"oppose\"") %>% 
   group_by(year, position, mass) %>% 
@@ -436,10 +461,11 @@ d %>%
                fill = mass) ) + 
   scale_y_continuous(labels = scales::comma) + 
   labs(x = "", 
-       y = paste("Public Comments"),
+       y = paste("Total Comments"),
        fill = "") + 
   facet_wrap("position", strip.position="top", ncol = 1) +
   theme_minimal() + 
+  theme_gray() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
