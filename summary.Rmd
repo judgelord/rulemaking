@@ -65,7 +65,7 @@ count <- d %>%
 ```
 
 ```{r rules-comments-per-year, fig.height = 3.5, fig.width=3.5}
-d %>% filter(year > 2003, !is.na(postedDate),
+d %>% filter(year > 2004, !is.na(postedDate),
              numberOfCommentsReceived>10,
              !is.na(numberOfCommentsReceived)) %>% 
   filter(documentType == "Proposed Rule") %>%
@@ -106,6 +106,7 @@ d %>% filter(year > 2005, !is.na(commentStartDate)) %>%
        color = "", 
        fill = "") + 
   facet_wrap(~ year, ncol = 6)+
+  theme_bw() +
   theme(legend.position = "none",
         axis.text.x = element_text(angle = 45))
 ```
@@ -394,7 +395,7 @@ d %<>%
 
 ```{r comments-per-year, fig.height=3, fig.width=6}
 d %>% 
-  filter(year > 2005) %>% 
+  filter(year > 2004) %>% 
   group_by(year) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
@@ -404,7 +405,6 @@ d %>%
        y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
        fill = "") + 
   theme_minimal() + 
-  theme_gray() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
@@ -413,9 +413,9 @@ d %>%
 
 
 
-```{r comments-mass-vs-unique, fig.height=3, fig.width=3}
+```{r comments-mass-vs-unique, fig.height=3.1, fig.width=5}
 d %>% 
-  filter(year > 2005) %>% 
+  filter(year > 2004) %>% 
   group_by(year, mass) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
@@ -425,15 +425,14 @@ d %>%
        y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
        fill = "") + 
   theme_minimal() + 
-  theme_gray() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
 ```
 
-```{r comments-support-vs-oppose, fig.height=3, fig.width=4}
+```{r comments-support-vs-oppose, fig.height=3.1, fig.width=5}
 d %>% 
-  filter(year > 2005, !is.na(position)) %>% 
+  filter(year > 2004, !is.na(position)) %>% 
   group_by(year, position) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
@@ -450,9 +449,9 @@ d %>%
         axis.text.x = element_text(angle = 45))
 ```
 
-```{r comments-mass-support-vs-oppose, fig.height=3, fig.width=4}
+```{r comments-mass-support-vs-oppose, fig.height=3.1, fig.width=5}
 d %>% 
-  filter(year > 2005, !is.na(position), position != "\"support\" and \"oppose\"") %>% 
+  filter(year > 2004, !is.na(position), position != "\"support\" and \"oppose\"") %>% 
   group_by(year, position, mass) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
@@ -465,7 +464,6 @@ d %>%
        fill = "") + 
   facet_wrap("position", strip.position="top", ncol = 1) +
   theme_minimal() + 
-  theme_gray() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
