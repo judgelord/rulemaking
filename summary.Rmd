@@ -87,7 +87,7 @@ d %>% filter(year > 2004, !is.na(postedDate),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
 ```
-```{r rules-ranked-comments-per-year, fig.height = 3.5}
+```{r rules-ranked-comments-per-year, fig.height = 4}
 d %>% filter(year > 2005, !is.na(commentStartDate)) %>% 
   filter(documentType == "Proposed Rule") %>%
   group_by(year) %>% 
