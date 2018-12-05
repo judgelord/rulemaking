@@ -75,8 +75,7 @@ d %>% filter(year > 2004, !is.na(postedDate),
                  color = numberOfCommentsReceived), shape = 2, size =3) +
   scale_color_gradient(low="blue", high="red")+
   #scale_x_continuous(labels = scales::int) +
-  scale_y_log10(breaks = c(0, 1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
-                labels = c("0", "1", "10", "100", "1k", "10k", "100k", "1m","10m") ) + 
+  scale_y_log10(breaks = c(0, 1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7), labels = c("0", "1", "10", "100", "1k", "10k", "100k", "1m","10m") ) +
   labs(x = "",
        y = "Comments per rule (log scale)", 
        color = "", 
@@ -395,7 +394,7 @@ d %<>%
 
 
 
-```{r comments-per-year, fig.height=3.2, fig.width=4}
+```{r comments-per-year, fig.height=3.5, fig.width=3.5}
 d %>% 
   filter(year > 2004) %>% 
   group_by(year) %>% 
@@ -404,7 +403,7 @@ d %>%
   geom_col(aes(x = factor(year), y = yearTotal) ) + 
   scale_y_continuous(labels = scales::comma) + 
   labs(x = "", 
-       y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       y = paste("Total comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
        fill = "") + 
   theme_minimal() + 
   theme(panel.grid.major.x = element_blank(),
