@@ -693,6 +693,8 @@ regs %<>% mutate(NPRMtoWithdrawal = as.numeric(as.Date(WITHDRAWAL) - as.Date(NPR
 
 #########################################################################
 # Save 
+
+# note that .csv files are too large for git
 if(F){
   # write out UA
   write.csv(UnifiedAgenda, file="data/Unified Agenda.csv")
