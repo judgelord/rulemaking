@@ -20,8 +20,8 @@ if(DownloadNow){
   unzip("reports/reginfo.zip")
 }
 
-files <- 
-  list.files(getwd(), pattern = "EO_RULE")
+# Find XML files
+files <- paste0("reports/", list.files(here("reports"), pattern = "EO_RULE"))
 
 # Function to parse XML files to lists:
 parse_xml <-function(FileName) {
@@ -32,9 +32,9 @@ parse_xml <-function(FileName) {
 # Apply function to lists and combine into dataframe:
 if(ParseNow){
   OIRAraw <- plyr::ldply(files, parse_xml)
-  # to restore dataframe without re-parsing
-  OIRA <- OIRAraw
 }
+# Restore dataframe retaining raw parsed data
+OIRA <- OIRAraw
 
 ##################################################################################################
 
@@ -92,6 +92,8 @@ OIRA$FINAL_RECIEVED = NA
 OIRA$FINAL_COMPLETED = NA
 OIRA$FINAL_PUBLISHED = NA
 
+# FIXME
+# would be faster with mutate(if_else())
 for(i in 1:dim(OIRA)[1]){
   # ANPRM
   if(OIRA$STAGE[i]=="Prerule"){OIRA$ANPRM_RECIEVED[i] <- OIRA$DATE_RECEIVED[i]}
@@ -235,21 +237,21 @@ if(DownloadNow){
   download.file("http://www.reginfo.gov/public/do/XMLViewFileAction?f=REGINFO_RIN_DATA_199510.xml","reports/REGINFO_RIN_DATA_199510.xml")
 }
 
-files <- 
-  list.files(getwd(), pattern = "REGINFO_RIN_DATA_")
-
-# function to parse XML files to lists:
+# Find saved Unified Agenda reports
+files <- paste0("reports/",
+  list.files(here("reports"), pattern = "REGINFO_RIN_DATA_") 
+  )
+# A function to parse XML files to lists:
 parse_xml <-function(FileName) {
   doc1 <- xmlParse(FileName) 
   doc <- xmlToDataFrame(homogeneous = FALSE, stringsAsFactors = FALSE, nodes=getNodeSet(doc1,"//RIN_INFO"))
 } 
-# apply function to lists and combine into dataframe
+# Apply this function to files and combine into dataframe
 if(ParseNow){
   UnifiedAgendaRaw <- plyr::ldply(files, parse_xml)
-  # so one can restore dataframe without re-parsing
-  UnifiedAgenda <- UnifiedAgendaRaw
 }
-
+# Restore dataframe without re-parsing
+UnifiedAgenda <- UnifiedAgendaRaw
 
 
 # format publication date
@@ -259,7 +261,7 @@ UnifiedAgenda$PUBLICATION <- as.Date(as.character(UnifiedAgenda$PUBLICATION), "%
 
 names(UnifiedAgenda) <- gsub("PUBLICATION", "UnifiedAgendaDate", names(UnifiedAgenda))
 
-# change name of stage to match OIRA reports
+# change name of STAGE to match OIRA reports
 names(UnifiedAgenda) <- gsub("RULE_STAGE", "STAGE", names(UnifiedAgenda))
 
 UnifiedAgenda$STAGE %<>%
@@ -290,13 +292,18 @@ UnifiedAgenda$TIMETABLE_LIST %<>%
 #       grepl("final rule", TIMETABLE_LIST, ignore.case = T)
 #     , "Final Rule", STAGE)) %>%
 #   mutate(STAGE = ifelse(
-#     grepl("final rule", STAGE, ignore.case = T) &&
-#       grepl("final rule", TIMETABLE_LIST, ignore.case = T) &&
+#     grepl("final rule", STAGE, ignore.case = T) &
+#       grepl("final rule", TIMETABLE_LIST, ignore.case = T) &
 #       sum(str_count(TIMETABLE_LIST, "Final Rule"))>sum(str_count(TIMETABLE_LIST, "Interim Final Rule"))
 #     , "Final Rule", STAGE))
 
 ###################################################################
 
+############################
+# RENAMING STAGES #
+###################
+
+# This might need to be revisited
 for(i in 1:dim(UnifiedAgenda)[1]){
   if(
     UnifiedAgenda$STAGE[i]=="Long-Term Actions" &
@@ -339,9 +346,12 @@ for(i in 1:dim(UnifiedAgenda)[1]){
 
 
 
+####################
+# CORRECTIONS #
+###############
 
-# correct stages
-# (only done for DOT 2007 - 2017 so far)
+# Correct stages - Please help with this! 
+# Corrections for DOT 2007 - 2017 (only corrections as of Dec 2018)
 UnifiedAgenda$STAGE[which(UnifiedAgenda$UnifiedAgendaDate=="2007-10-01" & UnifiedAgenda$RIN=="2105-AD63")] <- "Proposed Rule"
 UnifiedAgenda$STAGE[which(UnifiedAgenda$UnifiedAgendaDate=="2009-04-01" & UnifiedAgenda$RIN=="2105-AD72")] <- "Prerule"
 UnifiedAgenda$STAGE[which(UnifiedAgenda$UnifiedAgendaDate=="2007-04-01" & UnifiedAgenda$RIN=="2120-AG87")] <- "Proposed Rule"
@@ -404,7 +414,9 @@ UnifiedAgenda$STAGE[which(UnifiedAgenda$UnifiedAgendaDate=="2009-10-01" & Unifie
 UnifiedAgenda$STAGE[which(UnifiedAgenda$UnifiedAgendaDate=="2014-04-01" & UnifiedAgenda$RIN=="2127-AK43")] <- "Final Rule/2"
 UnifiedAgenda$STAGE[which(UnifiedAgenda$UnifiedAgendaDate=="2011-04-01" & UnifiedAgenda$RIN=="2137-AE13")] <- "Final Rule/2"
 
-
+#####################
+# SUBSET # 
+##########
 # select the most recent observation for each RIN at each Stage
 UnifiedAgenda %<>%
   dplyr::group_by(RIN, STAGE) %>%
@@ -412,6 +424,24 @@ UnifiedAgenda %<>%
   dplyr::ungroup() %>%
   dplyr::arrange(RIN)
 
+
+
+
+
+
+
+
+
+
+##########################################
+# EXTRACT DATES #
+#################
+
+# change 00 days to 01 in TIMETABLE
+UnifiedAgenda$TIMETABLE_LIST <- gsub("/00/", "/01/", UnifiedAgenda$TIMETABLE_LIST)
+
+# change Interim Final Rule to IFR, to make extraction easier 
+UnifiedAgenda$TIMETABLE_LIST <- gsub("Interim Final Rule", "IFR", UnifiedAgenda$TIMETABLE_LIST)
 
 # Extract dates from TIMETABLE
 UnifiedAgenda %<>%
@@ -428,25 +458,32 @@ UnifiedAgenda %<>%
   mutate(SNPRMcomment = gsub("S.N.P.R.M. Comment Period End","", str_extract(UnifiedAgenda$TIMETABLE_LIST, "S.N.P.R.M. Comment Period End[0-9]{2}/[0-9]{2}/[0-9]{4}"))) %>%
   mutate(SNPRMfedreg = gsub("S.N.P.R.M.[0-9]{2}/[0-9]{2}/[0-9]{4}|[A-Z]$","", str_extract(UnifiedAgenda$TIMETABLE_LIST, "S.N.P.R.M.[0-9]{2}/[0-9]{2}/[0-9]{6} FR [0-9]{4}."))) %>%
   # Interim Rule
-  mutate(IFR = gsub("(Interim Final Rule (IFR)|IFR|Interim Final Rule)","", str_extract(UnifiedAgenda$TIMETABLE_LIST, "(Interim Final Rule (IFR)|IFR|Interim Final Rule)[0-9]{2}/[0-9]{2}/[0-9]{4}"))) %>%
-  mutate(IFRcomment = gsub("(Interim Final Rule (IFR)|IFR|Interim Final Rule) Comment Period End","", str_extract(UnifiedAgenda$TIMETABLE_LIST, "(Interim Final Rule (IFR)|IFR|Interim Final Rule) Comment Period End[0-9]{2}/[0-9]{2}/[0-9]{4}"))) %>%
-  mutate(IFReffective = gsub("(Interim Final Rule (IFR)|IFR|Interim Final Rule) Effective","", str_extract(UnifiedAgenda$TIMETABLE_LIST, "(Interim Final Rule (IFR)|IFR|Interim Final Rule) Effective[0-9]{2}/[0-9]{2}/[0-9]{4}"))) %>%
-  mutate(IFRfedreg = gsub("(Interim Final Rule (IFR)|IFR|Interim Final Rule)[0-9]{2}/[0-9]{2}/[0-9]{4}|[A-Z]$","", str_extract(UnifiedAgenda$TIMETABLE_LIST, "(Interim Final Rule (IFR)|IFR|Interim Final Rule)[0-9]{2}/[0-9]{2}/[0-9]{6} FR [0-9]{4}."))) %>%
+  mutate(IFR = gsub("(IFR (IFR)|IFR)","", str_extract(UnifiedAgenda$TIMETABLE_LIST, "(IFR (IFR)|IFR)[0-9]{2}/[0-9]{2}/[0-9]{4}"))) %>%
+  mutate(IFRcomment = gsub("(IFR (IFR)|IFR) Comment Period End","", str_extract(UnifiedAgenda$TIMETABLE_LIST, "(IFR (IFR)|IFR) Comment Period End[0-9]{2}/[0-9]{2}/[0-9]{4}"))) %>%
+  mutate(IFReffective = gsub("(IFR (IFR)|IFR) Effective","", str_extract(UnifiedAgenda$TIMETABLE_LIST, "(IFR (IFR)|IFR) Effective[0-9]{2}/[0-9]{2}/[0-9]{4}"))) %>%
+  mutate(IFRfedreg = gsub("(IFR (IFR)|IFR)[0-9]{2}/[0-9]{2}/[0-9]{4}|[A-Z]$","", str_extract(UnifiedAgenda$TIMETABLE_LIST, "(IFR (IFR)|IFR)[0-9]{2}/[0-9]{2}/[0-9]{6} FR [0-9]{4}."))) %>%
   # Withdrawal
   mutate(WITHDRAWAL = gsub("(Withdraw|withdraw)[A-Za-z ]*","", str_extract(UnifiedAgenda$TIMETABLE_LIST, "(Withdraw|withdraw)[A-Za-z ]*[0-9]{2}/[0-9]{2}/[0-9]{4}"))) %>%
-  # FINAL (DOES THIS WORK NOW?)
+  # FINAL (DOES THIS WORK NOW?), NOT COMPLETELY, SEE 270
   mutate(FINAL = ifelse(
-    grepl("Final Rule| FR", UnifiedAgenda$TIMETABLE_LIST, ignore.case = T) &
-      sum(str_count(UnifiedAgenda$TIMETABLE_LIST, "Final Rule|FR"))>sum(str_count(UnifiedAgenda$TIMETABLE_LIST, "Interim Final Rule|IFR"))
-    , gsub("Final Rule","", stri_extract_last_regex(UnifiedAgenda$TIMETABLE_LIST, "Final Rule[0-9]{2}/[0-9]{2}/[0-9]{4}")), NA)) %>%
+    grepl("Final Rule", UnifiedAgenda$TIMETABLE_LIST, ignore.case = T),
+    gsub("Final Rule","", stri_extract_last_regex(UnifiedAgenda$TIMETABLE_LIST, "Final Rule[0-9]{2}/[0-9]{2}/[0-9]{4}")),
+    NA)) %>%
   mutate(FINALeffective = ifelse(
-    grepl("Final Rule", UnifiedAgenda$TIMETABLE_LIST, ignore.case = T) &
-      sum(str_count(UnifiedAgenda$TIMETABLE_LIST, "Final Rule"))>sum(str_count(UnifiedAgenda$TIMETABLE_LIST, "Interim Final Rule"))
-    , gsub("Final Rule Effective","", stri_extract_last_regex(UnifiedAgenda$TIMETABLE_LIST, "Final Rule Effective[0-9]{2}/[0-9]{2}/[0-9]{4}")), NA)) %>%
+    grepl("Final Rule", UnifiedAgenda$TIMETABLE_LIST, ignore.case = T), 
+    gsub("Final Rule Effective","", stri_extract_last_regex(UnifiedAgenda$TIMETABLE_LIST, "Final Rule Effective[0-9]{2}/[0-9]{2}/[0-9]{4}")), 
+    NA)) %>%
   mutate(FINALfedreg = ifelse(
-    grepl("Final Rule", UnifiedAgenda$TIMETABLE_LIST, ignore.case = T) &
-      sum(str_count(UnifiedAgenda$TIMETABLE_LIST, "Final Rule"))>sum(str_count(UnifiedAgenda$TIMETABLE_LIST, "Interim Final Rule"))
-    , gsub("Rule[0-9]{2}/[0-9]{2}/[0-9]{4}|[A-Z]$","", stri_extract_last_regex(UnifiedAgenda$TIMETABLE_LIST, "Rule[0-9]{2}/[0-9]{2}/[0-9]{6} FR [0-9]{4}.")), NA))
+    grepl("Final Rule", UnifiedAgenda$TIMETABLE_LIST, ignore.case = T),
+    gsub("Rule[0-9]{2}/[0-9]{2}/[0-9]{4}|[A-Z]$","", stri_extract_last_regex(UnifiedAgenda$TIMETABLE_LIST, "Rule[0-9]{2}/[0-9]{2}/[0-9]{6} FR [0-9]{4}.")), 
+    NA))
+
+# Inspect date variables vs timetable for completeness
+timetable <- select(UnifiedAgenda, TIMETABLE_LIST, ANPRM, NPRM, IFR, FINAL, WITHDRAWAL)
+
+
+
+
 
 # Extract dates from DEADLINE
 UnifiedAgenda %<>%
@@ -506,51 +543,92 @@ UnifiedAgenda$AGENCY %<>%
   gsub("[A-Z]*$","",.)
 
 # Copy new vars to all with the same RIN 
-UnifiedAgenda %<>% arrange((UnifiedAgendaDate)) %>%
-  transform(ANPRM = ave(ANPRM, RIN, FUN = CopyIfNA)) %>%
-  transform(ANPRMcomment = ave(ANPRMcomment, RIN, FUN = CopyIfNA)) %>%
-  transform(ANPRMfedreg = ave(ANPRMfedreg, RIN, FUN = CopyIfNA)) %>%
-  transform(NPRM = ave(NPRM, RIN, FUN = CopyIfNA)) %>%
-  transform(NPRMcomment = ave(NPRMcomment, RIN, FUN = CopyIfNA)) %>%
-  transform(NPRMfedreg = ave(NPRMfedreg, RIN, FUN = CopyIfNA)) %>%
-  transform(SNPRM = ave(SNPRM, RIN, FUN = CopyIfNA)) %>%
-  transform(SNPRMcomment = ave(SNPRMcomment, RIN, FUN = CopyIfNA)) %>%
-  transform(SNPRMfedreg = ave(SNPRMfedreg, RIN, FUN = CopyIfNA)) %>%
-  transform(IFR = ave(IFR, RIN, FUN = CopyIfNA)) %>%
-  transform(IFRcomment = ave(IFRcomment, RIN, FUN = CopyIfNA)) %>%
-  transform(IFRfedreg = ave(IFRfedreg, RIN, FUN = CopyIfNA)) %>%
-  transform(IFReffective = ave(IFReffective, RIN, FUN = CopyIfNA)) %>%
-  transform(WITHDRAWAL = ave(WITHDRAWAL, RIN, FUN = CopyIfNA)) %>%
-  transform(FINAL = ave(FINAL, RIN, FUN = CopyIfNA)) %>%
-  transform(FINALeffective = ave(FINALeffective, RIN, FUN = CopyIfNA)) %>%
-  transform(FINALfedreg = ave(FINALfedreg, RIN, FUN = CopyIfNA)) %>%
-  transform(StatutoryNPRM = ave(StatutoryNPRM, RIN, FUN = CopyIfNA)) %>%
-  transform(JudicialNPRM = ave(JudicialNPRM, RIN, FUN = CopyIfNA)) %>%
-  transform(StatutoryFinal = ave(StatutoryFinal, RIN, FUN = CopyIfNA)) %>%
-  transform(JudicialFinal = ave(JudicialFinal, RIN, FUN = CopyIfNA))
+UnifiedAgenda %<>% 
+  group_by(RIN) %>% 
+  #ANPRM
+  mutate(ANPRM = paste(rev(tail(ANPRM))[1], collapse = ";"))%>% 
+  mutate(ANPRMcomment = paste(rev(tail(ANPRMcomment))[1], collapse = ";"))%>% 
+  mutate(ANPRMfedreg = paste(ANPRMfedreg, collapse = ";"))%>% 
+  # NPRM
+  mutate(NPRM = paste(rev(tail(NPRM))[1], collapse = ";")) %>%  
+  mutate(NPRMcomment = paste(rev(tail(NPRMcomment))[1], collapse = ";")) %>%  
+  mutate(NPRMfedreg = paste(NPRMfedreg, collapse = ";")) %>%  
+  mutate(NPRMjudicial = paste(JudicialNPRM, collapse = ";")) %>%
+  mutate(NPRMstatutory = paste(StatutoryNPRM, collapse = ";")) %>%  
+  # SNPRM
+  mutate(SNPRM = paste(rev(tail(SNPRM))[1], collapse = ";")) %>%  
+  mutate(SNPRMcomment = paste(rev(tail(SNPRMcomment))[1], collapse = ";")) %>%  
+  mutate(SNPRMfedreg = paste(SNPRMfedreg, collapse = ";")) %>%
+  # IFR
+  mutate(IFR = paste(rev(tail(IFR))[1], collapse = ";")) %>%  
+  mutate(IFRcomment = paste(rev(tail(IFRcomment))[1], collapse = ";")) %>%  
+  mutate(IFRfedreg = paste(IFRfedreg, collapse = ";")) %>%
+  # FINAL
+  mutate(FINAL = paste(rev(tail(FINAL))[1], collapse = ";")) %>%  
+  # [no final comment? check timtable]
+  mutate(FINALeffective = paste(rev(tail(FINALeffective))[1], collapse = ";")) %>%  
+  mutate(FINALfedreg = paste(FINALfedreg, collapse = ";")) %>%  
+  mutate(FINALjudicial = paste(JudicialFinal, collapse = ";")) %>%
+  mutate(FINALstatutory = paste(StatutoryFinal, collapse = ";")) %>% 
+  # WITHDRAWAL
+  mutate(WITHDRAWAL = paste(rev(tail(WITHDRAWAL))[1], collapse = ";")) %>% 
+  ungroup()
+  
 
-UnifiedAgenda %<>% arrange(desc(UnifiedAgendaDate)) %>%
-  transform(ANPRM = ave(ANPRM, RIN, FUN = CopyIfNA)) %>%
-  transform(ANPRMcomment = ave(ANPRMcomment, RIN, FUN = CopyIfNA)) %>%
-  transform(ANPRMfedreg = ave(ANPRMfedreg, RIN, FUN = CopyIfNA)) %>%
-  transform(NPRM = ave(NPRM, RIN, FUN = CopyIfNA)) %>%
-  transform(NPRMcomment = ave(NPRMcomment, RIN, FUN = CopyIfNA)) %>%
-  transform(NPRMfedreg = ave(NPRMfedreg, RIN, FUN = CopyIfNA)) %>%
-  transform(SNPRM = ave(SNPRM, RIN, FUN = CopyIfNA)) %>%
-  transform(SNPRMcomment = ave(SNPRMcomment, RIN, FUN = CopyIfNA)) %>%
-  transform(SNPRMfedreg = ave(SNPRMfedreg, RIN, FUN = CopyIfNA)) %>%
-  transform(IFR = ave(IFR, RIN, FUN = CopyIfNA)) %>%
-  transform(IFRcomment = ave(IFRcomment, RIN, FUN = CopyIfNA)) %>%
-  transform(IFRfedreg = ave(IFRfedreg, RIN, FUN = CopyIfNA)) %>%
-  transform(IFReffective = ave(IFReffective, RIN, FUN = CopyIfNA)) %>%
-  transform(WITHDRAWAL = ave(WITHDRAWAL, RIN, FUN = CopyIfNA)) %>%
-  transform(FINAL = ave(FINAL, RIN, FUN = CopyIfNA)) %>%
-  transform(FINALeffective = ave(FINALeffective, RIN, FUN = CopyIfNA)) %>%
-  transform(FINALfedreg = ave(FINALfedreg, RIN, FUN = CopyIfNA)) %>%
-  transform(StatutoryNPRM = ave(StatutoryNPRM, RIN, FUN = CopyIfNA)) %>%
-  transform(JudicialNPRM = ave(JudicialNPRM, RIN, FUN = CopyIfNA)) %>%
-  transform(StatutoryFinal = ave(StatutoryFinal, RIN, FUN = CopyIfNA)) %>%
-  transform(JudicialFinal = ave(JudicialFinal, RIN, FUN = CopyIfNA))
+
+# Copy new vars to all with the same RIN (replaced with faster mutate() code above)
+# UnifiedAgenda %<>% arrange((UnifiedAgendaDate)) %>%
+#   transform(ANPRM = ave(ANPRM, RIN, FUN = CopyIfNA)) %>%
+#   transform(ANPRMcomment = ave(ANPRMcomment, RIN, FUN = CopyIfNA)) %>%
+#   transform(ANPRMfedreg = ave(ANPRMfedreg, RIN, FUN = CopyIfNA)) %>%
+#   transform(NPRM = ave(NPRM, RIN, FUN = CopyIfNA)) %>%
+#   transform(NPRMcomment = ave(NPRMcomment, RIN, FUN = CopyIfNA)) %>%
+#   transform(NPRMfedreg = ave(NPRMfedreg, RIN, FUN = CopyIfNA)) %>%
+#   transform(SNPRM = ave(SNPRM, RIN, FUN = CopyIfNA)) %>%
+#   transform(SNPRMcomment = ave(SNPRMcomment, RIN, FUN = CopyIfNA)) %>%
+#   transform(SNPRMfedreg = ave(SNPRMfedreg, RIN, FUN = CopyIfNA)) %>%
+#   transform(IFR = ave(IFR, RIN, FUN = CopyIfNA)) %>%
+#   transform(IFRcomment = ave(IFRcomment, RIN, FUN = CopyIfNA)) %>%
+#   transform(IFRfedreg = ave(IFRfedreg, RIN, FUN = CopyIfNA)) %>%
+#   transform(IFReffective = ave(IFReffective, RIN, FUN = CopyIfNA)) %>%
+#   transform(WITHDRAWAL = ave(WITHDRAWAL, RIN, FUN = CopyIfNA)) %>%
+#   transform(FINAL = ave(FINAL, RIN, FUN = CopyIfNA)) %>%
+#   transform(FINALeffective = ave(FINALeffective, RIN, FUN = CopyIfNA)) %>%
+#   transform(FINALfedreg = ave(FINALfedreg, RIN, FUN = CopyIfNA)) %>%
+#   transform(StatutoryNPRM = ave(StatutoryNPRM, RIN, FUN = CopyIfNA)) %>%
+#   transform(JudicialNPRM = ave(JudicialNPRM, RIN, FUN = CopyIfNA)) %>%
+#   transform(StatutoryFinal = ave(StatutoryFinal, RIN, FUN = CopyIfNA)) %>%
+#   transform(JudicialFinal = ave(JudicialFinal, RIN, FUN = CopyIfNA))
+# 
+# UnifiedAgenda %<>% arrange(desc(UnifiedAgendaDate)) %>%
+#   transform(ANPRM = ave(ANPRM, RIN, FUN = CopyIfNA)) %>%
+#   transform(ANPRMcomment = ave(ANPRMcomment, RIN, FUN = CopyIfNA)) %>%
+#   transform(ANPRMfedreg = ave(ANPRMfedreg, RIN, FUN = CopyIfNA)) %>%
+#   transform(NPRM = ave(NPRM, RIN, FUN = CopyIfNA)) %>%
+#   transform(NPRMcomment = ave(NPRMcomment, RIN, FUN = CopyIfNA)) %>%
+#   transform(NPRMfedreg = ave(NPRMfedreg, RIN, FUN = CopyIfNA)) %>%
+#   transform(SNPRM = ave(SNPRM, RIN, FUN = CopyIfNA)) %>%
+#   transform(SNPRMcomment = ave(SNPRMcomment, RIN, FUN = CopyIfNA)) %>%
+#   transform(SNPRMfedreg = ave(SNPRMfedreg, RIN, FUN = CopyIfNA)) %>%
+#   transform(IFR = ave(IFR, RIN, FUN = CopyIfNA)) %>%
+#   transform(IFRcomment = ave(IFRcomment, RIN, FUN = CopyIfNA)) %>%
+#   transform(IFRfedreg = ave(IFRfedreg, RIN, FUN = CopyIfNA)) %>%
+#   transform(IFReffective = ave(IFReffective, RIN, FUN = CopyIfNA)) %>%
+#   transform(WITHDRAWAL = ave(WITHDRAWAL, RIN, FUN = CopyIfNA)) %>%
+#   transform(FINAL = ave(FINAL, RIN, FUN = CopyIfNA)) %>%
+#   transform(FINALeffective = ave(FINALeffective, RIN, FUN = CopyIfNA)) %>%
+#   transform(FINALfedreg = ave(FINALfedreg, RIN, FUN = CopyIfNA)) %>%
+#   transform(StatutoryNPRM = ave(StatutoryNPRM, RIN, FUN = CopyIfNA)) %>%
+#   transform(JudicialNPRM = ave(JudicialNPRM, RIN, FUN = CopyIfNA)) %>%
+#   transform(StatutoryFinal = ave(StatutoryFinal, RIN, FUN = CopyIfNA)) %>%
+#   transform(JudicialFinal = ave(JudicialFinal, RIN, FUN = CopyIfNA))
+
+
+
+
+
+
+
 
 #UnifiedAgenda %<>%  dplyr::select(RIN, AGENCY, RULE_TITLE, ABSTRACT, STAGE, UnifiedAgendaDate, ANPRM, ANPRMcomment, NPRM, NPRMcomment, SNPRM, SNPRMcomment, IFR, IFReffective, FINAL, FINALeffective, TIMETABLE_LIST, CFR_LIST, ANPRMfedreg, NPRMfedreg, SNPRMfedreg, IFRfedreg, FINALfedreg, everything())
 #UnifiedAgenda <- read.csv("Unified Agenda.csv")
@@ -573,6 +651,8 @@ OIRA %<>% mutate(MAJOR_OIRA= MAJOR) %>% select(-MAJOR)
 regs <- merge(UnifiedAgenda, OIRA, by=c("RIN","STAGE"), all=TRUE)
 regs <- full_join(UnifiedAgenda, OIRA)
 
+# FIXME
+# this works fine, but mutate(if_else()) would be faster
 for(i in 1:dim(regs)[1]){
   if(!grepl("-", regs$ANPRM_PUBLISHED[i])){regs$ANPRM_PUBLISHED[i] <- as.character(regs$ANPRM[i])}
   if(!grepl("-", regs$NPRM_PUBLISHED[i])){regs$NPRM_PUBLISHED[i] <- as.character(regs$NPRM[i])}
@@ -582,8 +662,18 @@ for(i in 1:dim(regs)[1]){
   if(is.na(regs$TITLE[i])){regs$TITLE[i] <- regs$RULE_TITLE[i]}
 }
 
-# delete duplicated variables
+# delete duplicate variables (those created from timetable list, which were just merged with key dates above)
 regs$ANPRM <- regs$NPRM <- regs$SNPRM <- regs$IFR <- regs$FINAL <- regs$RULE_TITLE <- NULL
+
+# inspect timetable vs key date variables for completeness
+timetable <- select(regs, RIN, TIMETABLE_LIST, ANPRM_PUBLISHED, NPRM_PUBLISHED, IFR_PUBLISHED, FINAL_PUBLISHED)
+
+
+
+
+
+
+
 
 
 # Outcome and outcome date 
@@ -602,7 +692,7 @@ regs %<>% mutate(NPRMtoFinal = as.numeric(as.Date(FINAL_PUBLISHED) - as.Date(NPR
 regs %<>% mutate(NPRMtoWithdrawal = as.numeric(as.Date(WITHDRAWAL) - as.Date(NPRM_PUBLISHED)))
 
 #########################################################################
-
+# Save 
 if(F){
   # write out UA
   write.csv(UnifiedAgenda, file="Unified Agenda.csv")
