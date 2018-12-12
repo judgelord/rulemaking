@@ -695,13 +695,13 @@ regs %<>% mutate(NPRMtoWithdrawal = as.numeric(as.Date(WITHDRAWAL) - as.Date(NPR
 # Save 
 if(F){
   # write out UA
-  write.csv(UnifiedAgenda, file="Unified Agenda.csv")
+  write.csv(UnifiedAgenda, file="data/Unified Agenda.csv")
   
   # write out OIRA
-  write.csv(OIRA, file="OIRA.csv")
+  write.csv(OIRA, file="data/OIRA.csv")
   
   # write out combined
-  write.csv(regs, file="OIRA and UA.csv")
+  write.csv(regs, file="data/OIRAandUA.csv")
 
   
 }
