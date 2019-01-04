@@ -1,5 +1,5 @@
 library(here)
-source(here("rulemaking/setup.R"))
+source(here("setup.R"))
 load(here("ascending/lastcomments.Rdata"))
 all <- d
 
@@ -58,5 +58,12 @@ load(here("ascending/500comments.Rdata"))
 all %<>% full_join(d)
 
 #####################################
-save(all, file = "ascending/allcomments.Rdata")
+# save all
+save(all, 
+     file = "ascending/allcomments.Rdata")
+
 #####################################
+# save mass comment campaigns only to data folder
+mass <- filter(all, numberOfCommentsReceived > 99)
+save(mass,
+     file = "data/masscomments.Rdata")

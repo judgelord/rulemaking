@@ -273,9 +273,23 @@ return(d)
 
 
 
+###############################
+# One document (requires knowing the document id)
 
+search.doc <- function(docID) {
 
+  # create path (NOTE: for one document, the path is ...v3/document?..., not ...v3/documents?..)
+  path <- paste0("/regulations/v3/document?api_key=", api_key, 
+                 "&documentId=", docID)
 
+  raw.result <- GET(url = url, path = path)
+  raw.result$status_code == 200
+  content <- fromJSON(rawToChar(raw.result$content))
+  doc <- as.data.frame(content[[1]])
+  
+  if(raw.result$status_code != 200){ print(paste("Error: status code =", raw.result$status_code) ) }
+  return(doc)
+  }
 
 
 
