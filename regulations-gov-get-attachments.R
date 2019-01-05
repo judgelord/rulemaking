@@ -1,3 +1,4 @@
+source("setup.R")
 # data
 load("data/masscomments.Rdata")
 d <- mass 
@@ -17,14 +18,16 @@ d %<>% filter(!documentId %in% list.files("comments/") )
 
 
 # initialize and call api to get urls
-docs <- search.doc(mass$documentId[1]) 
-for(i in 1:dim(mass)[1]){ 
-  doc <- search.doc(mass$documentId[i]) 
+docs <- search.doc(d$documentId[1]) 
+for(i in 1:dim(d)[1]){ 
+  doc <- search.doc(d$documentId[i]) 
   docs %<>% full_join(doc) 
   Sys.sleep(2)} 
 
 # save all urls 
 save(docs, file ="data/attachment-urls.Rdata")
+
+load("data/attachment-urls.Rdata")
 
 # select first url for now, due to api limits (spread this out to get all)
 # FIXME

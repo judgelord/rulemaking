@@ -64,6 +64,13 @@ save(all,
 
 #####################################
 # save mass comment campaigns only to data folder
+textcomments <- filter(all, nchar(commentText)> 240)
+dim(textcomments)
+save(textcomments,
+     file = "ascending/textcomments.Rdata")
+
+#####################################
+# save mass comment campaigns only to data folder
 mass <- filter(all, numberOfCommentsReceived > 99)
 save(mass,
      file = "data/masscomments.Rdata")
