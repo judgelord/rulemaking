@@ -275,6 +275,7 @@ return(d)
 
 ###############################
 # One document (requires knowing the document id)
+docID <- mass$documentId[1]
 
 search.doc <- function(docID) {
 
@@ -285,7 +286,7 @@ search.doc <- function(docID) {
   raw.result <- GET(url = url, path = path)
   raw.result$status_code == 200
   content <- fromJSON(rawToChar(raw.result$content))
-  doc <- as.data.frame(content[[1]])
+  doc <- data.frame(documentId = docID, attach.url = paste(content$attachments$fileFormats, sep = "; ", collapse = "; ") )
   
   if(raw.result$status_code != 200){ print(paste("Error: status code =", raw.result$status_code) ) }
   return(doc)
