@@ -3,6 +3,8 @@ source(here("setup.R"))
 # load(here("ascending/allcomments.Rdata"))
 d<- all
 
+
+
 d %<>% group_by(docketId) %>% 
   mutate(docketTotal = sum(numberOfCommentsReceived)) %>% 
   ungroup()
@@ -110,6 +112,7 @@ d$organization <- gsub("\\(.*", "", d$organization, ignore.case = TRUE)
 d$organization <- gsub("\\. Sample.*|\\. \n.*|\n.*|\\,.*", "", d$organization, ignore.case = TRUE)
 d$organization <- gsub(" et al.*| - .*", "", d$organization, ignore.case = TRUE)
 d$organization <- gsub(" \\(.*| \\[.*", "", d$organization, ignore.case = TRUE)
+d$organization <- gsub(" $", "", d$organization, ignore.case = TRUE)
 
 
 d %<>% 
@@ -119,9 +122,12 @@ d %<>%
   ungroup() %>%
   arrange(-orgTotal)
 
-# unique(d$organization)
-
-
+# inspect 
+# unique(d$organization)[1:100]
+d$orgTotal[1:20]
+d$organization[1:20]
+d$documentId[1:20]
+d$commentText[1:20]
 
 allcomments2 <- d
 save(allcomments2, file ="ascending/allcomments2.Rdata") 
@@ -169,3 +175,27 @@ tocode <- filter(toporgs, docketType == "Rulemaking") %>%
 write.csv(tocode, here("data/tocode.csv"))
 
 
+##################################
+textcomments <- all %>% filter(docketType == "Rulemaking") %>%
+  filter(nchar(commentText)> 240)
+
+textcomments %<>% group_by(docketId) %>% 
+  mutate(docketTotal = sum(numberOfCommentsReceived)) %>% 
+  ungroup()
+
+d <- textcomments %>% 
+  filter(docketTotal %in% sort(
+    unique(textcomments$docketTotal), 
+    decreasing = T)[9] 
+  )
+length(unique(d$commentText))
+unique(d$organization)
+length(unique(d$commentText))
+unique(d$title)[1:20]
+sum(d$numberOfCommentsReceived)
+d$commentText[1:20]
+unique(d$docketId)
+
+
+
+write.cv(d, here("data/topdocket.Rdata"))
