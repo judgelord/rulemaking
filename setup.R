@@ -6,9 +6,6 @@ requires <- c("gmailr",
               "gdata", 
               "magrittr",
               "XML",
-              "stats",
-              "zoo",
-              "stringi",
               "stringr", 
               "stargazer",
               "visreg",
@@ -29,15 +26,11 @@ rm(requires, to_install)
 
 library(tidyverse)
 library(dplyr) # in case tydyverse fails (problem on linux)
-library(ggplot2)
+library(ggplot2); theme_set(theme_bw())
 library(magrittr)
 library(XML)
 library(stringr)
-library(stringi)
-library(stats)
-library(zoo)
 library(stargazer)
-library(visreg)
 library(reshape2)
 library(scales)
 library(here)

@@ -1,6 +1,7 @@
-source("setup.R")
+library(here)
+source(here("setup.R"))
 # data
-load("data/masscomments.Rdata")
+load(here("data/masscomments.Rdata"))
 d <- mass 
 
 # selecting ones most needed due to api limits
@@ -41,7 +42,8 @@ docs %<>% mutate(attach.url.1 = gsub(".*download?", "https://www.regulations.gov
 
 
 # name output file
-docs %<>% mutate(file = gsub(".*documentId=", "", attach.url.1)) %>%
+docs %<>% 
+  mutate(file = gsub(".*documentId=", "", attach.url.1)) %>%
   mutate(file = gsub("&contentType=", ".", file)) %>%
   mutate(file = gsub("&attachmentNumber=", "-", file))
 docs$file[1]
@@ -55,9 +57,10 @@ download <- docs
 # files we don't have 
 download %<>% filter(!file %in% list.files("comments/") ) %>%
   filter(attach.url.1 != "")
-
-# loop over downloading attachments 
-for(i in 1:dim(download)[1]){ 
+dim(download)
+i = 1
+# loop over downloading attachments (regulations.gov blocks after 90?)
+for(i in 1:89){ 
   # download to comments folder 
   tryCatch({
     download.file(download$attach.url.1[i], 
@@ -66,7 +69,7 @@ for(i in 1:dim(download)[1]){
     print(e)
     print(i)
   })
-  Sys.sleep(1)
+  Sys.sleep(2)
 }
 
 ##################
