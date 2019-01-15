@@ -109,7 +109,7 @@ d %>% filter(year > 2005, !is.na(commentStartDate)) %>%
   facet_wrap(~ year, ncol = 6)+
   theme_bw() +
   theme(legend.position = "none",
-        axis.text.x = element_text(angle = 45))
+        axis.text.x = element_text(angle = 30))
 ```
 
 ```{r type-comment-density, fig.height = 6.5}
@@ -543,8 +543,6 @@ r head(filter(d, position == "support and oppose"))
 ```{r toporgs}
 load(here("data/toporgs.Rdata"))
 
-toporgs$mass %<>% 
-  str_replace("Not unique", "Medium batch")
 
 toporgs %>%
   mutate(topdockets = ifelse(docketTotal %in% sort(unique(toporgs$docketTotal), decreasing = T)[1:10],

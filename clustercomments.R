@@ -3,9 +3,12 @@ source(here("setup.R"))
 load(here("ascending/allcomments.Rdata"))
 ls()
 dim(all)
-d<- all
+length(unique(all$docketId))
+d <- all
 d %<>% filter(docketType == "Rulemaking")
 dim(d)
+length(unique(d$docketId))
+length(unique(d$agencyAcronym))
 
 d %<>% group_by(docketId) %>% 
   mutate(docketTotal = sum(numberOfCommentsReceived)) %>% 
@@ -64,10 +67,21 @@ d  %<>% mutate(mass = ifelse(is.na(mass), "Yet to be classified", mass))
 d %>% group_by(mass) %>% summarise(n = n(), total = sum(numberOfCommentsReceived))
   
   
-  # form of comment
-  d %<>% 
-    mutate(commentform = tolower(str_extract_all(title, "email|Email|USB|Paper|paper|Web|web|Postcard|postcard|Change.org|eRulemaking Portal")))
+# forms of comments
+forms <- "email|Email|USB|Paper|paper|Web|web|Postcard|postcard|Change.org|eRulemaking Portal"
   
+  d %<>% 
+    mutate(commentform = tolower(str_extract(title, forms))) %>%
+    mutate(commentform = ifelse(is.na(commentform), "unknown", commentform))
+  
+d$commentform %<>% stringr::str_replace("change.org", "web")
+d$commentform %<>% stringr::str_replace("postcard", "paper")
+d$commentform %<>% stringr::str_replace("usb", "web")
+d %<>% 
+  mutate(commentform = ifelse(comment == TRUE & numberOfCommentsReceived ==1 & commentform == "unknown",
+                               "erulemaking portal", commentform))
+
+unique(d$commentform)  
   
 # extract org info 
 preface <- ".*ponsored by |.*ponsoring organization |.*ubmitted by |.*omments from |.*ampaign from |.*on behalf of "
@@ -197,8 +211,8 @@ write.csv(tocode, here("data/tocode.csv"))
 
 
 ##################################
-textcomments <- all %>% filter(docketType == "Rulemaking") %>%
-  filter(nchar(commentText)> 240)
+textcomments <- d %>% filter(docketType == "Rulemaking") %>%
+  filter(comment == T)
 
 textcomments %<>% group_by(docketId) %>% 
   mutate(docketTotal = sum(numberOfCommentsReceived)) %>% 
@@ -219,4 +233,4 @@ unique(d$docketId)
 
 
 
-save(d, here("data/textcoments.Rdata"))
+save(textcomments, file = here("ascending/textcoments.Rdata"))
