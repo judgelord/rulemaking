@@ -366,7 +366,7 @@ d <- allcomments2
 # mass comments to the top
 d %<>% arrange(desc(numberOfCommentsReceived))  %>% 
   # make a variable indicating comment is unique
-  mutate(mass2 = ifelse(numberOfCommentsReceived > 1, "Mass Comments", "Unique Comments"))
+  mutate(mass2 = ifelse(numberOfCommentsReceived > 99 | mass == "Mass Comments", "Mass Comments", "Other Comments"))
 
 # format data
 d$postedDate %<>% as.Date()
