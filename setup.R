@@ -38,7 +38,7 @@ library(here)
 library(gridExtra)
 library(httr)
 library(jsonlite)
-library(textreadr)
+# library(textreadr)
 
 
 # function to fill NAs
