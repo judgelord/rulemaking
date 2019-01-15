@@ -487,7 +487,32 @@ d %>%
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
-```
+``` 
+
+
+```{r comments-form, fig.height=3.1, fig.width=5}
+d %>% 
+  filter(year > 2004) %>% 
+  group_by(year, commentform) %>% 
+  summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
+  ggplot() + 
+  geom_col(aes(x = factor(year), y = yearTotal, fill = commentform) ) + 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "", 
+       y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       fill = "") + 
+  theme_minimal() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_text(angle = 45))
+``` 
+
+
+
+
+
+--- 
+
 ### Comments with the word "support": 
 
 `r head(d$commentText[which(grepl(" support ", d$commentText))])`

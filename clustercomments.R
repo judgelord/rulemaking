@@ -12,6 +12,7 @@ d %<>% group_by(docketId) %>%
 d %<>% 
   # logical
   mutate(comment = nchar(commentText) > 140 ) %>% 
+  mutate(comment = ifelse(is.na(comment), FALSE, comment)) %>%
   # text removing short phrases
   mutate(commenttext =
            ifelse( comment, commentText, NA)
@@ -19,6 +20,9 @@ d %<>%
   mutate(commentfirst140 = str_sub(commenttext,1,140)) %>% 
   mutate(commentlast140 = str_sub(commenttext,-140,-1))
 
+sum(d$comment)
+sum(!d$comment)
+dim(d)
 # count types 
 d %<>% 
   group_by(docketId, commenttext) %>% 
@@ -38,21 +42,26 @@ d %<>%
 
 sum(is.na(d$numberOfCommentsReceived))
 sum(is.na(d$commentText))
-sum(nchar(d$commentText)<20)
+sum(!is.na(d$commentText) & nchar(d$commentText)<20)
 
 # define mass
   d %<>% 
+    # default
+    mutate(mass = "Yet to be classified") %>% 
     # unique comments
-    mutate(mass = ifelse(numberOfCommentsReceived>1 | commentsIdentical>1, "Medium batch", "Unique")) %>%
+    mutate(mass = ifelse(comment & commentsIdentical == 1, "Unique", mass)) %>% 
+   # medium batches (2-100)
+    mutate(mass = ifelse(numberOfCommentsReceived>1 | commentsIdentical>1, "Medium batch", mass)) %>%
     # partially unique comments 
-    mutate(mass = ifelse(commentsIdentical==1 & commentsPartial>1, "Partially unique", mass)) %>%
-    # just in case the above counted NAs
-    mutate(mass = ifelse(comment==FALSE, NA, mass))%>% 
+    mutate(mass = ifelse(comment & commentsIdentical==1 & commentsPartial>1, "Partially unique", mass)) %>%
     # bulk submissions over 99 
     mutate(mass = ifelse(numberOfCommentsReceived>99 | commentsIdentical>99, "Mass Comments", mass)) %>% 
     # to be coded 
-    mutate(mass = ifelse(mass == "Unique" & (is.na(commentText) | nchar(commentText) < 20), "Yet to be classified", "Unique"))
+    
 
+d %>% group_by(mass) %>% sumarize(n = n(), total = sum(numberOfCommentsRecieved))
+  
+  
   # form of comment
   d %<>% 
     mutate(commentform = tolower(str_extract_all(title, "email|Email|USB|Paper|paper|Web|web|Postcard|postcard|Change.org|eRulemaking Portal")))
@@ -120,6 +129,8 @@ d$organization <- gsub(" \\(.*| \\[.*", "", d$organization, ignore.case = TRUE)
 d$organization <- gsub(" $", "", d$organization, ignore.case = TRUE)
 
 
+d %<>% filter(docketType == "Rulemaking")
+
 d %<>% 
   mutate(organization = ifelse(organization %in% c("", "NA", "unknown"), NA, organization)) %>%
   group_by(organization) %>% 
@@ -134,9 +145,13 @@ d$organization[1:20]
 d$documentId[1:20]
 d$commentText[1:20]
 
+
+
 allcomments2 <- d
 save(allcomments2, file ="ascending/allcomments2.Rdata") 
 
+load(file ="ascending/allcomments2.Rdata") 
+d <- allcomments2
 #############################################################
 
 
