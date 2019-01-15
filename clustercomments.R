@@ -36,17 +36,22 @@ d %<>%
 # d %>% filter(commentsPartial>9) %>% select(commentText)
 
 
+sum(is.na(d$numberOfCommentsReceived))
+sum(is.na(d$commentText))
+sum(nchar(d$commentText)<20)
 
 # define mass
   d %<>% 
     # unique comments
-    mutate(mass = ifelse(numberOfCommentsReceived>1 | commentsIdentical>1, "Small batch", "Unique")) %>%
+    mutate(mass = ifelse(numberOfCommentsReceived>1 | commentsIdentical>1, "Medium batch", "Unique")) %>%
     # partially unique comments 
     mutate(mass = ifelse(commentsIdentical==1 & commentsPartial>1, "Partially unique", mass)) %>%
     # just in case the above counted NAs
     mutate(mass = ifelse(comment==FALSE, NA, mass))%>% 
     # bulk submissions over 99 
-    mutate(mass = ifelse(numberOfCommentsReceived>99 | commentsIdentical>99, "Mass Comments", mass))
+    mutate(mass = ifelse(numberOfCommentsReceived>99 | commentsIdentical>99, "Mass Comments", mass)) %>% 
+    # to be coded 
+    mutate(mass = ifelse(mass == "Unique" & (is.na(commentText) | nchar(commentText) < 20), "Yet to be classified", "Unique"))
 
   # form of comment
   d %<>% 
@@ -132,7 +137,7 @@ d$commentText[1:20]
 allcomments2 <- d
 save(allcomments2, file ="ascending/allcomments2.Rdata") 
 
-
+#############################################################
 
 
 
@@ -198,4 +203,4 @@ unique(d$docketId)
 
 
 
-write.cv(d, here("data/topdocket.Rdata"))
+save(d, here("data/textcoments.Rdata"))

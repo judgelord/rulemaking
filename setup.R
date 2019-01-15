@@ -19,6 +19,7 @@ requires <- c("gmailr",
               "gridExtra",
               "httr",
               "jsonlite",
+              #"textreadr",
               "tidyverse")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
 install.packages(c(requires[to_install], "NA"), repos = "https://cloud.r-project.org/" )
@@ -37,6 +38,7 @@ library(here)
 library(gridExtra)
 library(httr)
 library(jsonlite)
+library(textreadr)
 
 
 # function to fill NAs

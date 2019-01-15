@@ -7,7 +7,7 @@ source(here("setup.R"))
 load(here("data/toporgs.Rdata"))
 
 toporgs$mass %<>% 
-  str_replace("Not unique", "Small batch")
+  str_replace("Not unique", "Medium batch")
 
 toporgs %>%
   mutate(topdockets = ifelse(docketTotal %in% sort(unique(toporgs$docketTotal), decreasing = T)[1:10],

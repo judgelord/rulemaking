@@ -4,13 +4,13 @@ source(here("setup.R"))
 load(here("data/masscomments.Rdata"))
 d <- mass 
 
-# selecting ones most needed due to api limits
+# selecting ones most needed for now due to api limits
 # FIXME 
 d %<>% filter(grepl("attach", commentText), 
                  docketType == "Rulemaking") %>% 
   arrange(-numberOfCommentsReceived) 
 # filter out docs we already have
-d %<>% filter(!documentId %in% list.files("comments/") )
+d %<>% filter(!stringr::str_detect(documentId, list.files("comments/") ))
 # /FIXME
 
 
@@ -18,7 +18,7 @@ d %<>% filter(!documentId %in% list.files("comments/") )
 
 
 
-# initialize and call api to get urls
+# initialize and call api to get urls (if only need pdfs, this is not necessary, just make all urls with the doc id and .pdf at the end)
 docs <- search.doc(d$documentId[1]) 
 for(i in 1:dim(d)[1]){ 
   doc <- search.doc(d$documentId[i]) 
@@ -40,7 +40,7 @@ docs$attach.url.1[1]
 # format for scraping rather than api 
 docs %<>% mutate(attach.url.1 = gsub(".*download?", "https://www.regulations.gov/contentStreamer", attach.url.1)) 
 
-
+docs$attach.url.1[1]
 # name output file
 docs %<>% 
   mutate(file = gsub(".*documentId=", "", attach.url.1)) %>%
@@ -58,19 +58,23 @@ download <- docs
 download %<>% filter(!file %in% list.files("comments/") ) %>%
   filter(attach.url.1 != "")
 dim(download)
-i = 1
+
+errorcount <- 0
 # loop over downloading attachments (regulations.gov blocks after 90?)
-for(i in 1:89){ 
+for(i in 1:dim(download)[1]){ 
+  if(errorcount < 5){
   # download to comments folder 
   tryCatch({
     download.file(download$attach.url.1[i], 
                   destfile = paste0("comments/", download$file[i]) ) 
-  },error = function(e) {
+  },
+  error = function(e) {
     print(e)
     print(i)
+    errorcount <- errorcount + 1
   })
   Sys.sleep(2)
-}
+}}
 
 ##################
 # READ TEXTS
@@ -78,7 +82,20 @@ for(i in 1:89){
 docs$attach.text = NA 
 for(i in 1:dim(docs)[1]){
   # read / ocr text 
-  text <- read_document(file[i]) 
+  # text <-  textread::read_document(docs$file[i]) 
+  text <-  pdf_text(docs$file[i]) 
+  
   docs$attach.text[i] <- text 
 }
+
+texts <- data_frame(file = list.files("comments/"),
+                    text = NA)
+for(i in 1:dim(texts)[1]){
+  # read / ocr text 
+  # text <-  textread::read_document(docs$file[i]) 
+  text <-  pdf_text(texts$file[i]) 
+  
+  texts$text[i] <- text 
+}
+
 
