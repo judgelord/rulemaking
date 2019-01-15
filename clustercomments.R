@@ -1,9 +1,11 @@
 library(here)
 source(here("setup.R"))
-# load(here("ascending/allcomments.Rdata"))
+load(here("ascending/allcomments.Rdata"))
+ls()
+dim(all)
 d<- all
-
-
+d %<>% filter(docketType == "Rulemaking")
+dim(d)
 
 d %<>% group_by(docketId) %>% 
   mutate(docketTotal = sum(numberOfCommentsReceived)) %>% 
@@ -55,11 +57,11 @@ sum(!is.na(d$commentText) & nchar(d$commentText)<20)
     # partially unique comments 
     mutate(mass = ifelse(comment & commentsIdentical==1 & commentsPartial>1, "Partially unique", mass)) %>%
     # bulk submissions over 99 
-    mutate(mass = ifelse(numberOfCommentsReceived>99 | commentsIdentical>99, "Mass Comments", mass)) %>% 
-    # to be coded 
-    
+    mutate(mass = ifelse(numberOfCommentsReceived>99 | commentsIdentical>99, "Mass Comments", mass)) 
 
-d %>% group_by(mass) %>% sumarize(n = n(), total = sum(numberOfCommentsRecieved))
+d  %<>% mutate(mass = ifelse(is.na(mass), "Yet to be classified", mass))
+
+d %>% group_by(mass) %>% summarise(n = n(), total = sum(numberOfCommentsReceived))
   
   
   # form of comment
@@ -129,7 +131,6 @@ d$organization <- gsub(" \\(.*| \\[.*", "", d$organization, ignore.case = TRUE)
 d$organization <- gsub(" $", "", d$organization, ignore.case = TRUE)
 
 
-d %<>% filter(docketType == "Rulemaking")
 
 d %<>% 
   mutate(organization = ifelse(organization %in% c("", "NA", "unknown"), NA, organization)) %>%
