@@ -234,3 +234,4 @@ unique(d$docketId)
 
 
 save(textcomments, file = here("ascending/textcoments.Rdata"))
+

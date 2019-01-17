@@ -77,25 +77,28 @@ for(i in 1:dim(download)[1]){
 }}
 
 ##################
+
+list.files("comments")
+# pdftools::pdf_text("comments/WHD-2017-0002-138298-1.pdf")
 # READ TEXTS
 # initialize and loop over downloaded attachments to read in texts
-docs$attach.text = NA 
-for(i in 1:dim(docs)[1]){
+files <- data.frame(fileId = as.character(paste0("comments/",list.files("comments"))), 
+                    attach.text = NA)
+dim(files)
+files$fileId %<>% as.character()
+files$fileId[1]
+
+for(i in 1:dim(files)[1]){
   # read / ocr text 
   # text <-  textread::read_document(docs$file[i]) 
-  text <-  pdf_text(docs$file[i]) 
+  tryCatch({
+  text <-  pdftools::pdf_text(
+    files$fileId[i]) 
   
-  docs$attach.text[i] <- text 
-}
-
-texts <- data_frame(file = list.files("comments/"),
-                    text = NA)
-for(i in 1:dim(texts)[1]){
-  # read / ocr text 
-  # text <-  textread::read_document(docs$file[i]) 
-  text <-  pdf_text(texts$file[i]) 
-  
-  texts$text[i] <- text 
-}
-
+  files$attach.text[i] <- text 
+  },
+  error = function(e) {
+    print(e)
+    print(i)
+})}
 
