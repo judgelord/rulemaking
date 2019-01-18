@@ -513,7 +513,7 @@ d %>%
 --
 
 # Top Orgs
-```{r toporgs, fig.height=4}
+```{r toporgs, fig.height=2.5}
 load(here("data/toporgs.Rdata"))
 
 
@@ -525,6 +525,7 @@ toporgs %>%
     decreasing = T)[1:10] 
   ) %>% 
   filter(!is.na(mass)) %>% 
+    filter(mass != "Yet to be classified") %>% 
   ggplot() +
   geom_col(aes(x = organization, y = numberOfCommentsReceived/1000)) +
   coord_flip()+
