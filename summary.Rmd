@@ -9,6 +9,8 @@ output:
 ```{r setup, include=FALSE}
 # R -e "rmarkdown::render('summary.Rmd')"
 # git add summary.html
+# git add figs
+# git commit -m "update figs"
 
 knitr::opts_chunk$set(echo = TRUE, 
                       cache = FALSE, 
@@ -598,7 +600,9 @@ topdockets %>%
   theme_bw()
 
 topdockets %>% group_by(docketId, organization) %>% summarise(n = sum(numberOfCommentsReceived)) %>% arrange(-n)
-```
+``` 
+
+```{r include=FALSE, eval = FALSE}
 
 <!--
 
@@ -639,4 +643,8 @@ r head(filter(d, position == "support and oppose"))
 - Shiny app to make datasets with search terms via regulations.gov API
 
 
--->     
+-->    
+  
+  
+  
+```
