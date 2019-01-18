@@ -540,7 +540,7 @@ r head(filter(d, position == "support and oppose"))
 
 
 # Top Orgs
-```{r toporgs}
+```{r toporgs, fig.height=4}
 load(here("data/toporgs.Rdata"))
 
 
