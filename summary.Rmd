@@ -508,36 +508,7 @@ d %>%
 ``` 
 
 
-
-
-
---- 
-
-### Comments with the word "support": 
-
-`r head(d$commentText[which(grepl(" support ", d$commentText))])`
-
-### Comments with the word "oppose": 
-
-`r head(d$commentText[which(grepl(" oppose ", d$commentText))])`
-
-### Comments with the both "support" and "oppose": 
-
-r head(filter(d, position == "support and oppose"))
-
-### Example mass comments:
-
-`r head(d$commentText)`
-
-### Top mobilizers
-
-`r unique(d$organization[which(d$numberOfCommentsReceived > 99 & !is.na(d$organization))])`
-
-### American Petroleum Institute, breaking a perceived consensus
-`r d[which(d$numberOfCommentsReceived > 99 & d$organization=="American Petroleum Institute"), 6:13]`
-
-
-
+--
 
 # Top Orgs
 ```{r toporgs, fig.height=4}
@@ -630,6 +601,38 @@ topdockets %>% group_by(docketId, organization) %>% summarise(n = sum(numberOfCo
 ```
 
 --
+
+
+
+--- 
+
+### Comments with the word "support": 
+
+`r head(d$commentText[which(grepl(" support ", d$commentText))])`
+
+### Comments with the word "oppose": 
+
+`r head(d$commentText[which(grepl(" oppose ", d$commentText))])`
+
+### Comments with the both "support" and "oppose": 
+
+r head(filter(d, position == "support and oppose"))
+
+### Example mass comments:
+
+`r head(d$commentText)`
+
+### Top mobilizers
+
+`r unique(d$organization[which(d$numberOfCommentsReceived > 99 & !is.na(d$organization))])`
+
+### American Petroleum Institute, breaking a perceived consensus
+`r d[which(d$numberOfCommentsReceived > 99 & d$organization=="American Petroleum Institute"), 6:13]`
+
+
+
+
+
 
 # To do:
 
