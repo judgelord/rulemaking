@@ -1,38 +1,49 @@
+# load packages and functions 
 library(here)
 source(here("setup.R"))
-# data
+source(here("regulations-gov-API-search.R"))
+       
+# load data from regulations.gov API search
 load(here("data/masscomments.Rdata"))
 d <- mass 
 
 # selecting ones most needed for now due to api limits
 # FIXME 
-d %<>% filter(grepl("attach", commentText), 
-                 docketType == "Rulemaking") %>% 
-  arrange(-numberOfCommentsReceived) 
-# filter out docs we already have
-d %<>% filter(!stringr::str_detect(documentId, list.files("comments/") ))
+d %<>% filter(#grepl("attach", commentText), 
+              docketType == "Rulemaking")
 # /FIXME
 
 
+# filter out docs already scraped
+d %<>% filter(!stringr::str_detect(documentId, list.files("comments/") ))
 
-
-
-
-# initialize and call api to get urls (if only need pdfs, this is not necessary, just make all urls with the doc id and .pdf at the end)
+## initialize and call api to get urls 
+## (if only need pdfs, this is not necessary, just make all urls with the doc id and .pdf at the end)
 docs <- search.doc(d$documentId[1]) 
 for(i in 1:dim(d)[1]){ 
-  doc <- search.doc(d$documentId[i]) 
+  doc <- search.doc(d$documentId[i]) # function from regulations-gov-API-search.R
   docs %<>% full_join(doc) 
-  Sys.sleep(2)} 
+  Sys.sleep(2)
+} 
 
 # save all urls 
 save(docs, file ="data/attachment-urls.Rdata")
 
+
+##############################################################
 load("data/attachment-urls.Rdata")
+
+docs %<>% filter( !is.na(attach.url), attach.url != "" ) %>% 
+  mutate(attach.count = str_count(attach.url,";") )
+
+max(docs$attach.count)
+
 
 # select first url for now, due to api limits (spread this out to get all)
 # FIXME
-docs %<>% mutate(attach.url.1 = gsub(";.*", "", attach.url)) %>%
+docs %<>% 
+  mutate(attach.url.1 = attach.url) %>%
+  mutate(attach.url.1 = gsub(";.*", "", attach.url)) %>%
   mutate(attach.url.1 = gsub("Type=pdf.*", "Type=pdf", attach.url.1))
 
 docs$attach.url.1[1]
@@ -56,11 +67,16 @@ download <- docs
 
 # files we don't have 
 download %<>% filter(!file %in% list.files("comments/") ) %>%
-  filter(attach.url.1 != "")
+  filter(!attach.url.1 %in% c("","NULL"), !is.null(attach.url.1) )
+dim(docs)
 dim(download)
+head(download$attach.url.1)
 
+# loop over downloading attachments (regulations.gov blocks after 79?)
+# With trycatch
+# Sys.sleep(1200) # sleep for an hour
+download %<>% filter(!file %in% list.files("comments/") ) 
 errorcount <- 0
-# loop over downloading attachments (regulations.gov blocks after 90?)
 for(i in 1:dim(download)[1]){ 
   if(errorcount < 5){
   # download to comments folder 
@@ -69,12 +85,13 @@ for(i in 1:dim(download)[1]){
                   destfile = paste0("comments/", download$file[i]) ) 
   },
   error = function(e) {
+    errorcount<-(errorcount+1)
+    print(errorcount)
     print(e)
-    print(i)
-    errorcount <- errorcount + 1
   })
-  Sys.sleep(2)
-}}
+  print(i)
+  Sys.sleep(1) # pausing between requests does not seem to help, but makes it easier to stop
+    }}
 
 ##################
 
