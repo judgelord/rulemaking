@@ -28,6 +28,17 @@ for(i in 1:dim(d)[1]){
 
 # save all urls 
 save(docs, file ="data/attachment-urls.Rdata")
+##################################################
+
+
+
+
+
+
+
+
+
+
 
 
 ##############################################################
@@ -70,28 +81,39 @@ download %<>% filter(!file %in% list.files("comments/") ) %>%
   filter(!attach.url.1 %in% c("","NULL"), !is.null(attach.url.1) )
 dim(docs)
 dim(download)
-head(download$attach.url.1)
+head(download)
 
-# loop over downloading attachments (regulations.gov blocks after 79?)
-# With trycatch
-# Sys.sleep(1200) # sleep for an hour
+# test
 download %<>% filter(!file %in% list.files("comments/") ) 
-errorcount <- 0
-for(i in 1:dim(download)[1]){ 
+download.file(download$attach.url.1[1000], 
+              destfile = paste0("comments/", download$file[1000]) ) 
+
+
+# loop over downloading attachments 78 at a time (regulations.gov blocks after 78?)
+for(i in 1:round(dim(download)[1]/78)){
+  download %<>% filter(!file %in% list.files("comments/") ) 
+  errorcount <<- 0
+#for(i in 1:dim(download)[1]){ 
+for(i in 1:78){ 
   if(errorcount < 5){
   # download to comments folder 
-  tryCatch({
+  tryCatch({ # tryCatch handles errors
     download.file(download$attach.url.1[i], 
                   destfile = paste0("comments/", download$file[i]) ) 
   },
   error = function(e) {
-    errorcount<-(errorcount+1)
+    errorcount<<-errorcount+1
     print(errorcount)
+    if( str_detect(e[[1]][1], "cannot open URL") ){
+      download$file[i] <<- "cannot open URL.csv" # this is a dummy file in the comments folder, which will cause this url to be filtered out
+    }
     print(e)
   })
   print(i)
-  Sys.sleep(1) # pausing between requests does not seem to help, but makes it easier to stop
-    }}
+  #Sys.sleep(1) # pausing between requests does not seem to help, but makes it easier to stop failed calls
+  }}
+  Sys.sleep(600) # 10 min
+}
 
 ##################
 
