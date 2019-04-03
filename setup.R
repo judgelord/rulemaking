@@ -20,7 +20,14 @@ requires <- c("gmailr",
               "httr",
               "jsonlite",
               "tm",
+              "tm",
+              "tidytext",
+              "topicmodels",
+              "textfeatures",
+              "cleanNLP",
               "clusters",
+              "rjags",
+              "bayesmix",
               #"textreadr",
               "tidyverse")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
@@ -30,8 +37,10 @@ rm(requires, to_install)
 library(tidyverse)
 library(dplyr) # in case tydyverse fails (problem on linux)
 library(ggplot2); theme_set(theme_bw())
-options(ggplot2.continuous.colour="viridis")
-options(ggplot2.discrete.colour="viridis")
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
 library(magrittr)
 library(XML)
 library(stringr)
@@ -42,6 +51,11 @@ library(here)
 library(gridExtra)
 library(httr)
 library(jsonlite)
+library(tm)
+library(tidytext)
+library(topicmodels)
+library(textfeatures)
+library(cleanNLP)
 # library(textreadr)
 
 knitr::opts_chunk$set(echo = TRUE, 

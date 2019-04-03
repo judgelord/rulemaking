@@ -146,6 +146,7 @@ d %>%
        y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
        fill = "") + 
   theme_minimal() + 
+  scale_fill_viridis_d(begin = 0, end = .6) +
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
@@ -164,6 +165,7 @@ d %>%
        y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
        fill = "") + 
   theme_minimal() + 
+  scale_fill_viridis_d(begin = 0, end = .6) +
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
@@ -242,14 +244,34 @@ text <- tibble(text1 = text1,
 
 # Cluster
 
-```{r}
+
+- [Grimmer lecture](http://stanford.edu/~jgrimmer/Text14/tc9.pdf)
+    - - [supervised code](http://stanford.edu/~jgrimmer/Text14/Class15Code.R)
+    - - [unsupervised, k-means and multinomial mixture code](http://stanford.edu/~jgrimmer/Text14/examp_c9.R)
+    - - [multinomial mixture paper](https://www.cambridge.org/core/journals/political-analysis/article/bayesian-hierarchical-topic-model-for-political-texts-measuring-expressed-agendas-in-senate-press-releases/74F30D05C220DB198F21FF5127EB7205)
+
+## K Means (or median)
+- [Benoit lecture](https://kenbenoit.net/assets/courses/nyu2014qta/QTA_NYU_Day7.pdf)
+- http://www.cs.cmu.edu/~dgovinda/pdf/emcat-mlj99.pdf
+- http://www.cs.columbia.edu/~smaskey/CS6998-0412/slides/week3_statnlp_web.pdf
+
+```{r kmeans, fig.height=11, fig.width=11}
 library(tm)
 d %>% group_by(docketId, docketType, docketTitle) %>% tally() %>% arrange(desc(n))
 
-d %<>% filter(docketId == "NPS-2018-0007")
-# FOR TESTING 
-# FIXME
-text <- d[1:800,]
+d %<>% 
+  group_by(docketId) %>% 
+  mutate(n=n()) %>%
+  filter(n>999) %>%
+  arrange(desc(n))
+
+# The docket with the most comments
+id <- d$docketId[1]
+
+kplot <- function(id){
+text <- Text <- d %>% filter(docketId == id,
+              !is.na(commentText),
+              nchar(commentText>10)) #%>% .[1:200,]
   
 # Make a single string of stopwards separated by regex "OR" ("|")
 stopwords <- str_c(stop_words$word, collapse = " | ")
@@ -268,21 +290,195 @@ text$commentText %<>%
   removePunctuation()
 
 head(text$commentText)
+head(Text$commentText)
 
-dtm <- DocumentTermMatrix(SimpleCorpus(VectorSource(text$commentText)))
+dtm <- VectorSource(text$commentText) %>%
+  SimpleCorpus()%>%
+  tm::DocumentTermMatrix()%>%
+  tm::removeSparseTerms(0.999)
 
-m <- as.matrix(dtm)
-
-# Distance between document vectors
-distance <- dist(m)
+# rowTotals <- apply(dtm , 1, sum) #Find the sum of words in each Document
+# dtm <- dtm[rowTotals> 0,]
 
 # k-means algorithm, 2 clusters, 100 starting configurations
-kfit <- kmeans(distance, 2, nstart=100)
+k = 2
+kfit <- dtm %>%
+  dist() %>% # default euclidian - this is incorrect 
+  as.matrix() %>%
+  kmeans(k, nstart=100, algorithm = "Forgy")
 
-kfit_data <- tibble(cluster = kfit$cluster,
-                    centers = kfit$centers)
+kfit_data <- tibble(Cluster = as.factor(kfit$cluster),
+                    Component_1 = as.numeric(kfit$centers[1,]),
+                    Component_2 = as.numeric(kfit$centers[2,]),
+                    documentId = text$documentId[rowTotals> 0])
 
-# plot vs. 2 principle components
-library(cluster)
-clusplot(as.matrix(distance), kfit$cluster, color=T, shade=F, labels=2, lines=0)
+Text %<>% full_join(kfit_data)
+
+p <- Text %>% 
+ggplot() + 
+  aes(x = Component_1, 
+      y = Component_2, 
+      color = Cluster, 
+      label = str_sub(commentText, 1,40) ) + 
+  geom_point(aes(size = numberOfCommentsReceived), alpha=.2) +
+  geom_text(aes(label = ifelse(numberOfCommentsReceived>1, 
+                               commentText, 
+                               NA)),
+                check_overlap = T, hjust = 0) +
+  geom_text(check_overlap = T, hjust = 0) +
+  labs(title = unique(Text$docketTitle),
+       size = "Number of Identical Comments") +
+  scale_color_viridis_d(begin = 0, end = .6) +
+  theme_minimal() 
+p
+
+return(p)
+}
+kplot(id)
+kplots <- map(unique(d$docketId)[1:100], possibly(kplot, NA))
+kplots
+```
+
+Label clusters
+```{r, eval=FALSE}
+##labeling the topics
+##just use the ``biggest" in each category
+key_words<- matrix(NA, nrow=n.clust, ncol=10)
+for(z in 1:n.clust){
+	key_words[z,]<- colnames(flake_matrix)[order(k_cluster$center[z,], decreasing=T)[1:10]]
+	}
+
+##we can then try to compare the ``relative" strong words
+key_words2<- matrix(NA, nrow=n.clust, ncol=10)
+for(z in 1:n.clust){
+	diff<- k_cluster$center[z,] - apply(k_cluster$center[-z, ], 2, mean)
+	key_words2[z,]<- colnames(flake_matrix)[order(diff, decreasing=T)[1:10]]
+	}
+```
+
+Cosine distance and hierarchcial clustering
+```{r, eval=FALSE}
+## https://cai.tools.sap/blog/text-clustering-with-r-an-introduction-for-data-scientists/
+## Cosine distance matrix (useful for specific clustering algorithms) 
+tfidf.matrix <- as.matrix(tdm.tfidf) 
+dist.matrix = proxy::dist(tfidf.matrix, method = "cosine") 
+
+# https://rpubs.com/saqib/DocumentClustering
+groups <- hclust(distMatrix, method="ward.D")
+plot(groups, cex=0.9, hang=-1)
+rect.hclust(groups, k=5)
+```
+
+
+# Bayesian Clustering (mixture models)
+```{r, eval = FALSE}
+# Mixture of Multinomials
+
+mix_mult<- function(X, k, tol, seed){
+	library(MCMCpack)
+	
+	
+	##initializing parameters
+	set.seed(seed)
+	pis<- rdirichlet(1, alpha = rep(100, 3))
+	thetas<- matrix(NA, nrow=k, ncol=ncol(X))
+	for(z in 1:k){
+		thetas[z,]<- rdirichlet(1, alpha=rep(100, ncol(X)))
+		}
+	rs<- matrix(NA, nrow=nrow(X),ncol=k)
+	a<- 0
+	t<- 1 
+	
+	##writing a function to compute the expected value
+	e.log<- function(X, pis, thetas, rs){
+		log.pis<- log(pis)
+		log.thetas<- log(thetas)
+		score<- 0
+		for(z in 1:nrow(X)){
+			part1<- rs[z,]*log.pis
+			part2<- 0
+			for(j in 1:k){
+				part2<- part2 + sum(rs[z,j]*X[z,]*log(thetas[j,] + .000001))
+				}
+			score<- score + sum(part1) + part2
+			}
+		return(score)
+		}
+	
+	##iterating while 
+	while(a==0){
+		if(t>1){
+			e.old<- e.log(X, pis,thetas,  rs)
+			}
+			##we have to be mildly creative to avoid underlow.  We can avoid this more complicated
+			##argument with a variational approximation, which allows for a simple algebraic trick to avoid underflow.  Alternatively, distributions like VMF present no real underflow concern
+		for(i in 1:nrow(X)){
+			for(j in 1:k){
+				denom<- thetas[j,]^{-X[i,]}
+				nums<- thetas[-j,]
+				new_num<- 0
+				for(l in 1:nrow(nums)){
+					new_num<- new_num + (pis[l]/pis[j])*prod(nums[l,]^{X[i,]}*denom)}
+				rs[i,j]<- ifelse(is.na(1/(1 + new_num))==F,1/(1 + new_num), 0)
+				}
+			}
+		##now, maximizing parameters
+		thetas<- t(rs)%*%X
+		for(z in 1:k){
+			thetas[z,]<- (thetas[z,] )/(sum(thetas[z,] ) )
+			}
+		pis<- apply(rs, 2, sum)/sum(rs)
+		t<- t + 1
+		if(t>1){
+			e.new<- e.log(X, pis, thetas, rs)
+			change<- e.new - e.old
+			print(abs(change))
+			if(abs(change)<tol){
+				a<- 1}
+			}
+			}
+		out<- list(thetas, pis, rs)
+		names(out)<- c('thetas', 'pis', 'rs')
+		return(out)
+		}	
+			
+			
+			
+test<- mix_mult(X, 3, 1e-5, 12122007)
+
+table(apply(test$rs, 1, which.max), k_cluster$cluster)
+
+## label documents
+mult_words<- matrix(NA, nrow = 3, ncol=10)
+for(z in 1:3){
+	diff<- test$thetas[z,] - apply(thetas[-z,], 2, mean)
+	mult_words[z,]<- colnames(X)[order(diff, decreasing=T)[1:10]]
+}
+```
+
+
+[`mixtools`](https://cran.r-project.org/web/packages/mixtools/vignettes/mixtools.pdf)
+```{r, eval=FALSE}
+install.packages("bayesmix")
+install.packages("rjags")
+library("bayesmix")
+data("fish", package = "bayesmix")
+
+model <- BMMmodel(fish, 
+                  k = 4, 
+                  initialValues = list(S0 = 2),
+                  priors = list(kind = "independence",
+                                parameter = "priorsFish", 
+                                hierarchical = "tau"))
+model
+
+control <- JAGScontrol(variables = c("mu", "tau", "eta", "S"),
+                       burn.in = 1000, 
+                       n.iter = 5000, 
+                       seed = 10)
+
+z <- JAGSrun(fish, model = model, control = control)
+
+zSort <- Sort(z, by = "mu")
+zSort
 ```
