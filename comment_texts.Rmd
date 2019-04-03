@@ -1,0 +1,288 @@
+---
+title: "Tidy text analysis example: Public comments"
+output: 
+   html_document:
+    toc: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+
+# R -e "rmarkdown::render('summary.Rmd')"
+# git add summary.html
+# git add figs
+# git commit -m "update figs"
+
+# load required packages
+source("setup.R")
+```
+
+Data: 
+```{r comments-data}
+
+# load comments as all
+load(here("ascending/allcomments2.Rdata"))
+d <- allcomments2
+# load(here("data/allcomments-sample.Rdata")) # for testing on a small sample 
+
+# mass comments to the top
+d %<>% arrange(desc(numberOfCommentsReceived))  %>% 
+  # make a variable indicating comment is unique
+  mutate(mass2 = ifelse(numberOfCommentsReceived > 99 | mass == "Mass Comments", "Mass Comments", "Other Comments"))
+
+# format data
+d$postedDate %<>% as.Date()
+d$year <- as.numeric(substr(d$postedDate, 1, 4))
+d$numberOfCommentsReceived %<>% as.numeric()
+
+# docket vars 
+d %<>% group_by(docketId) %>% 
+  mutate(docketUnique = n()) %>% 
+  mutate(docketTotal = sum(numberOfCommentsReceived)) %>% 
+  ungroup() 
+
+# year vars
+d %<>% group_by(year) %>% 
+  mutate(docketsPerYear = n()) %>% 
+  mutate(yearTotal = sum(numberOfCommentsReceived)) %>% 
+  ungroup() 
+
+d %<>%  
+  mutate(position = ifelse(grepl(" support ", commentText), "Contains \"support\"", NA )) %>% 
+  mutate(position = ifelse(grepl(" oppose ", commentText), "Contains \"oppose\"", position )) %>% 
+    mutate(position = ifelse(grepl(" support ", commentText) & grepl(" oppose ", commentText), "\"support\" and \"oppose\"", position )) 
+```
+
+
+
+
+```{r comments-per-year, fig.height=3.5, fig.width=3.5}
+d %>% 
+  filter(year > 2004) %>% 
+  group_by(year) %>% 
+  summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
+  ggplot() + 
+  geom_col(aes(x = factor(year), y = yearTotal) ) + 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "", 
+       y = paste("Total comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       fill = "") + 
+  theme_minimal() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_text(angle = 45))
+```
+
+
+
+
+```{r comments-mass-vs-unique, fig.height=3.1, fig.width=5}
+d %>% 
+  filter(year > 2004) %>% 
+  group_by(year, mass2) %>% 
+  summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
+  ggplot() + 
+  geom_col(aes(x = factor(year), y = yearTotal, fill = mass2) ) + 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "", 
+       y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       fill = "") + 
+  theme_minimal() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_text(angle = 45))
+```
+
+
+
+```{r comments-support-vs-oppose, fig.height=3.1, fig.width=5}
+d %>% 
+  filter(year > 2004, !is.na(position)) %>% 
+  group_by(year, position) %>% 
+  summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
+  ggplot() + 
+  geom_col(aes(x = factor(year), 
+               y = yearTotal, 
+               fill = position) ) + 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "", 
+       y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       fill = "") + 
+  theme_minimal() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_text(angle = 45))
+```
+
+```{r comments-mass-support-vs-oppose, fig.height=3.1, fig.width=5}
+d %>% 
+  filter(year > 2004, !is.na(position), position != "\"support\" and \"oppose\"") %>% 
+  group_by(year, position, mass) %>% 
+  summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
+  ggplot() + 
+  geom_col(aes(x = factor(year), 
+               y = yearTotal, 
+               fill = mass) ) + 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "", 
+       y = paste("Total Comments"),
+       fill = "") + 
+  facet_wrap("position", strip.position="top", ncol = 1) +
+  theme_minimal() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_text(angle = 45))
+```
+
+```{r comments-mass, fig.height=3.1, fig.width=5}
+d %>% 
+  filter(year > 2004) %>% 
+  group_by(year, mass) %>% 
+  summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
+  ggplot() + 
+  geom_col(aes(x = factor(year), y = yearTotal, fill = mass) ) + 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "", 
+       y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       fill = "") + 
+  theme_minimal() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_text(angle = 45))
+``` 
+
+
+```{r comments-form, fig.height=3.1, fig.width=5}
+d %>% 
+  filter(year > 2004) %>% 
+  group_by(year, commentform) %>% 
+  summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
+  ggplot() + 
+  geom_col(aes(x = factor(year), y = yearTotal, fill = commentform) ) + 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "", 
+       y = paste("Total Comments, N =", round(sum(d$numberOfCommentsReceived)/1000000,1), "million"),
+       fill = "") + 
+  theme_minimal() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_text(angle = 45))
+``` 
+
+
+
+# Text reuse with a 10-gram window
+```{r}
+library(tokenizers)
+library(tidytext)
+
+# 10 window, fraction of 10 grams from text 1 in text 1
+tengram_percent <- function(a, b){
+match <- str_detect(b,
+                    tokenize_ngrams(a, 
+                                    n = 10, 
+                                    simplify = TRUE))
+return(sum(match)/length(match))
+}
+
+
+tengram_text <- function(a, b){
+match <- str_detect(b,
+                    tokenize_ngrams(a, 
+                                    n = 10, 
+                                    simplify = TRUE))
+
+text <- str_c(tokenize_words(a, simplify = TRUE)[match], collapse = " ")
+return(text)
+}
+tengram_text(text1, text2)
+
+
+
+a <- tibble(a = c(1,2,3,4,5))
+
+fun <- function(x){
+  b <- x + a$a
+}
+map(a$a, fun)
+
+tengram <- function(x){
+  tokenize_ngrams(x, n = 10, simplify = TRUE)
+}
+str_detect_match <- function(a, b){
+  match <- str_detect(a, b)
+  return(sum(match)/length(match))
+}
+
+top_match <- function(text, id){
+tengrams <- map(text$text, tengram)
+
+percent <- map2_dbl(text$text, tengrams, str_detect_match)
+
+topmatch <- tibble(id = text$id,
+       percent) %>% 
+  top_n(1, percent)
+return(topmatch)
+}
+
+
+
+
+text1 <- "testing this 10 gram matching testing this 10 gram matching testing this 10 gram matching testing this 10 gram matching "
+text2 <- "testing this 10 gram matching testing this 10 gram matching testing this 10 gram matching testing this 10 gram batching "
+tengram(text1, text2) 
+
+text <- tibble(text1 = text1, 
+            text2 = text2,
+            text = d$commentText[1:20],
+            id = d$documentId[1:20])
+
+```
+
+
+# Cluster
+
+```{r}
+library(tm)
+d %>% group_by(docketId, docketType, docketTitle) %>% tally() %>% arrange(desc(n))
+
+d %<>% filter(docketId == "NPS-2018-0007")
+# FOR TESTING 
+# FIXME
+text <- d[1:800,]
+  
+# Make a single string of stopwards separated by regex "OR" ("|")
+stopwords <- str_c(stop_words$word, collapse = " | ")
+# Add to the list of things to exclude
+stopwords <- paste("[0-9]|", stopwords)
+
+text$commentText %<>% 
+  # To lower case
+  tolower() %>% 
+  # Remove stopwords
+  str_replace(stopwords, " ") %>%
+  # Remove numbers 
+  str_replace_all("[0-9]", "") %>% 
+  # Stem words and remove punctuation
+  stemDocument() %>% 
+  removePunctuation()
+
+head(text$commentText)
+
+dtm <- DocumentTermMatrix(SimpleCorpus(VectorSource(text$commentText)))
+
+m <- as.matrix(dtm)
+
+# Distance between document vectors
+distance <- dist(m)
+
+# k-means algorithm, 2 clusters, 100 starting configurations
+kfit <- kmeans(distance, 2, nstart=100)
+
+kfit_data <- tibble(cluster = kfit$cluster,
+                    centers = kfit$centers)
+
+# plot vs. 2 principle components
+library(cluster)
+clusplot(as.matrix(distance), kfit$cluster, color=T, shade=F, labels=2, lines=0)
+```

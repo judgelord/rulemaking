@@ -63,6 +63,8 @@ count <- d %>%
   mutate(medianW.O.zero = max(medianW.O.zero)) %>%
   group_by(agencyAcronym, documentType, mean, median, max, zero, medianW.O.zero) %>% 
   tally() %>% arrange(-n)
+
+kable(count)
 ```
 
 Comments per rule (log):

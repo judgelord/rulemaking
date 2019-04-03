@@ -19,6 +19,8 @@ requires <- c("gmailr",
               "gridExtra",
               "httr",
               "jsonlite",
+              "tm",
+              "clusters",
               #"textreadr",
               "tidyverse")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
@@ -28,6 +30,8 @@ rm(requires, to_install)
 library(tidyverse)
 library(dplyr) # in case tydyverse fails (problem on linux)
 library(ggplot2); theme_set(theme_bw())
+options(ggplot2.continuous.colour="viridis")
+options(ggplot2.discrete.colour="viridis")
 library(magrittr)
 library(XML)
 library(stringr)
@@ -39,6 +43,11 @@ library(gridExtra)
 library(httr)
 library(jsonlite)
 # library(textreadr)
+
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = FALSE, 
+                      fig.width=8.5, fig.align = 'center', fig.path='Figs/',
+                      warning=FALSE, message=FALSE)
 
 
 # function to fill NAs
