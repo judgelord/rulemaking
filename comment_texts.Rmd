@@ -251,10 +251,13 @@ text <- tibble(text1 = text1,
     - - [unsupervised, k-means and multinomial mixture code](http://stanford.edu/~jgrimmer/Text14/examp_c9.R)
     - - [multinomial mixture paper](https://www.cambridge.org/core/journals/political-analysis/article/bayesian-hierarchical-topic-model-for-political-texts-measuring-expressed-agendas-in-senate-press-releases/74F30D05C220DB198F21FF5127EB7205)
 
+[Basic supervised classification]()https://rstudio-pubs-static.s3.amazonaws.com/132792_864e3813b0ec47cb95c7e1e2e2ad83e7.html)
+
 ## K Means (or median)
 - [Benoit lecture](https://kenbenoit.net/assets/courses/nyu2014qta/QTA_NYU_Day7.pdf)
 - http://www.cs.cmu.edu/~dgovinda/pdf/emcat-mlj99.pdf
 - http://www.cs.columbia.edu/~smaskey/CS6998-0412/slides/week3_statnlp_web.pdf
+- http://www.robots.ox.ac.uk/~az/lectures/ml/2011/lect8.pdf
 
 ```{r kmeans, fig.height=11, fig.width=11}
 library(tm)
@@ -384,12 +387,14 @@ rect.hclust(groups, k=5)
 
 # Bayesian Clustering (mixture models)
 ```{r, eval = FALSE}
+library(MCMCpack)
+library(gtools)
+
 # Mixture of Multinomials
+load("data/FlakeMatrix.RData")
+X = flake_matrix
 
 mix_mult<- function(X, k, tol, seed){
-	library(MCMCpack)
-	
-	
 	##initializing parameters
 	set.seed(seed)
 	pis<- rdirichlet(1, alpha = rep(100, 3))

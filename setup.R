@@ -28,6 +28,8 @@ requires <- c("gmailr",
               "clusters",
               "rjags",
               "bayesmix",
+              "MCMCpack",
+              "gtools",
               #"textreadr",
               "tidyverse")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
