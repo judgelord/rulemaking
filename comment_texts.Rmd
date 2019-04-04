@@ -8,10 +8,10 @@ output:
 
 ```{r setup, include=FALSE}
 
-# R -e "rmarkdown::render('summary.Rmd')"
-# git add summary.html
-# git add figs
-# git commit -m "update figs"
+# R -e "rmarkdown::render('comment_texts.Rmd')"
+# git add comment_texts.html
+# git add Figs
+# git commit -m "update figs from linstat"
 
 # load required packages
 source("setup.R")
@@ -21,7 +21,8 @@ Data:
 ```{r comments-data}
 
 # load comments as all
-load(here("ascending/allcomments2.Rdata"))
+list.files("../../../home/j/judgelord/rulemaking/ascending")
+load("../../../home/j/judgelord/rulemaking/ascending/allcomments2.Rdata")
 d <- allcomments2
 # load(here("data/allcomments-sample.Rdata")) # for testing on a small sample 
 
@@ -263,7 +264,8 @@ d %<>%
   group_by(docketId) %>% 
   mutate(n=n()) %>%
   filter(n>999) %>%
-  arrange(desc(n))
+  arrange(desc(n))%>%
+  arrange(desc(numberOfCommentsReceived))
 
 # The docket with the most comments
 id <- d$docketId[1]
@@ -271,7 +273,7 @@ id <- d$docketId[1]
 kplot <- function(id){
 text <- Text <- d %>% filter(docketId == id,
               !is.na(commentText),
-              nchar(commentText>10)) #%>% .[1:200,]
+              nchar(commentText>10)) %>% .[1:400,]
   
 # Make a single string of stopwards separated by regex "OR" ("|")
 stopwords <- str_c(stop_words$word, collapse = " | ")
@@ -310,7 +312,7 @@ kfit <- dtm %>%
 kfit_data <- tibble(Cluster = as.factor(kfit$cluster),
                     Component_1 = as.numeric(kfit$centers[1,]),
                     Component_2 = as.numeric(kfit$centers[2,]),
-                    documentId = text$documentId[rowTotals> 0])
+                    documentId = text$documentId)
 
 Text %<>% full_join(kfit_data)
 
@@ -319,24 +321,34 @@ ggplot() +
   aes(x = Component_1, 
       y = Component_2, 
       color = Cluster, 
-      label = str_sub(commentText, 1,40) ) + 
+      label = str_c(str_sub(commentText, 1,50),"..." )) + 
   geom_point(aes(size = numberOfCommentsReceived), alpha=.2) +
-  geom_text(aes(label = ifelse(numberOfCommentsReceived>1, 
-                               commentText, 
-                               NA)),
-                check_overlap = T, hjust = 0) +
+  #geom_text(aes(label = ifelse(numberOfCommentsReceived>1, 
+  #                            commentText, 
+  #                             NA)),
+  #              check_overlap = T, hjust = 0) +
   geom_text(check_overlap = T, hjust = 0) +
   labs(title = unique(Text$docketTitle),
        size = "Number of Identical Comments") +
   scale_color_viridis_d(begin = 0, end = .6) +
-  theme_minimal() 
+  theme_minimal() +
+  scale_x_continuous(limits = c(0, max(kfit_data$Component_1)*2))
 p
+
+png(filename=str_c("Figs/", unique(Text$docketTitle),".png"), width = 11, height =11, units = "in", res = 300)
+p
+dev.off()
+
 
 return(p)
 }
 kplot(id)
+#walk(unique(d$docketId)[1:100], possibly(kplot, NA))
 kplots <- map(unique(d$docketId)[1:100], possibly(kplot, NA))
-kplots
+save(kplots, file = "data/kplots.Rdata")
+kplots[1:100]
+
+p+ facet_grid(.~Cluster)
 ```
 
 Label clusters
