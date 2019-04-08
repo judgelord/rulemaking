@@ -24,7 +24,7 @@ Data:
 list.files("../../../home/j/judgelord/rulemaking/ascending")
 load("../../../home/j/judgelord/rulemaking/ascending/allcomments2.Rdata")
 d <- allcomments2
-# load(here("data/allcomments-sample.Rdata")) # for testing on a small sample 
+# load(here("data/allcomments-sample.Rdata")) # for testing on a small sample of 480,000
 
 # mass comments to the top
 d %<>% arrange(desc(numberOfCommentsReceived))  %>% 
@@ -135,6 +135,73 @@ d %>%
         axis.text.x = element_text(angle = 45))
 ```
 
+
+```{r}
+library(tidytext)
+
+## Alternativly:
+# library(textfeatures)
+# textfeatures::textfeatures(text$commentText)
+
+d$commentText %<>% str_replace_all("\n", " ")
+
+d %<>% 
+  group_by(docketId) %>% 
+  mutate(n=n()) %>%
+  filter(n>999) %>%
+  arrange(desc(n))%>%
+  arrange(desc(numberOfCommentsReceived)) %>% 
+  ungroup()
+
+# The docket with the most comments
+id <- d$docketId[1]
+
+support_oppose <- function(id){
+text <- Text <- d %>% filter(docketId == id,
+              !is.na(commentText),
+              !str_detect(commentText, "attach|Attach"),
+              nchar(commentText>15)) %>% 
+  mutate(position = ifelse(is.na(position), "neither", position)) %>%   mutate(position = ifelse(position %in% c("neither", "\"support\" and \"oppose\""), "neither or both", position)) %>%
+  group_by(documentId) %>%
+  top_n(1, nchar(commentText)) #%>% .[1:400,]
+
+sent <- get_sentiments("afinn") %>% 
+  rbind(c("oppose", -5)) %>% 
+  mutate(score = ifelse(word == "support", 5, score) ) 
+
+s <- unnest_tokens(text,word, commentText) %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(documentId) %>%
+  summarise(sentiment = sum(score)/n()) %>% 
+  ungroup()
+
+text %<>% 
+  full_join(s) %>% arrange(sentiment)
+
+p <- text %>% 
+  drop_na(sentiment) %>%
+ggplot() +
+  aes(x= sentiment, 
+      y= fct_reorder(documentId, sentiment),
+      label = str_c(str_sub(commentText, 0, 60), "...")) + 
+  geom_point(aes(color = position), alpha= .5, shape = "+", size = 6) + 
+  geom_text(check_overlap = T) +
+  labs(title = paste(unique(text$year), unique(text$docketTitle)),
+       x = "Sentiment\n(AFINN score/word count)",
+       y = "", 
+       color = "")+
+  theme_minimal() +
+  scale_color_viridis_d() + 
+  theme(axis.text = element_blank())
+
+
+ggsave(filename=str_c("Figs/", "sent-", unique(Text$year), unique(Text$docketId),".png"),
+       plot = p, height = 2, width = 11)
+}
+support_oppose(id)
+walk(unique(d$docketId), safely(support_oppose))
+```
+
 ```{r comments-mass, fig.height=3.1, fig.width=5}
 d %>% 
   filter(year > 2004) %>% 
@@ -151,6 +218,8 @@ d %>%
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
+
+
 ``` 
 
 
@@ -175,7 +244,7 @@ d %>%
 
 
 # Text reuse with a 10-gram window
-```{r}
+```{r, eval=FALSE}
 library(tokenizers)
 library(tidytext)
 
@@ -240,262 +309,9 @@ text <- tibble(text1 = text1,
             text = d$commentText[1:20],
             id = d$documentId[1:20])
 
+
+
 ```
 
 
-# Cluster
 
-
-- [Grimmer lecture](http://stanford.edu/~jgrimmer/Text14/tc9.pdf)
-    - - [supervised code](http://stanford.edu/~jgrimmer/Text14/Class15Code.R)
-    - - [unsupervised, k-means and multinomial mixture code](http://stanford.edu/~jgrimmer/Text14/examp_c9.R)
-    - - [multinomial mixture paper](https://www.cambridge.org/core/journals/political-analysis/article/bayesian-hierarchical-topic-model-for-political-texts-measuring-expressed-agendas-in-senate-press-releases/74F30D05C220DB198F21FF5127EB7205)
-
-[Basic supervised classification]()https://rstudio-pubs-static.s3.amazonaws.com/132792_864e3813b0ec47cb95c7e1e2e2ad83e7.html)
-
-## K Means (or median)
-- [Benoit lecture](https://kenbenoit.net/assets/courses/nyu2014qta/QTA_NYU_Day7.pdf)
-- http://www.cs.cmu.edu/~dgovinda/pdf/emcat-mlj99.pdf
-- http://www.cs.columbia.edu/~smaskey/CS6998-0412/slides/week3_statnlp_web.pdf
-- http://www.robots.ox.ac.uk/~az/lectures/ml/2011/lect8.pdf
-
-```{r kmeans, fig.height=11, fig.width=11}
-library(tm)
-d %>% group_by(docketId, docketType, docketTitle) %>% tally() %>% arrange(desc(n))
-
-d %<>% 
-  group_by(docketId) %>% 
-  mutate(n=n()) %>%
-  filter(n>999) %>%
-  arrange(desc(n))%>%
-  arrange(desc(numberOfCommentsReceived))
-
-# The docket with the most comments
-id <- d$docketId[1]
-
-kplot <- function(id){
-text <- Text <- d %>% filter(docketId == id,
-              !is.na(commentText),
-              nchar(commentText>10)) %>% .[1:400,]
-  
-# Make a single string of stopwards separated by regex "OR" ("|")
-stopwords <- str_c(stop_words$word, collapse = " | ")
-# Add to the list of things to exclude
-stopwords <- paste("[0-9]|", stopwords)
-
-text$commentText %<>% 
-  # To lower case
-  tolower() %>% 
-  # Remove stopwords
-  str_replace(stopwords, " ") %>%
-  # Remove numbers 
-  str_replace_all("[0-9]", "") %>% 
-  # Stem words and remove punctuation
-  stemDocument() %>% 
-  removePunctuation()
-
-head(text$commentText)
-head(Text$commentText)
-
-dtm <- VectorSource(text$commentText) %>%
-  SimpleCorpus()%>%
-  tm::DocumentTermMatrix()%>%
-  tm::removeSparseTerms(0.999)
-
-# rowTotals <- apply(dtm , 1, sum) #Find the sum of words in each Document
-# dtm <- dtm[rowTotals> 0,]
-
-# k-means algorithm, 2 clusters, 100 starting configurations
-k = 2
-kfit <- dtm %>%
-  dist() %>% # default euclidian - this is incorrect 
-  as.matrix() %>%
-  kmeans(k, nstart=100, algorithm = "Forgy")
-
-kfit_data <- tibble(Cluster = as.factor(kfit$cluster),
-                    Component_1 = as.numeric(kfit$centers[1,]),
-                    Component_2 = as.numeric(kfit$centers[2,]),
-                    documentId = text$documentId)
-
-Text %<>% full_join(kfit_data)
-
-p <- Text %>% 
-ggplot() + 
-  aes(x = Component_1, 
-      y = Component_2, 
-      color = Cluster, 
-      label = str_c(str_sub(commentText, 1,50),"..." )) + 
-  geom_point(aes(size = numberOfCommentsReceived), alpha=.2) +
-  #geom_text(aes(label = ifelse(numberOfCommentsReceived>1, 
-  #                            commentText, 
-  #                             NA)),
-  #              check_overlap = T, hjust = 0) +
-  geom_text(check_overlap = T, hjust = 0) +
-  labs(title = unique(Text$docketTitle),
-       size = "Number of Identical Comments") +
-  scale_color_viridis_d(begin = 0, end = .6) +
-  theme_minimal() +
-  scale_x_continuous(limits = c(0, max(kfit_data$Component_1)*2))
-p
-
-png(filename=str_c("Figs/", unique(Text$docketTitle),".png"), width = 11, height =11, units = "in", res = 300)
-p
-dev.off()
-
-
-return(p)
-}
-kplot(id)
-#walk(unique(d$docketId)[1:100], possibly(kplot, NA))
-kplots <- map(unique(d$docketId)[1:100], possibly(kplot, NA))
-save(kplots, file = "data/kplots.Rdata")
-kplots[1:100]
-
-p+ facet_grid(.~Cluster)
-```
-
-Label clusters
-```{r, eval=FALSE}
-##labeling the topics
-##just use the ``biggest" in each category
-key_words<- matrix(NA, nrow=n.clust, ncol=10)
-for(z in 1:n.clust){
-	key_words[z,]<- colnames(flake_matrix)[order(k_cluster$center[z,], decreasing=T)[1:10]]
-	}
-
-##we can then try to compare the ``relative" strong words
-key_words2<- matrix(NA, nrow=n.clust, ncol=10)
-for(z in 1:n.clust){
-	diff<- k_cluster$center[z,] - apply(k_cluster$center[-z, ], 2, mean)
-	key_words2[z,]<- colnames(flake_matrix)[order(diff, decreasing=T)[1:10]]
-	}
-```
-
-Cosine distance and hierarchcial clustering
-```{r, eval=FALSE}
-## https://cai.tools.sap/blog/text-clustering-with-r-an-introduction-for-data-scientists/
-## Cosine distance matrix (useful for specific clustering algorithms) 
-tfidf.matrix <- as.matrix(tdm.tfidf) 
-dist.matrix = proxy::dist(tfidf.matrix, method = "cosine") 
-
-# https://rpubs.com/saqib/DocumentClustering
-groups <- hclust(distMatrix, method="ward.D")
-plot(groups, cex=0.9, hang=-1)
-rect.hclust(groups, k=5)
-```
-
-
-# Bayesian Clustering (mixture models)
-```{r, eval = FALSE}
-library(MCMCpack)
-library(gtools)
-
-# Mixture of Multinomials
-load("data/FlakeMatrix.RData")
-X = flake_matrix
-
-mix_mult<- function(X, k, tol, seed){
-	##initializing parameters
-	set.seed(seed)
-	pis<- rdirichlet(1, alpha = rep(100, 3))
-	thetas<- matrix(NA, nrow=k, ncol=ncol(X))
-	for(z in 1:k){
-		thetas[z,]<- rdirichlet(1, alpha=rep(100, ncol(X)))
-		}
-	rs<- matrix(NA, nrow=nrow(X),ncol=k)
-	a<- 0
-	t<- 1 
-	
-	##writing a function to compute the expected value
-	e.log<- function(X, pis, thetas, rs){
-		log.pis<- log(pis)
-		log.thetas<- log(thetas)
-		score<- 0
-		for(z in 1:nrow(X)){
-			part1<- rs[z,]*log.pis
-			part2<- 0
-			for(j in 1:k){
-				part2<- part2 + sum(rs[z,j]*X[z,]*log(thetas[j,] + .000001))
-				}
-			score<- score + sum(part1) + part2
-			}
-		return(score)
-		}
-	
-	##iterating while 
-	while(a==0){
-		if(t>1){
-			e.old<- e.log(X, pis,thetas,  rs)
-			}
-			##we have to be mildly creative to avoid underlow.  We can avoid this more complicated
-			##argument with a variational approximation, which allows for a simple algebraic trick to avoid underflow.  Alternatively, distributions like VMF present no real underflow concern
-		for(i in 1:nrow(X)){
-			for(j in 1:k){
-				denom<- thetas[j,]^{-X[i,]}
-				nums<- thetas[-j,]
-				new_num<- 0
-				for(l in 1:nrow(nums)){
-					new_num<- new_num + (pis[l]/pis[j])*prod(nums[l,]^{X[i,]}*denom)}
-				rs[i,j]<- ifelse(is.na(1/(1 + new_num))==F,1/(1 + new_num), 0)
-				}
-			}
-		##now, maximizing parameters
-		thetas<- t(rs)%*%X
-		for(z in 1:k){
-			thetas[z,]<- (thetas[z,] )/(sum(thetas[z,] ) )
-			}
-		pis<- apply(rs, 2, sum)/sum(rs)
-		t<- t + 1
-		if(t>1){
-			e.new<- e.log(X, pis, thetas, rs)
-			change<- e.new - e.old
-			print(abs(change))
-			if(abs(change)<tol){
-				a<- 1}
-			}
-			}
-		out<- list(thetas, pis, rs)
-		names(out)<- c('thetas', 'pis', 'rs')
-		return(out)
-		}	
-			
-			
-			
-test<- mix_mult(X, 3, 1e-5, 12122007)
-
-table(apply(test$rs, 1, which.max), k_cluster$cluster)
-
-## label documents
-mult_words<- matrix(NA, nrow = 3, ncol=10)
-for(z in 1:3){
-	diff<- test$thetas[z,] - apply(thetas[-z,], 2, mean)
-	mult_words[z,]<- colnames(X)[order(diff, decreasing=T)[1:10]]
-}
-```
-
-
-[`mixtools`](https://cran.r-project.org/web/packages/mixtools/vignettes/mixtools.pdf)
-```{r, eval=FALSE}
-install.packages("bayesmix")
-install.packages("rjags")
-library("bayesmix")
-data("fish", package = "bayesmix")
-
-model <- BMMmodel(fish, 
-                  k = 4, 
-                  initialValues = list(S0 = 2),
-                  priors = list(kind = "independence",
-                                parameter = "priorsFish", 
-                                hierarchical = "tau"))
-model
-
-control <- JAGScontrol(variables = c("mu", "tau", "eta", "S"),
-                       burn.in = 1000, 
-                       n.iter = 5000, 
-                       seed = 10)
-
-z <- JAGSrun(fish, model = model, control = control)
-
-zSort <- Sort(z, by = "mu")
-zSort
-```
