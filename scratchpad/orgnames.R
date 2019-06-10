@@ -1,6 +1,17 @@
 source("setup.R")
+
 # load(here("ascending/allcomments.Rdata"))
 # d <- all
+
+
+#function to change string remove to str_rm which is no longer case senstitive
+str_rm_all <- function(string, pattern) {
+  str_remove_all(string, regex(pattern, ignore_case = TRUE))
+}
+
+str_rpl <- function(string, pattern, replacement) {
+  str_replace(string, regex(pattern, ignore_case = TRUE), replacement)
+}
 
 ## A sample of high-profile rules
 load(here("data/masscomments.Rdata"))
@@ -133,7 +144,7 @@ d$organization <- gsub(".*MomsRising|mom's rising.*", "MomsRising", d$organizati
 d$organization <- gsub(".*PEW.*", "PEW", d$organization, ignore.case = FALSE)
 d$organization <- gsub(".*Farm Bureau.*", "Farm Bureau", d$organization, ignore.case = FALSE)
 d$organization <- gsub(".*Organizing for Action.*", "Organizing For Action", d$organization, ignore.case = FALSE)
-
+  
 # second to last
 d$organization <- gsub(".*members of ", "", d$organization, ignore.case = FALSE)
 d$organization <- gsub(".*Change.org.*", "Change.org", d$organization, ignore.case = FALSE)
@@ -146,6 +157,44 @@ d$organization <- gsub("\\. Sample.*|\\. \n.*|\n.*|\\,.*", "", d$organization, i
 d$organization <- gsub(" et al.*| - .*", "", d$organization, ignore.case = TRUE)
 d$organization <- gsub(" \\(.*| \\[.*", "", d$organization, ignore.case = TRUE)
 d$organization <- gsub(" $", "", d$organization, ignore.case = TRUE)
+
+
+#TO DO:
+#create new org variable, that starts with organization and then builds on it 
+
+#creating org variable
+d %<>% 
+  #bring over organization to org
+  mutate(org = organization) %>% 
+  #sponsored by
+  mutate(org = ifelse(is.na(org) & grepl("sponsor... by [[:upper:]]", title, ignore.case = TRUE), 
+                      str_rm_all(title, ".* sponsor... by|\\(.*"), 
+                      org)) %>% 
+  #association
+  mutate(org = ifelse(is.na(org) & grepl(".* association", title, ignore.case = TRUE), 
+                      str_rpl(title, "association .*", "Association"), 
+                      org)) %>% 
+  #cooperative
+  mutate(org = ifelse(is.na(org) & grepl(".* cooperative", title, ignore.case = TRUE), 
+                      str_rpl(title, "cooperative.*", "Cooperative"), 
+                      org))
+
+d %<>% 
+  mutate(org = organization) %>% 
+  mutate(org = ifelse(is.na(org) & grepl("sponsoring by [[:upper:]]", title, ignore.case = TRUE), 
+                      str_rm_all(title, "sponsoring by"), org))
+
+#test for missing orgs not the unknown
+test <- d %>% 
+  select(attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
+  filter(!grepl("unknown", title, ignore.case = TRUE))
+
+
+#running smaller test for speciifc rules 
+test1 <- d %>% 
+  select(attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
+  filter(grepl("cooperative", title, ignore.case = TRUE))
+##########################################################################################################
 
 unique(d$organization)[1:100]
 
@@ -238,3 +287,4 @@ unique(d$docketId)
 save(textcomments, file = here("ascending/textcoments.Rdata"))
 
 }
+
