@@ -232,7 +232,7 @@ d %<>%
   mutate(org = ifelse(is.na(org) & grepl("I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network", commenttext, ignore.case = TRUE), 
                     str_rpl(commenttext, "I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network.*", "Power Shift Network"), 
                     org)) %>% 
-  #other
+  #creating other by getting rid of common phrasing of unknowns
   mutate(org = ifelse(is.na(org) & grepl("EPA", agencyAcronym, ignore.case = TRUE) & !grepl(str_c("This is a mass letter campaign.",
                                                                                                     "This is a mass postcard campaign.",
                                                                                                     "These comments were labeled incorrectly to refer",
