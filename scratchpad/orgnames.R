@@ -1,10 +1,13 @@
-library(here)
-source(here("setup.R"))
-load(here("ascending/allcomments.Rdata"))
-ls()
-dim(all)
-length(unique(all$docketId))
-d <- all
+source("setup.R")
+# load(here("ascending/allcomments.Rdata"))
+# d <- all
+
+## A sample of high-profile rules
+load(here("data/masscomments.Rdata"))
+d <- mass %>% filter(agencyAcronym == "EPA")
+
+length(unique(d$docketId))
+
 d %<>% filter(docketType == "Rulemaking")
 dim(d)
 length(unique(d$docketId))
@@ -144,7 +147,7 @@ d$organization <- gsub(" et al.*| - .*", "", d$organization, ignore.case = TRUE)
 d$organization <- gsub(" \\(.*| \\[.*", "", d$organization, ignore.case = TRUE)
 d$organization <- gsub(" $", "", d$organization, ignore.case = TRUE)
 
-
+unique(d$organization)[1:100]
 
 d %<>% 
   mutate(organization = ifelse(organization %in% c("", "NA", "unknown"), NA, organization)) %>%
@@ -161,16 +164,15 @@ d$documentId[1:20]
 d$commentText[1:20]
 
 
-
+save = FALSE
+if(save){
 allcomments2 <- d
 save(allcomments2, file ="ascending/allcomments2.Rdata") 
 
 load(file ="ascending/allcomments2.Rdata") 
 d <- allcomments2
+
 #############################################################
-
-
-
 
 
 
@@ -235,3 +237,4 @@ unique(d$docketId)
 
 save(textcomments, file = here("ascending/textcoments.Rdata"))
 
+}
