@@ -13,9 +13,15 @@ str_rpl <- function(string, pattern, replacement) {
   str_replace(string, regex(pattern, ignore_case = TRUE), replacement)
 }
 
+str_rm <- function(string, pattern) {
+  str_remove(string, regex(pattern, ignore_case = TRUE))
+}
+
 ## A sample of high-profile rules
 load(here("data/masscomments.Rdata"))
 d <- mass %>% filter(agencyAcronym == "EPA")
+#later select later.. Forest Service
+#
 
 length(unique(d$docketId))
 
@@ -158,7 +164,7 @@ d$organization <- gsub(" et al.*| - .*", "", d$organization, ignore.case = TRUE)
 d$organization <- gsub(" \\(.*| \\[.*", "", d$organization, ignore.case = TRUE)
 d$organization <- gsub(" $", "", d$organization, ignore.case = TRUE)
 
-
+################################################################################
 #TO DO:
 #create new org variable, that starts with organization and then builds on it 
 
@@ -177,23 +183,43 @@ d %<>%
   #cooperative
   mutate(org = ifelse(is.na(org) & grepl(".* cooperative", title, ignore.case = TRUE), 
                       str_rpl(title, "cooperative.*", "Cooperative"), 
-                      org))
+                      org)) %>% 
+  #by
+  mutate(org = ifelse(is.na(org) & grepl("by", title, ignore.case = TRUE), 
+                    str_rm_all(title, ".* by|\\(.*| et al|\\'s .*|Alexander Rony, |the "), 
+                    org)) %>% 
+    #fixing issues under "by"
+    #FIXME
+    mutate(org = ifelse(grepl("EPA-HQ-TRI-2005-0073", docketId), 
+                    NA, 
+                    org)) %>% 
+  #mass mailer campaign 
+  mutate(org = ifelse(is.na(org) & grepl(".*mass mailer campaign", title, ignore.case = TRUE), 
+                    str_rm(title, "mass mailer campaign.*"), 
+                    org))
 
-d %<>% 
-  mutate(org = organization) %>% 
-  mutate(org = ifelse(is.na(org) & grepl("sponsoring by [[:upper:]]", title, ignore.case = TRUE), 
-                      str_rm_all(title, "sponsoring by"), org))
+
+
+
+
+
+
+
 
 #test for missing orgs not the unknown
 test <- d %>% 
   select(attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
-  filter(!grepl("unknown", title, ignore.case = TRUE))
+  filter(!grepl("unknown", title, ignore.case = TRUE), is.na(organization), is.na(org))
 
 
 #running smaller test for speciifc rules 
 test1 <- d %>% 
   select(attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
-  filter(grepl("cooperative", title, ignore.case = TRUE))
+  filter(grepl("mass mailer campaign", title, ignore.case = TRUE), is.na(organization))
+
+test1 <- d %>% 
+  select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
+  filter(grepl("by", title, ignore.case = TRUE), is.na(organization))
 ##########################################################################################################
 
 unique(d$organization)[1:100]
