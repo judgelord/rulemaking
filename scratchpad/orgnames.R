@@ -213,6 +213,25 @@ d %<>%
   mutate(org = ifelse(is.na(org) & grepl(".*member mass email", title, ignore.case = TRUE), 
                       str_rm(title, "member mass email.*"), 
                       org)) %>% 
+  #comment from
+  mutate(org = ifelse(is.na(org) & grepl("comment from", title, ignore.case = TRUE), 
+                      str_rm(title, ".*comment from"), 
+                      org)) %>% 
+  #schools
+  mutate(org = ifelse(is.na(org) & grepl(".* school", title, ignore.case = TRUE), 
+                    str_rpl(title, "school.*", "School"), 
+                    org)) %>% 
+  #church
+  #FIXME, somehow doesn't work?
+  mutate(org = ifelse(is.na(org) & grepl("church", title, ignore.case = TRUE), 
+                    str_rpl(title, "church \\(.*", "Church"), 
+                    org))
+
+
+  
+#Specific Cases
+d %<>% 
+  mutate(org = organization) %>% 
   #Missourians for a Balanced Energy Future
   mutate(org = ifelse(is.na(org) & grepl(".*Missourians for a Balanced Energy Future", title, ignore.case = TRUE), 
                    "Missourians for a Balanced Energy Future", 
@@ -241,8 +260,31 @@ d %<>%
   #Power Shift Network
   #FIXME
   mutate(org = ifelse(is.na(org) & grepl("I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network", commenttext, ignore.case = TRUE), 
-                    str_rpl(commenttext, "I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network.*", "Power Shift Network"), 
-                    org)) %>% 
+                      str_rpl(commenttext, "I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network.*", "Power Shift Network"), 
+                      org))
+  
+
+#wildearth doesn't work completely 
+d$org <- gsub(".*WildEarth Guardians.*", "WildEarth Guardians", d$title, ignore.case = FALSE)
+d$org <- gsub(".*WildEarthGuardians.*", "WildEarth Guardians", d$title, ignore.case = FALSE)
+d$org <- gsub(".*Care2.*", "Care2", d$title, ignore.case = FALSE)
+d$org <- gsub(".*Jane Goodall Institute.*", "Jane Goodall Institute", d$title, ignore.case = FALSE)
+d$org <- gsub(".*Humane Society International.*", "Humane Society International", d$title, ignore.case = FALSE)
+d$org <- gsub(".*The Human Society.*", "The Human Society", d$title, ignore.case = FALSE)
+d$org <- gsub(".*Defenders of Wildlife.*", "Defenders of Wildlife", d$title, ignore.case = FALSE)
+d$org <- gsub(".*League of Conservation Voters.*", " League of Conservation Voters", d$title, ignore.case = FALSE)
+d$org <- gsub(".*Sierra Club.*", "Sierra Club", d$title, ignore.case = FALSE)
+d$org <- gsub(".*Environmental Action.*", "Environmental Action", d$title, ignore.case = FALSE)
+d$org <- gsub(".*League of Conservation Voters.*", " League of Conservation Voters", d$title, ignore.case = FALSE)
+d$org <- gsub(".*League of Conservation Voters.*", " League of Conservation Voters", d$title, ignore.case = FALSE)
+
+
+  
+ 
+  
+ 
+    
+    
   #mass mail
   #creating other by getting rid of common phrasing of unknowns
   mutate(org = ifelse(is.na(org) & grepl("EPA", agencyAcronym, ignore.case = TRUE) & !grepl(str_c("This is a mass letter campaign.",
@@ -257,7 +299,8 @@ d %<>%
                                                                                                     "This is a mass e-mail  and letter campaign.",
                                                                                                     "A sample PDF has been provided for review",
                                                                                                     sep = "|"),
-                                                             commenttext, ignore.case = TRUE) & grepl(".", commenttext, ignore.case = TRUE), "other", org))
+                                                             commenttext, ignore.case = TRUE) & grepl(".", commenttext, ignore.case = TRUE), "other", org)) 
+ 
 
   
 #create variable org.comment, result is T 
@@ -272,7 +315,7 @@ showme <- d %>%
   select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization,org)
 
 test <- d %>% 
-  select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
+  select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org, numberOfCommentsReceived) %>% 
   filter(!grepl("unknown", title, ignore.case = TRUE), is.na(organization), is.na(org))
 
 test <- d %>% 
@@ -283,11 +326,11 @@ test <- d %>%
 #running smaller test for speciifc rules 
 test1 <- d %>% 
   select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
-  filter(grepl("comment from", title, ignore.case = TRUE), is.na(organization), is.na(org))
+  filter(grepl("network", title, ignore.case = TRUE), is.na(organization))
 
 test2 <- d %>% 
   select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
-  filter(grepl("other", org, ignore.case = TRUE))
+  filter(grepl("care2", org, ignore.case = TRUE))
 
 # The comments received are identical in content and format
 test3 <- d %>% 
