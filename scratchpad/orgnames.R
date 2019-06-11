@@ -4,6 +4,7 @@ source("setup.R")
 # load(here("ascending/allcomments.Rdata"))
 # d <- all
 
+#make a data subset with all
 
 #function to change string remove to str_rm which is no longer case senstitive
 str_rm_all <- function(string, pattern) {
@@ -29,8 +30,12 @@ load(here("data/topdockets.RData"))
 #searching through EPA 
 d <- topdockets %>% filter(agencyAcronym == "EPA")
 
+#checking topdockets, 5 top dockets 
+unique(d$docketId)
+
 #FIXME
 #d <- mass %>% filter(agencyAcronym == "EPA")
+
 
 #later select later.. Forest Service
 
@@ -407,12 +412,17 @@ d %<>%
                                                                "mass e-mail and postcard campaign",
                                                                "mass e-mail  and letter campaign",
                                                                "Mass signature campaign",
+                                                               "mass Comment campaing",
+                                                               "Mass comment Campaingn",
                                                                sep = "|"), title, ignore.case = TRUE), F, org.comment))
 
 #Testing
 example <- d %>% 
-  select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) 
-  #filter(is.na(org.comment))
+  select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(is.na(org.comment))
+
+unique(d$docketId)
+
 
 ######################################################################################################################################################################################
 
