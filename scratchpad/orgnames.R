@@ -19,9 +19,20 @@ str_rm <- function(string, pattern) {
 
 ## A sample of high-profile rules
 load(here("data/masscomments.Rdata"))
-d <- mass %>% filter(agencyAcronym == "EPA")
+
+
+
+
+
+#"FWS"   "HUD"   "NPS"   "OSHA"  "NHTSA" "NRC"   "BLM"   "FDA"   "BSEE"  "CMS"   "ED"    "CFPB"  "BOEM"  "FNS"   "ATF"   "EBSA"  "WHD"   "DOI"   "NOAA"  "IRS"   "OCC"   "EERE"  "OMB"   "FEMA"  "OSM"  
+#"VA"    "SSA"   "HHS"   "FHWA"  "FAA"   "BIA"   "PHMSA" "OFCCP" "ACF"   "DOL"   "CDC"   "OPM"   "LMSO"  "OTS"   "USCIS" "CPSC"  "EEOC"  "DOD"   "ETA"   "MMS"  
+
+d <- mass %>% filter(agencyAcronym == "FWS")
 #later select later.. Forest Service
-#
+
+#all the agency list
+unique(d$agencyAcronym)
+
 
 length(unique(d$docketId))
 
@@ -232,6 +243,7 @@ d %<>%
   mutate(org = ifelse(is.na(org) & grepl("I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network", commenttext, ignore.case = TRUE), 
                     str_rpl(commenttext, "I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network.*", "Power Shift Network"), 
                     org)) %>% 
+  #mass mail
   #creating other by getting rid of common phrasing of unknowns
   mutate(org = ifelse(is.na(org) & grepl("EPA", agencyAcronym, ignore.case = TRUE) & !grepl(str_c("This is a mass letter campaign.",
                                                                                                     "This is a mass postcard campaign.",
@@ -246,20 +258,32 @@ d %<>%
                                                                                                     "A sample PDF has been provided for review",
                                                                                                     sep = "|"),
                                                              commenttext, ignore.case = TRUE) & grepl(".", commenttext, ignore.case = TRUE), "other", org))
-   
-                                                             
-                                                             
+
+  
+#create variable org.comment, result is T 
+d %<>%
+  mutate(org.comment) %>% 
+  mutate(org.comment = ifelse(grepl("FWS-HQ-ES-2013-0073", docketID, ignore.case = TRUE), T, org.comment))
+  
+
                                                             
 #test for missing orgs not the unknown
+showme <- d %>% 
+  select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization,org)
+
 test <- d %>% 
   select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
   filter(!grepl("unknown", title, ignore.case = TRUE), is.na(organization), is.na(org))
+
+test <- d %>% 
+  select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
+  filter( is.na(organization), is.na(org))
 
 
 #running smaller test for speciifc rules 
 test1 <- d %>% 
   select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
-  filter(grepl(".", commenttext, ignore.case = TRUE), is.na(organization), is.na(org))
+  filter(grepl("comment from", title, ignore.case = TRUE), is.na(organization), is.na(org))
 
 test2 <- d %>% 
   select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
