@@ -1,10 +1,18 @@
 source("setup.R")
 
 
-# load(here("ascending/allcomments.Rdata"))
+#load(here("ascending/allcomments.Rdata"))
+load(here("allcomments.Rdata"))
+load(here("masscomments.Rdata"))
+
+#subsetting data 
+d <- all %>% 
+  filter(docketId %in% mass$docketId)
+
 # d <- all
 
 #make a data subset with all
+
 
 #function to change string remove to str_rm which is no longer case senstitive
 str_rm_all <- function(string, pattern) {
