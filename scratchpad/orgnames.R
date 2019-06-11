@@ -309,14 +309,21 @@ d %<>%
                       "International Fund For Animal Welfare", 
                       org)) %>% 
   #Conservation Northwest
-  
+  mutate(org = ifelse(is.na(org) & grepl(".*Conservation Northwest.*", commenttext, ignore.case = TRUE), 
+                      "Conservation Northwest", 
+                      org)) %>% 
   #Save Our Environment
-  mutate(org = ifelse(is.na(org) & grepl(".*Endangered Species Coalition.*", commenttext, ignore.case = TRUE), 
-                      "International Fund For Animal Welfare", 
+  mutate(org = ifelse(is.na(org) & grepl(".*Save Our Environment.*", commenttext, ignore.case = TRUE), 
+                      "Save Our Environment", 
+                      org)) %>%
+  #Oregon Wild
+  mutate(org = ifelse(is.na(org) & grepl(".*Oregon Wild.*", commenttext, ignore.case = TRUE), 
+                      "Oregon Wild", 
                       org)) %>% 
   #Audobon California
+  #FIXME
   mutate(org = ifelse(is.na(org) & grepl(".*Audobon California.*", commenttext, ignore.case = TRUE), 
-                      "Endangered Species Coalition", 
+                      "Audobon California", 
                       org)) %>% 
   #Care2
   mutate(org = ifelse(is.na(org) & grepl(".*Care2.*", commenttext, ignore.case = TRUE), 
@@ -347,7 +354,7 @@ d %<>%
   #FIXME
   mutate(org = ifelse(is.na(org) & grepl("I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network", commenttext, ignore.case = TRUE), 
                       str_rpl(commenttext, "I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network.*", "Power Shift Network"), 
-                      org)) 
+                      org))
 
 
   
