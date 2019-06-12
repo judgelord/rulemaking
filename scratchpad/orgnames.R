@@ -456,11 +456,15 @@ d %<>%
 
 #finding submitted by names that are not associated with an organization
 d %<>% 
+  #finding false 
  # mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]]. .*\\S$"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & congress == T, F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]]. \\w+$"), F, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]]. .*\\S$"), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "anonymous public comment"), F, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]] .*\\S$"), F, org.comment)
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]] .*\\S$"), F, org.comment))
+  #finding true 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by \\w+ \\w+") & str_dct(title, "director|CEO|president") & attachmentCount >= 1, T, org.comment))
+
          
   
   
@@ -483,14 +487,14 @@ example <- d %>%
 #Test for org.comment
 org.comment <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(grepl("president,", title, ignore.case = TRUE)) 
+  filter(is.na(org.comment), str_dct(title, "comment submitted by \\w+ \\w+"), grepl("president|ceo|director", title, ignore.case = TRUE), attachmentCount >= 1)
 
 org.comment1 <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(grepl("comment by \\w+", title, ignore.case = TRUE))
+  filter(grepl("comment submitted by \\w+ \\w+", title, ignore.case = TRUE), attachmentCount >= 2)
 
 Docket <- d %>% 
-  select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, congress, org.comment, org) %>% 
+  select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, congress, org.comment, org, submitterName) %>% 
   filter(grepl("EPA-HQ-OAR-2018-0283", docketId, ignore.case = TRUE) & is.na(org.comment) & is.na(congress))
 
 
