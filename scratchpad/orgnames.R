@@ -456,9 +456,21 @@ d %<>%
 
 #finding submitted by names that are not associated with an organization
 d %<>% 
+ # mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]]. .*\\S$"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]]. \\w+$"), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]]. .*\\S$"), F, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "anonymous public comment"), F, org.comment))
-  mutate(org.comment = ifelse(is.na(orgcomment) & str_dct(org, ".*"))) & str_dct("comment submitted by ")
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "anonymous public comment"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]] .*\\S$"), F, org.comment)
+         
+  
+  
+  
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment from by \\w+\\w+$"), F, org.comment))
+
+
+
+
+  mutate(org.comment = ifelse(is.na(orgcomment) & str_dct(org, ".*")))
 
 
 #Testing
@@ -475,11 +487,11 @@ org.comment <- d %>%
 
 org.comment1 <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(grepl("anonymous public comment", title, ignore.case = TRUE))
+  filter(grepl("comment by \\w+", title, ignore.case = TRUE))
 
 Docket <- d %>% 
-  select(congress, docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(grepl("EPA-HQ-OAR-2018-0283", docketId, ignore.case = TRUE) & is.na(org.comment) & str_dct(title,"representative"))
+  select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, congress, org.comment, org) %>% 
+  filter(grepl("EPA-HQ-OAR-2018-0283", docketId, ignore.case = TRUE) & is.na(org.comment) & is.na(congress))
 
 
 true <- d %>% 
@@ -491,7 +503,7 @@ true <- d %>%
 d %<>% 
   mutate(org.comment = ifelse(is.na(org) & grepl("comment submitted by [[:upper:]]\\w$", title, ignore.case = TRUE), F, org.comment))
 
-str_detect("comment submitted by [[:upper:]]\\w$")
+str_detect("comment submitted by \\w \\w$")
 
 association <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
