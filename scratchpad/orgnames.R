@@ -461,7 +461,7 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & congress == T, F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]]. \\w+$"), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "anonymous public comment"), F, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]] .*\\S$"), F, org.comment))
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]] .*\\S$"), F, org.comment)) %>% 
   #finding true 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by \\w+ \\w+") & str_dct(title, "director|CEO|president") & attachmentCount >= 1, T, org.comment))
 
@@ -487,7 +487,7 @@ example <- d %>%
 #Test for org.comment
 org.comment <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(is.na(org.comment), str_dct(title, "comment submitted by \\w+ \\w+"), grepl("president|ceo|director", title, ignore.case = TRUE), attachmentCount >= 1)
+  filter(str_dct(title, "comment submitted by \\w+ \\w+"), grepl("president|ceo|director", title, ignore.case = TRUE), attachmentCount >= 1)
 
 org.comment1 <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
