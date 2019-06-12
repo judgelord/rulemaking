@@ -22,6 +22,10 @@ str_rm <- function(string, pattern) {
   str_remove(string, regex(pattern, ignore_case = TRUE))
 }
 
+str_dct <- function(string, pattern) {
+  str_detect(string, regex(pattern, ignore_case = TRUE))
+}
+
 ## A sample of high-profile rules
 #load(here("data/masscomments.Rdata"))
 #load(here("data/toporgs.RData"))
@@ -407,8 +411,21 @@ d %<>%
 #                                                                                                     sep = "|"),
 #                                                              commenttext, ignore.case = TRUE) & grepl(".", commenttext, ignore.case = TRUE), "other", org))
 
+#congress
+#############################
 
 
+#create congress variable
+d %<>%
+  mutate(congress = NA) %>% 
+  mutate(congress = ifelse(str_dct(title, "submitted by.*Senator|letter from.*senator"), T, congress)) %>% 
+  mutate(congress = ifelse(str_dct(title, "submitted by.*representative|house of representatives|house of representative"), T, congress))
+
+
+
+
+#org.comment
+##############################
 
 #create variable org.comment 
 #org.comment, result is T
@@ -437,10 +454,15 @@ d %<>%
                                                               sep = "|"), title, ignore.case = TRUE), F, org.comment))
 
 
+#finding submitted by names that are not associated with an organization
 d %<>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & grepl("comment submitted by [[:upper:]]. .*\\S$", title, ignore.case = TRUE), F, org.comment))
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]]. .*\\S$"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "anonymous public comment"), F, org.comment))
+  mutate(org.comment = ifelse(is.na(orgcomment) & str_dct(org, ".*"))) & str_dct("comment submitted by ")
+
 
 #Testing
+##########################
 example <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
   filter(is.na(org.comment))
@@ -453,11 +475,16 @@ org.comment <- d %>%
 
 org.comment1 <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(grepl("comment submitted by [[:upper:]]. .*\\S$", title, ignore.case = TRUE))
+  filter(grepl("anonymous public comment", title, ignore.case = TRUE))
 
 Docket <- d %>% 
+  select(congress, docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(grepl("EPA-HQ-OAR-2018-0283", docketId, ignore.case = TRUE) & is.na(org.comment) & str_dct(title,"representative"))
+
+
+true <- d %>% 
   select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(grepl("EPA-HQ-OAR-2018-0283", docketId, ignore.case = TRUE) & !grepl("anonymous public comment", title, ignore.case = TRUE))
+  filter(org.comment == T)
   
 #need to make code to keep names without anything after
 #needs to be after text
