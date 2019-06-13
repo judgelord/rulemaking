@@ -457,7 +457,7 @@ d %<>%
 #finding submitted by names that are not associated with an organization
 #notes: earthjustice miscaptures a few based on attachment count number because there are some
   #with high attachment counts that should be org.comment but others with high that aren't 
-spicy <- d %>% 
+d %<>% 
   #finding true 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by \\w+ \\w+") & str_dct(title, "director|CEO|president|manager|attorney") & attachmentCount >= 1, T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by") & str_dct(title, "natural resources defense council"), T, org.comment)) %>% 
@@ -483,41 +483,48 @@ spicy <- d %>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, "[[:upper:]]. \\w+$"), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, "[[:upper:]].") & attachmentCount <=1, F, org.comment))
 
-  
-  #look up table 
-#map 
-#take a dataframe and apply it 
-
-datalist
-
-"earthworks", 
-#earthworks
-#earthjustice
-#riverkeeper
-#sierra club
-#Black Warrior Riverkeeper
-#Rogue Riverkeeper
-#Chattahoochee Riverkeeper
-#Hackensack Riverkeeper
-#riverkeeper
-#350
 
 
-  
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment from by \\w+\\w+$"), F, org.comment))
+#creating dataframe for org information, tribble
+orgInfo <- tribble(
+  ~org, ~org.type, ~org.ej.community,
+  "earthjustice", "ngo", "no", 
+  "earthworks", "ngo", "no", 
+  "riverkeeper", "ngo", "no", 
+  "sierra club", "ngo", "no", 
+  "black warrior riverkeeper", "ngo", "no",
+  "cattahoochee riverkeeper", "ngo", "no",
+  "hackensack riverkeeper", "ngo", "no", 
+  "350", "ngo", "no"
+)
+
+#join orgInfo into orginial dataset
+test <- d %>% 
+  left_join(orgInfo) %>% 
+  select(agencyAcronym, title, commenttext, organization, org.comment, org, org.type, org.ej.community) %>% 
+  filter(!is.na(org.type))
 
 
-  #mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by") & attachmentCount == 0, F, org.comment))
   
 
-  mutate(org.comment = ifelse(is.na(orgcomment) & str_dct(org, ".*")))
-
   
-#function
+# #testing in c formatting for while loop 
+# while (org.comment == T)
+# { 
+#   mutate(org.name = org) %>% 
+#   if(str_dct(title, "earthjustice")
+#   {
+#     mutate(org.type = "ngo" )
+#     mutate(org.ej.community = "no")
+#   }
+# }
+  
+
+
 
 #Testing
 ##########################
-example <- spicy %>% 
+example <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
   filter(is.na(org.comment)) %>% 
   count(organization) %>% 
@@ -527,7 +534,7 @@ example <- spicy %>%
   
     
 #Test for org.comment
-org.comment <- spicy %>% 
+org.comment <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
   filter(str_dct(organization, "earthjustice"), is.na(org.comment))
 
@@ -542,7 +549,7 @@ Docket <- d %>%
 
 true <- d %>% 
   select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(org.comment == T)
+  filter(org.comment == T, attachmentCount == 0)
   
 #need to make code to keep names without anything after
 #needs to be after text
