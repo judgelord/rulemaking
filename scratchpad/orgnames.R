@@ -456,14 +456,6 @@ d %<>%
 #notes: earthjustice miscaptures a few based on attachment count number because there are some
   #with high attachment counts that should be org.comment but others with high that aren't 
 #SOMEHOW EVERYTHING IN FWS is getting marked as true 
-none <- d %>% 
-  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(organization, "none"))
-
-help <- d %>% 
-  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(title, "comment submitted by [[:uppercase:]]. [[:uppercase:]]. \\w+$"))
-# 
  temp <- d
  d <- temp
 
@@ -498,16 +490,21 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, str_c("comment submitted by Chattahoochee Riverkeeper", "comment submitted by Black Warrior Riverkeeper", 
                                                                       "comment submitted by Hackensack", sep = "|")), T, org.comment)) %>% #check these
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "LLC") & attachmentCount >= 1, T, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "[[:upper:]]\\. \\w+$") & agencyAcronym == "FWS" & str_dct(org, ".*"), T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "[[:upper:]]\\. \\w+$") & str_dct(org, ".*") & agencyAcronym == "FWS", T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "comments of the|on behalf of") & str_dct(org, ".*") & agencyAcronym == "FWS", T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "as well as a letter") & str_dct(org, ".*") & agencyAcronym == "FWS", T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "organizational comments"), T, org.comment)) %>% 
   #finding false
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment from") & is.na(org), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "[[:upper:]]\\. \\w+$") & agencyAcronym == "FWS" & is.na(org), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Submitted Electronically via eRulemaking Portal") & is.na(org), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "^\\w+$") & is.na(org) & agencyAcronym == "FWS", F, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, "none"), F, org.comment))
-
-
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, "none|concerned citizen"), F, org.comment)) %>% #this might need to change if they mention an org in text and its not captured in org
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "attached \\d.* comments|accept \\d.* comments"), F, org.comment))
   
+
+
+
   
 #mutate org to lower
 ##org is who your mobilized by
@@ -517,6 +514,7 @@ mutate(org = ifelse(org %in% c("none"), NA , org))
 
 
 #creating dataframe for org information, tribble
+###################################################
 orgInfo <- tribble(
   ~org, ~org.type, ~org.ej.community,
   "earthjustice", "ngo", "no", 
@@ -526,14 +524,22 @@ orgInfo <- tribble(
   "black warrior riverkeeper", "ngo", "no",
   "cattahoochee riverkeeper", "ngo", "no",
   "hackensack riverkeeper", "ngo", "no", 
-  "350", "ngo", "no"
+  "350", "ngo", "no", 
+  "oregon wild", 
+  "defenders of wildlife",
+  "conservation northwest", 
+  "center for biological diversity",
+  "endangered species coalition",
 )
 
+#these are in addition to our official organization comments 
+
 #join orgInfo into orginial dataset
-test <- d %>% 
+###################################################
+d %<>% 
   left_join(orgInfo) %>% 
   select(agencyAcronym, title, commenttext, organization, org.comment, org, org.type, org.ej.community) %>% 
-  filter(grepl("earthjustice", org, ignore.case = TRUE))
+  #filter(grepl("earthjustice", org, ignore.case = TRUE))
 
 
   
@@ -557,7 +563,9 @@ test <- d %>%
 ##########################
 example <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(is.na(org.comment))%>% 
+  filter(is.na(org.comment), attachmentCount >= 2, numberOfCommentsReceived == 1)
+
+%>% 
   count(organization) %>% 
   arrange(-n)
   #find out large numbers of seen organizations
@@ -567,11 +575,12 @@ example <- d %>%
 #Test for org.comment
 org.comment <- d %>% 
   select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(organization, "none"))
+  filter(str_dct(organization, "concerned citizen"))
 
 org.comment1 <- d %>% 
   select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(title, "Comment on FR Doc # 2011-21556"))
+  filter(str_dct(commenttext, "accept \\d.* comments"))
+#these are in addition to our official
 
 Docket <- d %>% 
   select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, congress, org.comment, org, submitterName) %>% 
