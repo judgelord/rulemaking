@@ -208,7 +208,7 @@ d$organization <- gsub(" $", "", d$organization, ignore.case = TRUE)
 
 ##Org variable
 d %<>% 
-  mutate(org = NA)
+  mutate(org = NA) 
 
 ##broader rules
 d %<>% 
@@ -355,8 +355,8 @@ d %<>%
   mutate(org = ifelse(is.na(org) & grepl(".*Conservation Northwest.*", commenttext, ignore.case = TRUE), 
                       "Conservation Northwest", 
                       org)) %>% 
-  #Save Our Environment
-  mutate(org = ifelse(is.na(org) & grepl(".*Save Our Environment.*", commenttext, ignore.case = TRUE), 
+  #Save Our Environment, making caps matter because happens a lot in the text
+  mutate(org = ifelse(is.na(org) & grepl(".*Save Our Environment.*", commenttext), 
                       "Save Our Environment", 
                       org)) %>%
   #Oregon Wild
@@ -399,7 +399,9 @@ d %<>%
                       str_rpl(commenttext, "I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network.*", "Power Shift Network"), 
                       org))
 
-# 
+
+
+
 #   #mass mail
 #   #creating other by getting rid of common phrasing of unknowns
 #   mutate(org = ifelse(is.na(org) & grepl("EPA", agencyAcronym, ignore.case = TRUE) & !grepl(str_c("This is a mass letter campaign.",
@@ -463,12 +465,26 @@ d %<>%
 #notes: earthjustice miscaptures a few based on attachment count number because there are some
   #with high attachment counts that should be org.comment but others with high that aren't 
 #SOMEHOW EVERYTHING IN FWS is getting marked as true 
+
+#EPA 
+#testcode
+help <- d %>% 
+  select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(grepl(".*", org.comment))
+
+check <- d %>% 
+  select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(grepl("[[:upper:]]. \\w+$", title))
+
+check2 <- d %>% 
+  select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(title, "Chattahoochee Riverkeeper"))
+
 d %<>% 
   #finding true 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment from") & is.na(org), F, org.comment)) %>%  #fix this somehow 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by \\w+ \\w+") & str_dct(title, "director|CEO|president|manager|attorney") & attachmentCount >= 1, T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by") & str_dct(title, "natural resources defense council"), T, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by \\w+ \\w+$") & attachmentCount > 1, T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by \\w+ \\w+$") & agencyAcronym == "EPA" & attachmentCount > 1, T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by earthjustice"), T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by") & str_dct(title, "earthjustice") & str_dct(title,  str_c("lisa evans", "carrie apfel", "tyler smith",
                                                                                                                                                    "james pew", "jim pew", sep = "|")), T, org.comment)) %>% 
@@ -476,9 +492,8 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by Sierra Club and Earthjustice"), T, org.comment)) %>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by 350"), T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, str_c("comment submitted by Chattahoochee Riverkeeper", "comment submitted by Black Warrior Riverkeeper", 
-                                                                        "comment submitted by Hackensack", sep = "|")), T, org.comment)) %>% 
+                                                                        "comment submitted by Hackensack", sep = "|")), T, org.comment)) %>% #check these
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "LLC") & attachmentCount >= 1, T, org.comment)) %>% 
-  #mutate(org.comment = ifelse(is.na(org.comment) & !str_dct(title, "Submitted Electronically via eRulemaking Portal"), T, org.comment)) %>% 
   #finding false 
   mutate(org.comment = ifelse(is.na(org.comment) & congress == T, F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:upper:]]. \\w+$"), F, org.comment)) %>% 
@@ -489,11 +504,20 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:uppercase:]]. [[:uppercase:]]. \\w+$"), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:uppercase:]]. [[:uppercase:]].\\w+$"), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by [[:uppercase:]]. and [[:uppercase:]].\\w+$") & attachmentCount <= 1, F, org.comment)) %>%
-  #mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Submitted Electronically via eRulemaking Portal"), F, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, "[[:upper:]]. \\w+$"), F, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, "[[:upper:]].") & attachmentCount <=1, F, org.comment))
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, "[[:upper:]]. \\w+$") & agencyAcronym == "EPA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "[[:upper:]]. \\w+$") & agencyAcronym == "FWS" & is.na(org), F, org.comment)) %>% 
+  #mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, "[[:upper:]].$") & attachmentCount <=1, F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment from") & is.na(org), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Submitted Electronically via eRulemaking Portal") & is.na(org), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "^\\w+$") & is.na(org) & agencyAcronym == "FWS", F, org.comment))
+ 
 
-
+  
+#make a line of code that is ONE WORD........
+  
+#mutate org to lower
+d %<>% 
+mutate(org = tolower(org))
 
 
 #creating dataframe for org information, tribble
@@ -513,7 +537,7 @@ orgInfo <- tribble(
 test <- d %>% 
   left_join(orgInfo) %>% 
   select(agencyAcronym, title, commenttext, organization, org.comment, org, org.type, org.ej.community) %>% 
-  filter(!is.na(org.type))
+  filter(grepl("earthjustice", org, ignore.case = TRUE))
 
 
   
@@ -744,4 +768,6 @@ test3 <- d %>%
 
 
 ##########################################################################################################
+
+#make a word   filter(str_dct(title, "^\\w+$"))
 
