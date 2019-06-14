@@ -1,33 +1,29 @@
 options(stringsAsFactors = FALSE)
 
 requires <- c("gmailr", 
-              "dplyr", 
-              "ggplot2", 
+              "tidyverse", 
+              "dplyr",
               "gdata", 
               "magrittr",
-              "XML",
-              "stringr", 
-              "stargazer",
-              "visreg",
               "reshape2",
               "scales",
               "magrittr",
               "XML",
-              "stringi",
               "stringr", 
               "here",
               "gridExtra",
               "httr",
               "jsonlite",
               "tm",
-              "tm",
               "tidytext",
               "topicmodels",
               "textfeatures",
               "cleanNLP",
               "clusters",
-              "rjags",
-              "bayesmix",
+              # "rjags",
+              # "bayesmix",
+              # "MCMCpack",
+              "gtools",
               #"textreadr",
               "tidyverse")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
@@ -38,19 +34,23 @@ library(tidyverse)
 library(dplyr) # in case tydyverse fails (problem on linux)
 library(ggplot2); theme_set(theme_bw())
 options(
-  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.color = "viridis",
   ggplot2.continuous.fill = "viridis"
 )
+scale_color_discrete <- function(...)
+  scale_color_viridis_d(...)
+scale_fill_discrete <- function(...)
+  scale_fill_viridis_d(...)
+library(gridExtra)
+library(jsonlite)
+
 library(magrittr)
 library(XML)
 library(stringr)
-library(stargazer)
 library(reshape2)
 library(scales)
 library(here)
-library(gridExtra)
 library(httr)
-library(jsonlite)
 library(tm)
 library(tidytext)
 library(topicmodels)
@@ -65,4 +65,7 @@ knitr::opts_chunk$set(echo = TRUE,
 
 
 # function to fill NAs
+# FIXME 
+# replace with fill()
 CopyIfNA <- function(x, na.rm = FALSE, ...) na.locf(x, na.rm = na.rm, ...)
+
