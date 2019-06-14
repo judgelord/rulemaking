@@ -4,10 +4,16 @@ source("setup.R")
 #load(here("ascending/allcomments.Rdata"))
 load(here("data/allcomments.Rdata"))
 load(here("data/masscomments.Rdata"))
+load(here("data/comment_text_short.Rdata"))
 
 #subsetting data from 'all' with matching docketId in 'mass'
 d <- all %>% 
   filter(docketId %in% mass$docketId)
+
+#merge comment_text by documentID value
+d %<>% 
+  left_join(comment_text_short)
+
 
 #function to change string remove to str_rm which is no longer case senstitive
 str_rm_all <- function(string, pattern) {
@@ -491,16 +497,17 @@ d %<>%
                                                                       "comment submitted by Hackensack", sep = "|")), T, org.comment)) %>% #check these
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "LLC") & attachmentCount >= 1, T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "[[:upper:]]\\. \\w+$") & str_dct(org, ".*") & agencyAcronym == "FWS", T, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "comments of the|on behalf of") & str_dct(org, ".*") & agencyAcronym == "FWS", T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "comments of the|on behalf of [[:uppercase:]]") & str_dct(org, ".*") & agencyAcronym == "FWS", T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "as well as a letter") & str_dct(org, ".*") & agencyAcronym == "FWS", T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "organizational comments"), T, org.comment)) %>% 
   #finding false
+  mutate(org.comment = ifelse(is.na(org.comment) & numberOfCommentsReceived > 20, F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment from") & is.na(org), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "[[:upper:]]\\. \\w+$") & agencyAcronym == "FWS" & is.na(org), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Submitted Electronically via eRulemaking Portal") & is.na(org), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "^\\w+$") & is.na(org) & agencyAcronym == "FWS", F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, "none|concerned citizen"), F, org.comment)) %>% #this might need to change if they mention an org in text and its not captured in org
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "attached \\d.* comments|accept \\d.* comments"), F, org.comment))
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "attached \\d.* comments|accept \\d.* comments"), F, org.comment)) 
   
 
 
@@ -563,7 +570,7 @@ d %<>%
 ##########################
 example <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(is.na(org.comment), attachmentCount >= 2, numberOfCommentsReceived == 1)
+  filter(is.na(org.comment))
 
 %>% 
   count(organization) %>% 
@@ -574,12 +581,14 @@ example <- d %>%
     
 #Test for org.comment
 org.comment <- d %>% 
-  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(organization, "concerned citizen"))
+  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, organization, org.comment, org, text_clean_short) %>% 
+  filter(numberOfCommentsReceived > 20)
+
+
 
 org.comment1 <- d %>% 
   select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(commenttext, "accept \\d.* comments"))
+  filter(str_dct(title, "\\w+.\\w+"))
 #these are in addition to our official
 
 Docket <- d %>% 
@@ -591,37 +600,30 @@ true <- d %>%
   select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
   filter(org.comment == T, attachmentCount == 0)
   
-#need to make code to keep names without anything after
-#needs to be after text
-d %<>% 
-  mutate(org.comment = ifelse(is.na(org) & grepl("comment submitted by [[:upper:]]\\w$", title, ignore.case = TRUE), F, org.comment))
-
-str_detect("comment submitted by \\w \\w$")
-
-association <- d %>% 
-  select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(grepl("association,", title, ignore.case = TRUE))
-
-#Finding org names
 
 
-#Test for position
-data %<>%
-  mutate(position = NA) %>% 
-  mutate(position = ifelse(is.na(position) & grepl(".*Audobon California.*", commenttext, ignore.case = TRUE), "Audobon California", org))
 
-
-# position <- d %>% 
-#   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-#   filter(grepl("junk science", commenttext, ignore.case = TRUE))
-
-#Finding org
-
-
+#Finding org.comment by docket
 
 unique(d$docketId)
 
+docket <- d %>% 
+  select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(docketId, "FWS-R7-NWRS-2014-0005"), org.comment == T) %>% 
+  count(org, .drop = FALSE) %>% 
+  arrange(-n)
 
+docket <- d %>% 
+  group_by(org.comment, docketId, .drop = F) %>%
+  summarize(n=n()) %>% 
+  arrange(docketId)
+
+#count by org.comment and docket
+
+
+docket <- d %>% 
+  select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(docketId, "FWS-HQ-ES-2013-0073"), is.na(org.comment))
 ######################################################################################################################################################################################
 
 
