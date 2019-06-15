@@ -15,15 +15,96 @@ output:
 
 # load required packages
 source("setup.R")
+library(tidyverse)
+library(pdftools)
 ```
 
 Data: 
-```{r comments-data}
 
+# Convert pdf letters to text 
+This function uses `pdf_text` (we can also OCR images, but I have not yet done so).
+```{r, eval=FALSE}
+ssh -Y judgelord@linstat.ssc.wisc.edu
+cd /project/judgelord/rulemaking
+ls
+R
+list.files( )
+head(list.files("comments"))
+
+files <- tibble(file = list.files("comments")) %>% distinct()
+dim(files)
+
+files %<>% mutate(pdf = str_detect(file, "pdf"))
+
+## FOR TESTING 
+# files <- head(files)
+# file_name = files$file[1]
+
+totext <- function(file_name){
+  # paste pages
+  text <- NA
+  # if the file is a pdf, run pdf_text
+  if(str_detect(file_name, "pdf")){
+  text <- pdf_text(here("comments", file_name))  %>% 
+    # collapse the list of pages 
+    # FIXME 
+    unlist() %>% 
+    paste(collapse = "<pagebreak>") %>% 
+    unlist() %>% as.character() %>% 
+    paste(sep = "<pagebreak>")
+  }
+  return(text)
+}
+
+
+
+## If possible, read text (returns a list of char)
+files$text <- map(files$file, possibly(totext, NA_real_, quiet = T))
+
+# A helper function to clean strings
+Clean_String <- function(string){
+  string %<>% 
+    stringr::str_replace_all("[^a-zA-Z\\s]", " ") %>% 
+    stringr::str_replace_all("[\\s]+", " ") %>% 
+    trimws()
+  return(string)
+}
+
+# make clean and short versions of the text
+files %<>% 
+  mutate(text_clean = Clean_String(text)) %>% 
+  mutate(text_clean_short = str_sub(text_clean, 1, 1000))
+
+files %<>% 
+  mutate(documentId = str_remove(file, "-1.pdf|-1.excel12book|-1.docx|-1.rtf|-1.msw12")) %>% 
+  mutate(url = str_c("https://www.regulations.gov/document?D=", documentId))
+
+head(files$documentId)
+head(files$url)
+names(files)
+
+# data that only contains file names and short text
+comment_text_short <- files %>% select(documentId, text_clean_short, url)
+
+save(comment_text_short, file = "data/comment_text_short.Rdata") # <100 MB
+save(files, file = "data/comment_text.Rdata") # >100 MB
+
+q()
+git add data/comment_text_short.Rdata
+git commit -m "update comment text short Rdata sample"
+git pull
+git push
+```
+
+
+```{r comments-data, include=FALSE}
 # load comments as all
-list.files("../../../home/j/judgelord/rulemaking/ascending")
-load("../../../home/j/judgelord/rulemaking/ascending/allcomments2.Rdata")
-d <- allcomments2
+load("ascending/allcomments.Rdata")
+dim(all)
+names(all)
+
+d <- all
+head(d$documentId)
 # load(here("data/allcomments-sample.Rdata")) # for testing on a small sample of 480,000
 
 # mass comments to the top

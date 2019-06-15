@@ -275,23 +275,32 @@ return(d)
 
 ###############################
 # One document (requires knowing the document id)
-docID <- mass$documentId[1]
+docID <- d$documentId[2]
 
 search.doc <- function(docID) {
 
+
   # create path (NOTE: for one document, the path is ...v3/document?..., not ...v3/documents?..)
+  # This path is for an API search to get the file formats
+  # To download these files, see regulations-gov-get-attachments.R, which uses the content streamer, not the API
   path <- paste0("/regulations/v3/document?api_key=", api_key, 
                  "&documentId=", docID)
 
   raw.result <- GET(url = url, path = path)
   raw.result$status_code == 200
   content <- fromJSON(rawToChar(raw.result$content))
-  doc <- data.frame(documentId = docID, attach.url = paste(content$attachments$fileFormats, sep = "; ", collapse = "; ") )
+  doc <- tibble(documentId = docID, 
+                attach.url = str_c( unlist(content$attachments$fileFormats), collapse = ";")
+                )
   
   if(raw.result$status_code != 200){ print(paste("Error: status code =", raw.result$status_code) ) }
+  
+  # sleep to avoid 429 overload errors when applied to many documents
+  Sys.sleep(5)
+  
   return(doc)
   }
-
+# end get attachment loop
 
 
 

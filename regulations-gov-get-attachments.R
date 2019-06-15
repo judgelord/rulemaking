@@ -1,18 +1,19 @@
 # load packages and functions 
-library(here)
-source(here("setup.R"))
-source(here("regulations-gov-API-search.R"))
+source("setup.R")
+source("regulations-gov-API-search.R")
        
 # load data from regulations.gov API search
-load(here("data/masscomments.Rdata"))
+load("data/masscomments.Rdata")
 d <- mass 
+load("data/recentcomments.Rdata")
 
-# selecting ones most needed for now due to api limits
 # FIXME 
-d %<>% filter(#grepl("attach", commentText), 
-              docketType == "Rulemaking")
-# /FIXME
+# sample allcomments matching mass ids
 
+# selecting ones most needed for now
+# FIXME 
+d %<>% filter(docketType == "Rulemaking")
+# /FIXME
 
 # filter out docs already scraped
 d %<>% filter(!stringr::str_detect(documentId, list.files("comments/") ))
@@ -20,85 +21,84 @@ d %<>% filter(!stringr::str_detect(documentId, list.files("comments/") ))
 ## initialize and call api to get urls 
 ## (if only need pdfs, this is not necessary, just make all urls with the doc id and .pdf at the end)
 docs <- search.doc(d$documentId[1]) 
-for(i in 1:dim(d)[1]){ 
-  doc <- search.doc(d$documentId[i]) # function from regulations-gov-API-search.R
-  docs %<>% full_join(doc) 
-  Sys.sleep(2)
-} 
+
+docs <- map_dfr(.x = d$documentId[1:100], .f = search.doc)
 
 # save all urls 
+if(F){
 save(docs, file ="data/attachment-urls.Rdata")
 ##################################################
 
-
-
-
-
-
-
-
-
-
-
-
 ##############################################################
 load("data/attachment-urls.Rdata")
+}
 
 docs %<>% filter( !is.na(attach.url), attach.url != "" ) %>% 
-  mutate(attach.count = str_count(attach.url,";") )
+  mutate(attach.count = 1 + str_count(attach.url,";") )
 
 max(docs$attach.count)
 
 
-# select first url for now, due to api limits (spread this out to get all)
+# select first url for now, (str_sep and unnest this to get all)
 # FIXME
 docs %<>% 
-  mutate(attach.url.1 = attach.url) %>%
-  mutate(attach.url.1 = gsub(";.*", "", attach.url)) %>%
-  mutate(attach.url.1 = gsub("Type=pdf.*", "Type=pdf", attach.url.1))
+  mutate(pdf = str_detect(attach.url, "pdf")) %>% 
+  # split out attachments
+  mutate(attach.url = str_split(attach.url, ";")) %>%
+  unnest(attach.url)
 
-docs$attach.url.1[1]
+docs %<>% 
+  # drop tiffs where we have a pdf
+  filter(!(pdf & str_detect(attach.url, "tiff"))) %>% 
+  mutate(attach.url = str_replace(attach.url, "Type=pdf.*", "Type=pdf"))%>% 
+  # switch API URL base to content streamer URL base 
+  mutate(attach.url = str_replace(attach.url, 
+                                  ".*download?", 
+                                  "https://www.regulations.gov/contentStreamer"))
 
-# format for scraping rather than api 
-docs %<>% mutate(attach.url.1 = gsub(".*download?", "https://www.regulations.gov/contentStreamer", attach.url.1)) 
+## Test 
+docs$attach.url[1]
 
-docs$attach.url.1[1]
 # name output file
 docs %<>% 
-  mutate(file = gsub(".*documentId=", "", attach.url.1)) %>%
+  mutate(file = gsub(".*documentId=", "", attach.url)) %>%
   mutate(file = gsub("&contentType=", ".", file)) %>%
   mutate(file = gsub("&attachmentNumber=", "-", file))
-docs$file[1]
 
-docs$attach.url.1[1]
+# Inspect
+docs$file[1]
+docs$attach.url[1]
+
+
 
 #################################
-# DOWNLOAD 
+# to DOWNLOAD 
 download <- docs 
 
 # files we don't have 
 download %<>% filter(!file %in% list.files("comments/") ) %>%
-  filter(!attach.url.1 %in% c("","NULL"), !is.null(attach.url.1) )
+  filter(!attach.url %in% c("","NULL"), !is.null(attach.url) )
 dim(docs)
 dim(download)
 head(download)
 
 # test
-download %<>% filter(!file %in% list.files("comments/") ) 
-download.file(download$attach.url.1[1000], 
-              destfile = paste0("comments/", download$file[1000]) ) 
+download.file(download$attach.url[1], 
+              destfile = paste0("comments/", download$file[1]) ) 
 
 
 # loop over downloading attachments 78 at a time (regulations.gov blocks after 78?)
 for(i in 1:round(dim(download)[1]/78)){
   download %<>% filter(!file %in% list.files("comments/") ) 
+  
+  ## Reset error counter inside function 
   errorcount <<- 0
 #for(i in 1:dim(download)[1]){ 
 for(i in 1:78){ 
   if(errorcount < 5){
   # download to comments folder 
   tryCatch({ # tryCatch handles errors
-    download.file(download$attach.url.1[i], 
+    download.file(download$attach.url[i], 
                   destfile = paste0("comments/", download$file[i]) ) 
   },
   error = function(e) {

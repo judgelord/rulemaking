@@ -37,7 +37,10 @@ raw.result$status_code
 
 # extract content to list
 content <- fromJSON(rawToChar(raw.result$content))
+# make a data frame 
 d <- as.data.frame(content[[1]])
+
+# to strings 
 if("organization" %in% names(d)){d$organization %<>% as.character()}
 if("commentDueDate" %in% names(d)){d$commentDueDate %<>% as.character()}
 if("commentStartDate" %in% names(d)){d$commentStartDate %<>% as.character()}
@@ -117,6 +120,8 @@ while (error < 61) {
 }# END LOOP 
 save(d, page, skip, file = paste0("lastcomments.Rdata") ) 
 save.image()
+
+save(d, file = "data/recentcomments.Rdata")
 
 
 
