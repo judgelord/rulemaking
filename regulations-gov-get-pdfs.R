@@ -1,13 +1,21 @@
-mass
+## This script downloads pdf attachments only
+## The advantage of this approach is that it does not require using the API to get file names
+## However, after it is run, one should run regulation-gov-get-attachments.R to get non-pdfs 
 
-docs <- mass 
 
-mass$documentId
+# load("ascending/allcomments.Rdata")
+# load("data/mass.Rdata")
+# docs <- filter(all, documentId %in% mass$documentId)
 
+dim(d)
+names(d)
+head(d$org.comment)
+docs <- d %>% filter(org.comment)
+dim(docs)
 
 docs %<>% 
   mutate(file = str_c(documentId, "-1.pdf"),
-                      attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
+         attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
                             documentId,
                             "&attachmentNumber=1&contentType=pdf"))
 
@@ -21,19 +29,23 @@ docs$attach.url[1]
 #################################
 # to DOWNLOAD 
 download <- docs 
+dim(download)
 
 # files we don't have 
 download %<>% filter(!file %in% list.files("comments/") ) %>%
   filter(!attach.url %in% c("","NULL"), !is.null(attach.url) )
 dim(docs)
 dim(download)
-head(download)
+head(download$documentId)
 
 # test
-download.file(download$attach.url[1], 
-              destfile = str_c("comments/", download$file[1]) ) 
+i <- 5
+download.file(download$attach.url[i], 
+              destfile = str_c("comments/", download$file[i]) ) 
 
 
+# FIXME
+# should use purrr walk() here and in get-attachments  
 # loop over downloading attachments 78 at a time (regulations.gov blocks after 78?)
 for(i in 1:round(dim(download)[1]/78)){
   download %<>% filter(!file %in% list.files("comments/") ) 
