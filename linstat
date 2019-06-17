@@ -1,0 +1,6 @@
+ssh -Y judgelord@linstat.ssc.wisc.edu
+cd /project/judgelord/rulemaking
+ls
+R
+list.files( )
+head(list.files("comments"))
