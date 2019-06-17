@@ -296,7 +296,7 @@ search.doc <- function(docID) {
   if(raw.result$status_code != 200){ print(paste("Error: status code =", raw.result$status_code) ) }
   
   # sleep to avoid 429 overload errors when applied to many documents
-  Sys.sleep(5)
+  Sys.sleep(3)
   
   return(doc)
   }

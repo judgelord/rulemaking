@@ -22,7 +22,7 @@ d %<>% filter(!stringr::str_detect(documentId, list.files("comments/") ))
 ## (if only need pdfs, this is not necessary, just make all urls with the doc id and .pdf at the end)
 docs <- search.doc(d$documentId[1]) 
 
-docs <- map_dfr(.x = d$documentId[1:100], .f = search.doc)
+docs <- map_dfr(d$documentId[1:100], search.doc)
 
 # save all urls 
 if(F){
@@ -39,8 +39,7 @@ docs %<>% filter( !is.na(attach.url), attach.url != "" ) %>%
 max(docs$attach.count)
 
 
-# select first url for now, (str_sep and unnest this to get all)
-# FIXME
+
 docs %<>% 
   mutate(pdf = str_detect(attach.url, "pdf")) %>% 
   # split out attachments
@@ -61,9 +60,10 @@ docs$attach.url[1]
 
 # name output file
 docs %<>% 
-  mutate(file = gsub(".*documentId=", "", attach.url)) %>%
-  mutate(file = gsub("&contentType=", ".", file)) %>%
-  mutate(file = gsub("&attachmentNumber=", "-", file))
+  mutate(file = attach.url %>% 
+           str_remove(".*documentId=") %>%
+           str_replace("&contentType=", ".") %>%
+           str_replace("&attachmentNumber=", "-"))
 
 # Inspect
 docs$file[1]
