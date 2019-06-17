@@ -507,11 +507,43 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Submitted Electronically via eRulemaking Portal") & is.na(org), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "^\\w+$") & is.na(org) & agencyAcronym == "FWS", F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, "none|concerned citizen"), F, org.comment)) %>% #this might need to change if they mention an org in text and its not captured in org
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "attached \\d.* comments|accept \\d.* comments"), F, org.comment)) 
-  
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "attached \\d.* comments|accept \\d.* comments"), F, org.comment)) %>%
+  #fixing by docket
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(docketId, "FWS-HQ-ES-2013-0052") & str_dct(org, ".*"), T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(docketId, "FWS-HQ-ES-2013-0052") & str_dct(title, "Arkansas Game and Fish Commission"), T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(docketId, "FWS-HQ-ES-2013-0055") & str_dct(org, ".*"), T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(docketId, "FWS-HQ-ES-2016-0010") & str_dct(org, ".*"), T, org.comment))
 
 
 
+
+
+##############################################
+#Finding org.comment by docket
+
+unique(d$docketId)
+
+docketTEST <- d %>% 
+  select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(docketId, "FWS-R7-NWRS-2014-0005"), org.comment == T) %>% 
+  count(org, .drop = FALSE) %>% 
+  arrange(-n)
+
+docket <- d %>% 
+  group_by(org.comment, docketId, .drop = F) %>%
+  summarize(n=n()) %>% 
+  arrange(docketId)
+
+#count by org.comment and docket
+
+
+docketTest <- d %>% 
+  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(docketId, "FWS-HQ-ES-2016-0010"), is.na(org.comment))
+         
+         
+         #is.na(org.comment))
+#######################################################
   
 #mutate org to lower
 ##org is who your mobilized by
@@ -522,6 +554,7 @@ mutate(org = ifelse(org %in% c("none"), NA , org))
 
 #creating dataframe for org information, tribble
 ###################################################
+#should be distinct if non profit?
 orgInfo <- tribble(
   ~org, ~org.type, ~org.ej.community,
   "earthjustice", "ngo", "no", 
@@ -532,11 +565,11 @@ orgInfo <- tribble(
   "cattahoochee riverkeeper", "ngo", "no",
   "hackensack riverkeeper", "ngo", "no", 
   "350", "ngo", "no", 
-  "oregon wild", 
-  "defenders of wildlife",
-  "conservation northwest", 
-  "center for biological diversity",
-  "endangered species coalition",
+  "oregon wild", "ngo", "no",
+  "defenders of wildlife", "ngo", "no",
+  "conservation northwest", "ngo", "no",
+  "center for biological diversity", "ngo", "no",
+  "endangered species coalition", "ngo", "no"
 )
 
 #these are in addition to our official organization comments 
@@ -545,24 +578,41 @@ orgInfo <- tribble(
 ###################################################
 d %<>% 
   left_join(orgInfo) %>% 
-  select(agencyAcronym, title, commenttext, organization, org.comment, org, org.type, org.ej.community) %>% 
+  select(agencyAcronym, title, commenttext, organization, org.comment, org, org.type, org.ej.community)
   #filter(grepl("earthjustice", org, ignore.case = TRUE))
 
 
   
+#Observations per docket for position
+#####################################
+
+#creating position variable
+d %<>% 
+  mutate(position = NA) %>% 
+  #putting turtle species on international trade list
+  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2013-0052-0013"), "1", position)) %>% 
+  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2013-0052-0010"), "3", position)) %>% 
+  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2013-0052-0016"), "2", position)) %>% 
+  #listing white rhino as threatened
+  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2013-0055-0577"), "3", position)) %>% 
+  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2013-0055-0580"), "2", position)) %>% 
+  #reclassification of african elephant to endangered
+  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2016-0010-1483"), "1", position)) %>% 
+  mutate(position = ifelse (str_dct(documentId, " FWS-HQ-ES-2016-0010-0446"), "3", position)) %>% 
+ 
 
   
-# #testing in c formatting for while loop 
-# while (org.comment == T)
-# { 
-#   mutate(org.name = org) %>% 
-#   if(str_dct(title, "earthjustice")
-#   {
-#     mutate(org.type = "ngo" )
-#     mutate(org.ej.community = "no")
-#   }
-# }
   
+
+  
+
+  
+  
+
+
+  
+  
+
 
 
 
@@ -603,27 +653,7 @@ true <- d %>%
 
 
 
-#Finding org.comment by docket
 
-unique(d$docketId)
-
-docket <- d %>% 
-  select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "FWS-R7-NWRS-2014-0005"), org.comment == T) %>% 
-  count(org, .drop = FALSE) %>% 
-  arrange(-n)
-
-docket <- d %>% 
-  group_by(org.comment, docketId, .drop = F) %>%
-  summarize(n=n()) %>% 
-  arrange(docketId)
-
-#count by org.comment and docket
-
-
-docket <- d %>% 
-  select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "FWS-HQ-ES-2013-0073"), is.na(org.comment))
 ######################################################################################################################################################################################
 
 
