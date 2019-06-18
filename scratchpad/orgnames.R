@@ -410,7 +410,10 @@ d %<>%
   #National Parks Conservation Association
   mutate(org = ifelse(is.na(org) & grepl("National Parks Conservation Association", commenttext, ignore.case = TRUE), "National Parks Conservation Association", org)) %>% 
   #Catharsis on the Mall
-  mutate(org = ifelse(is.na(org) & grepl("catharsis on the mall", commenttext, ignore.case = TRUE), "Catharsis on the Mall", org))
+  mutate(org = ifelse(is.na(org) & grepl("catharsis on the mall", commenttext, ignore.case = TRUE), "Catharsis on the Mall", org)) %>% 
+  #The November Project
+  mutate(org = ifelse(is.na(org) & grepl("november project", commenttext, ignore.case = TRUE), "November Project", org))
+
 
 
 #   #mass mail
@@ -436,8 +439,10 @@ d %<>%
 d %<>% 
   mutate(org = tolower(org)) %>% 
   #mutate(org = ifelse(org %in% c("none", "unknown", "individual", "citizen", "self", "not applicable", "private", "personal", "bird lover", "private citizen", "retired"), NA , org))
-  mutate(org = ifelse(str_dct(org, str_c("none", "unknown", "individual", "citizen", "self", "not applicable", "private", "personal", "lover", "mr.", "mrs.", "ms",
-                                         "retired", "dr", "miss ", "mr ", "na", 
+  mutate(org = ifelse(str_dct(organization, str_c("^none$", "^unknown$", "^individual$", "citizen$", "self$", "not applicable", "^private$", "personal", "lover", "mr.$", "mrs.$", "ms$",
+                                         "retired", "dr$", "miss$", "mr$", "ms.$", "mr.$", "^na$", "^me$", "^-$|^--$", "street$", "^happy$", "^r$", "^home$", "please select", "^brain$", "^no name$",
+                                         "no one$", "^nol longer", "no organization$", "- select -", "- none - ","--none--", "concerned citizen$", "-none-", "select...", "send$", "^love$", "^n.a.$",
+                                         "^.$", "not specified", "^other$", "foekf", "what a shame this is", "no affiliation", "^usa$", "LFJJHK"
                               sep = "|")), NA, org))
 
 #congress
@@ -453,6 +458,8 @@ d %<>%
 
 #org.comment
 ##############################
+temp <- d
+d <- temp
 
 #create variable org.comment 
 #org.comment, result is T
@@ -476,8 +483,7 @@ d %<>%
 #notes: earthjustice miscaptures a few based on attachment count number because there are some
   #with high attachment counts that should be org.comment but others with high that aren't 
 #SOMEHOW EVERYTHING IN FWS is getting marked as true 
- temp <- d
- d <- temp
+
 
 #EPA 
 d %<>% 
@@ -541,36 +547,71 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, ".*") & !str_dct(commenttext, "public comments") & agencyAcronym == "FWS", T, org.comment))
 
 
+
+whatiswrong <- d %>% 
+  select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(org.comment, ".*"))
+
+
 #National Park Service
 #NA org for NPS
 d %<>% 
   mutate(org = ifelse(str_dct(organization, "\\d\\d\\d\\d$") & agencyAcronym == "NPS", NA, org)) %>% 
-  mutate(org = ifelse(is.na(org) & str_dct(commenttext, "on behalf of [[:uppercase:]]") & agencyAcronym == "NPS", "FIXME", org.comment)) #fix this line of code before starting 
-
+  mutate(org = ifelse(str_dct(org, "\\d$") & !str_dct(org, "black youth project") & agencyAcronym == "NPS", NA, org))
+  
 
 d %<>% 
   #finding false
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "as one of the 1.3 million|as one of 1.3 million") & str_dct(commenttext, "national parks conservation association") & agencyAcronym == "NPS", F, org.comment)) %>%
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "as one of the 1.3 million|as one of 1.3 million|an one of the 1.3 million") & str_dct(commenttext, "national parks conservation association") & agencyAcronym == "NPS", F, org.comment)) %>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, str_c("none", "unknown", "individual", "citizen", "self", "not applicable", "private", "personal", "lover", "mr.", "mrs.", "ms",
                                                                         "retired", "dr", "miss ", "mr ", sep = "|")), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I urge you not to adopt the proposed rule .* impacts on public safety") & agencyAcronym == "NPS", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "as a citizen") & agencyAcronym == "NPS", F, org.comment)) %>% 
+  #need to keep these mass comments just to NPS because they do not have orgs associated 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I am writing to respectfully encourage you not to") & agencyAcronym == "NPS", F, org.comment)) %>% #none of these seem to have attached orgs?
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I am opposed to the National Park Services plan") & agencyAcronym == "NPS", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I strongly urge you not to adopt the proposed rule") & agencyAcronym == "NPS", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I am writing to oppose the amendments to regulations") & agencyAcronym == "NPS", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "As a concerned citizen, animal activist, and a human being") & agencyAcronym == "NPS", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "concerned citizen") & agencyAcronym == "NPS", F, org.comment)) %>% #appears no org writen in the text
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "november project") & str_dct(commenttext, "member"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "Ryan Zinke,"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "Im writing today to demand that the Department of Interior,"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I'm writing today to demand that the Department of Interior,"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I am opposed to these new rules that act to restrict and burden the ability"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I am writing to express my opposition to the National Park Service's proposed regulations"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(mass, "mass comments"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(str_dct(org, "David's Tent|Davids Tent") & !str_dct(documentId, "NPS-2018-0007-49456"), F, org.comment)) %>% 
   #finding true
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, ".*") & agencyAcronym == "NPS", T, org.comment)) #go through
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "on behalf of [[:uppercase:]]") & agencyAcronym == "NPS", T, org.comment))
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, ".*") & str_dct(organization, ".*") & agencyAcronym == "NPS", T, org.comment)) %>% #might be overbroad 925 observations
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "november project") & str_dct(commenttext, "co-leader"), T, org.comment))
+  #leaving the rest as n/a, don't seem to have an associated org or org.comment 
   
 
+na <- d %>% 
+  select(docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(is.na(org.comment))
 
+test <- d %>% 
+  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(commenttext, "I am writing to express my opposition to the National Park Service's proposed regulations"))
 
+#NPS-2018-0007, NPS-2014-0004, NPS-2015-0006
+docketTestTRUE <- d %>% 
+  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(docketId, "NPS-2018-0007"), org.comment == T)
 
+docketTest <- d %>% 
+  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(docketId, "NPS-2018-0005"), is.na(org.comment))
 
-example <- d %>% 
+false <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(is.na(org.comment) & attachmentCount > 1)
+  filter(org.comment == F)
 
-organizations <- d %>% 
+true <- d %>% 
   select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(org, ".*"))
-
+  filter(org.comment == T)
 
 
 ##############################################
@@ -662,7 +703,18 @@ d %<>%
   mutate(position = ifelse (str_dct(documentId, "FWS-HQ-NWRS-2012-0086-0032"), "5", position)) %>% #confirm?
   #spotted owl
   mutate(position = ifelse (str_dct(documentId, "FWS-R1-ES-2011-0112-0882"), "1", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, "FWS-R1-ES-2011-0112-0882"), "1", position)) %>% 
+  #hunting wildlife in Alaska
+  mutate(position = ifelse (str_dct(documentId, "NPS-2018-0005-117264"), "1", position)) %>% 
+  mutate(position = ifelse (str_dct(documentId, "NPS-2018-0005-116315"), "1", position)) %>% 
+  mutate(position = ifelse (str_dct(documentId, "NPS-2018-0005-175662"), "3", position)) %>% #not org but pro
+  #demonstration regulations
+  mutate(position = ifelse (str_dct(documentId, "NPS-2018-0007-49456"), "1", position)) %>% 
+  mutate(position = ifelse (str_dct(documentId, "NPS-2018-0007-49527"), "1", position)) %>% 
+  
+
+
+
+
 
 
 
