@@ -3,4 +3,6 @@ cd /project/judgelord/rulemaking
 ls
 R
 list.files( )
+list.files("data")
+list.files("ascending")
 head(list.files("comments"))

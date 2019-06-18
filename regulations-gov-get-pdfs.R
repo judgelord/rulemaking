@@ -9,7 +9,7 @@
 
 dim(d)
 names(d)
-head(d$org.comment)
+head(d)
 docs <- d %>% filter(org.comment)
 dim(docs)
 
@@ -46,8 +46,12 @@ download.file(download$attach.url[i],
 
 # FIXME
 # should use purrr walk() here and in get-attachments  
+
+
 # loop over downloading attachments 78 at a time (regulations.gov blocks after 78?)
+# need to run this loop about n/78 times to get everything
 for(i in 1:round(dim(download)[1]/78)){
+  # filter out files already downloaded
   download %<>% filter(!file %in% list.files("comments/") ) 
   
   ## Reset error counter inside function 
@@ -61,41 +65,16 @@ for(i in 1:round(dim(download)[1]/78)){
                       destfile = paste0("comments/", download$file[i]) ) 
       },
       error = function(e) {
-        errorcount<<-errorcount+1
+        errorcount <<- errorcount+1
         print(errorcount)
         if( str_detect(e[[1]][1], "cannot open URL") ){
-          download$file[i] <<- "cannot open URL.csv" # this is a dummy file in the comments folder, which will cause this url to be filtered out
+          download$file[i] <<- "cannot open URL.csv" # this is a dummy file in the comments folder, which will cause this url to be filtered out for future runs of the loop
         }
         print(e)
       })
       print(i)
-      #Sys.sleep(1) # pausing between requests does not seem to help, but makes it easier to stop failed calls
+      Sys.sleep(1) # pausing between requests does not seem to help, but makes it easier to stop failed calls
     }}
   Sys.sleep(600) # 10 min
 }
 
-##################
-
-list.files("comments")
-# pdftools::pdf_text("comments/WHD-2017-0002-138298-1.pdf")
-# READ TEXTS
-# initialize and loop over downloaded attachments to read in texts
-files <- data.frame(fileId = as.character(paste0("comments/",list.files("comments"))), 
-                    attach.text = NA)
-dim(files)
-files$fileId %<>% as.character()
-files$fileId[1]
-
-for(i in 1:dim(files)[1]){
-  # read / ocr text 
-  # text <-  textread::read_document(docs$file[i]) 
-  tryCatch({
-    text <-  pdftools::pdf_text(
-      files$fileId[i]) 
-    
-    files$attach.text[i] <- text 
-  },
-  error = function(e) {
-    print(e)
-    print(i)
-  })}

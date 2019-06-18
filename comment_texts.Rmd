@@ -15,8 +15,6 @@ output:
 
 # load required packages
 source("setup.R")
-library(tidyverse)
-library(pdftools)
 ```
 
 Data: 
@@ -24,11 +22,6 @@ Data:
 # Convert pdf letters to text 
 This function uses `pdf_text` (we can also OCR images, but I have not yet done so).
 ```{r, eval=FALSE}
-ssh -Y judgelord@linstat.ssc.wisc.edu
-cd /project/judgelord/rulemaking
-ls
-R
-list.files( )
 head(list.files("comments"))
 
 files <- tibble(file = list.files("comments")) %>% distinct()
