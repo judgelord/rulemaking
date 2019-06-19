@@ -43,7 +43,7 @@ str_dct <- function(string, pattern) {
 #searching through EPA 
 #d <- topdockets %>% filter(agencyAcronym == "EPA")
 
-d <- d %>% filter(agencyAcronym == "NPS")
+d <- d %>% filter(agencyAcronym == "NHTSA")
 #looking through docket after
 #group by docket, orgname
 #summarize org.comment
@@ -627,8 +627,9 @@ d %<>%
 
 
 na <- d %>% 
-  select(docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
   filter(is.na(org.comment))
+
 
 noName <- d %>% 
   select(mass, congress,docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
@@ -653,7 +654,7 @@ false <- d %>%
   filter(org.comment == F)
 
 true <- d %>% 
-  select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
   filter(org.comment == T)
 
 
@@ -771,6 +772,17 @@ d %<>%
   mutate(position = ifelse (str_dct(documentId, "NPS-2015-0006-0018"), "5", position)) %>% 
   mutate(position = ifelse (str_dct(documentId, "NPS-2015-0006-0015"), "1", position)) %>% #assumption
   mutate(position = ifelse (str_dct(documentId, "NPS-2015-0006-0008"), "3", position)) %>% #assumption
+  
+#correct now on
+d %<>% 
+  #new energy conservation standards for manufactured housing
+  mutate(position = ifelse (str_dct(documentId, "EERE-2009-BT-BC-0021-0440"), "1", position)) %>% 
+  mutate(position = ifelse (str_dct(documentId, "EERE-2009-BT-BC-0021-0174"), "5", position)) %>% 
+  #conservation standards for refrigerated beverage vending machines 
+  mutate(position = ifelse (str_dct(documentId, "EERE-2013-BT-STD-0022-0052"), "3", position)) %>% 
+  mutate(position = ifelse (str_dct(documentId, "EERE-2013-BT-STD-0022-0051"), "5", position)) %>% #assumption
+
+  
 
 
 
@@ -783,7 +795,7 @@ position <- d %>%
   select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
   filter(str_dct(docketId, "NPS-2018-0005"), org.comment == T)
   
-  
+
 
 
 
