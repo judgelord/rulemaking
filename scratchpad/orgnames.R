@@ -43,7 +43,7 @@ str_dct <- function(string, pattern) {
 #searching through EPA 
 #d <- topdockets %>% filter(agencyAcronym == "EPA")
 
-d <- d %>% filter(agencyAcronym == "NHTSA")
+d <- d %>% filter(agencyAcronym == "FDA")
 #looking through docket after
 #group by docket, orgname
 #summarize org.comment
@@ -226,7 +226,7 @@ d %<>%
                       str_rm_all(title, ".* sponsor... by|\\(.*"), 
                       org)) %>% 
   #association
-  mutate(org = ifelse(is.na(org) & grepl(".* association", title, ignore.case = TRUE) & !grepl("association of", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & grepl(".*association", title, ignore.case = TRUE) & !grepl("association of", title, ignore.case = TRUE), 
                       str_rpl(title, "association .*", "Association"), 
                       org)) %>% 
   #association of
@@ -234,11 +234,15 @@ d %<>%
                       str_rpl(title, ".*association", "Association"), 
                       org)) %>% 
   #cooperative
-  mutate(org = ifelse(is.na(org) & grepl(".* cooperative", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & grepl(".*cooperative", title, ignore.case = TRUE), 
                       str_rpl(title, "cooperative.*", "Cooperative"), 
                       org)) %>% 
+  #co. 
+  mutate(org = ifelse(is.na(org) & grepl(".*Co\\.$", title, ignore.case = TRUE), 
+                      str_rm(title, "comment from"), 
+                      org)) %>% 
   #cooperative
-  mutate(org = ifelse(is.na(org) & grepl(".* LLP", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & grepl(".*LLP", title, ignore.case = TRUE), 
                       str_rpl(title, "LLP.*", "LLP"), 
                       org)) %>% 
   #mass mailer campaign 
@@ -270,6 +274,10 @@ d %<>%
   mutate(org = ifelse(is.na(org) & grepl(".*, .*president,.*", title, ignore.case = TRUE), 
                     str_rm(title, ".*, .*president,"), 
                     org)) %>% 
+  #testimony from
+  mutate(org = ifelse(is.na(org) & grepl("testimony from.*", title, ignore.case = TRUE), 
+                      str_rm(title, "testimony from"), 
+                      org)) %>% 
   #bring over organization to org
   mutate(org = ifelse(is.na(org), organization, org))
 
@@ -621,14 +629,65 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(documentId, "NPS-2014-0004-1150"), T, org.comment))
 #leaving the rest as n/a, don't seem to have an associated org or org.comment 
 
+#Comment from South Coast Air Quality Management District IN TITLE FIX
+#this is a problem in NHTSA
+
+#FDA
+d %<>%
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Inc\\.$"), T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Association$"), T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Co\\.$"), T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "testimony from"), T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "write in campaign"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "National Association of County and City Health Officials") & agencyAcronym == "FDA", T, org.comment)) %>%
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Delaware Division of Public Health") & agencyAcronym == "FDA", T, org.comment)) %>%
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Michigan Department of Community Health") & agencyAcronym == "FDA", T, org.comment)) %>%
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Arizonans for Non-Smokers' Rights") & agencyAcronym == "FDA", T, org.comment)) %>%
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "California Canning Peach Association") & agencyAcronym == "FDA", T, org.comment)) %>%
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "George Washington University Regulatory Studies Center") & agencyAcronym == "FDA", T, org.comment)) %>%
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Snohomish County Children's Commission") & agencyAcronym == "FDA", T, org.comment)) %>%
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Center for Science in the Public Interest") & agencyAcronym == "FDA", T, org.comment)) %>%
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Campbell Soup Company") & agencyAcronym == "FDA", T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "California Date Commission") & agencyAcronym == "FDA", T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "UCSF-UC Hastings Consortium on Law, Science, and Health Policy") & agencyAcronym == "FDA", T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "ILSI North America") & agencyAcronym == "FDA", T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "California Strawberry Commission") & agencyAcronym == "FDA", T, org.comment)) %>%
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Citizens for Health") & agencyAcronym == "FDA", T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "International Scientific Association for Probiotics and Prebiotics") & agencyAcronym == "FDA", T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "International Food Additives Council") & agencyAcronym == "FDA", T, org.comment))
+  
+  
+  
+  
+
+  #   #Comment from International Fiber Corp.
+  # Comment from Compton Point, Inc.
+  # Comment from The Sugar Association
+  # Comment from Center for Science in the Public Interest (CSPI)
+  # Comment from Independent Bakers Association
+  # Comment from Campbell Soup Company
+  # Matsutani America, Inc.
+  # Comment from American Public Health Association (APHA)
+  # Comment from International Food Additives Council (IFAC)
+  # Comment from Great Midwest Tobacco, Inc.
+  # Comment from North American Dried Cherry Cooperative, Inc.
+  # Comment from National WIC Association
+  # Comment from Midori Renewables, Inc.
+  # Comment from ILSI North America
+  # Comment from Seafood Products Association
+  # Comment from The Kroger Co.
+
+  
+  
+  
+  
 
 
-
-
+unique(d$docketId)
 
 na <- d %>% 
   select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(is.na(org.comment))
+  filter(is.na(org.comment), attachmentCount > 0)
 
 
 noName <- d %>% 
@@ -637,7 +696,7 @@ noName <- d %>%
 
 test <- d %>% 
   select(mass, congress,docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(commenttext, "this is the humane society"))
+  filter(str_dct(title, "testimony from"))
 
 
 #NPS-2018-0007, NPS-2014-0004, NPS-2015-0006
@@ -650,12 +709,16 @@ docketTest <- d %>%
   filter(str_dct(docketId, "NPS-2014-0004"), is.na(org.comment), str_dct(commenttext, "on behalf"))
 
 false <- d %>% 
-  select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  select(mass, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
   filter(org.comment == F)
 
 true <- d %>% 
-  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  select(mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
   filter(org.comment == T)
+#incorrecly marked false
+
+
+
 
 
 ##############################################
@@ -736,51 +799,51 @@ d %<>%
 d %<>% 
   mutate(position = NA) %>% 
   #putting turtle species on international trade list, not org.comment
-  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2013-0052-0013"), "1", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2013-0052-0010"), "3", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2013-0052-0016"), "2", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-ES-2013-0052-0013"), "1", position)) %>% 
+  mutate(position = ifelse (is.na(position) & str_dct(documentId, "FWS-HQ-ES-2013-0052-0010"), "3", position)) %>% 
+  mutate(position = ifelse (is.na(position) & str_dct(documentId, "FWS-HQ-ES-2013-0052-0016"), "2", position)) %>% 
   #listing white rhino as threatened
-  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2013-0055-0577"), "3", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2013-0055-0580"), "2", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-ES-2013-0055-0577"), "3", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-ES-2013-0055-0580"), "2", position)) %>% 
   #reclassification of african elephant to endangered
-  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2016-0010-1483"), "1", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, " FWS-HQ-ES-2016-0010-0446"), "3", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-ES-2016-0010-1483"), "1", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, " FWS-HQ-ES-2016-0010-0446"), "3", position)) %>% 
   #pangolin
-  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-ES-2016-0012-0008"), "2", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-ES-2016-0012-0008"), "2", position)) %>% 
   #Ivory
-  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-IA-2013-0091-0817"), "4", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-IA-2013-0091-5613"), "1", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-IA-2013-0091-5613"), "1", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-IA-2013-0091-5719"), "2", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-IA-2013-0091-0817"), "4", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-IA-2013-0091-5613"), "1", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-IA-2013-0091-5613"), "1", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-IA-2013-0091-5719"), "2", position)) %>% 
   #regulations governing non-federal oil and gas development 
-  mutate(position = ifelse (str_dct(documentId, "FWS-HQ-NWRS-2012-0086-0032"), "5", position)) %>% #confirm?
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-NWRS-2012-0086-0032"), "5", position)) %>% #confirm?
   #spotted owl
-  mutate(position = ifelse (str_dct(documentId, "FWS-R1-ES-2011-0112-0882"), "1", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-R1-ES-2011-0112-0882"), "1", position)) %>% 
   #altering rules for hunting wildlife in Alaska, permitting aggressive take and harvest practices #check thwaw
 ####GONE THROUGH, #YES are the ones I have looked at
-  mutate(position = ifelse (str_dct(documentId, "NPS-2018-0005-160808"), "2", position)) %>% #YES
-  mutate(position = ifelse (str_dct(documentId, "NPS-2018-0005-78196"), "1", position)) %>% #read articles, can't read from just commenttext
-  mutate(position = ifelse (str_dct(documentId, "NPS-2018-0005-175662"), "3", position)) %>% #not org but pro
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "NPS-2018-0005-160808"), "2", position)) %>% #YES
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "NPS-2018-0005-78196"), "1", position)) %>% #read articles, can't read from just commenttext
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "NPS-2018-0005-175662"), "3", position)) %>% #not org but pro
   #demonstration regulations
-  mutate(position = ifelse (str_dct(documentId, "NPS-2018-0007-49456"), "1", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, "NPS-2018-0007-49527"), "1", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, "NPS-2018-0007-7913"), "5", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "NPS-2018-0007-49456"), "1", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "NPS-2018-0007-49527"), "1", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "NPS-2018-0007-7913"), "5", position)) %>% 
   #sport hunting and trapping, NPS does not adopt state of alaskas take and harvest practices
-  mutate(position = ifelse (str_dct(documentId, "NPS-2014-0004-1163"), "2", position)) %>% #support preventions, also dont want hunting dogs
-  mutate(position = ifelse (str_dct(documentId, "NPS-2014-0004-2345"), "1", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "NPS-2014-0004-1163"), "2", position)) %>% #support preventions, also dont want hunting dogs
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "NPS-2014-0004-2345"), "1", position)) %>% 
   #proposed rule and EIS on the revision of governing non-federal oil and gas development within the boundaries of units of the national park system
-  mutate(position = ifelse (str_dct(documentId, "NPS-2015-0006-0018"), "5", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, "NPS-2015-0006-0015"), "1", position)) %>% #assumption
-  mutate(position = ifelse (str_dct(documentId, "NPS-2015-0006-0008"), "3", position)) %>% #assumption
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "NPS-2015-0006-0018"), "5", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "NPS-2015-0006-0015"), "1", position)) %>% #assumption
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "NPS-2015-0006-0008"), "3", position)) #assumption
   
 #correct now on
 d %<>% 
   #new energy conservation standards for manufactured housing
-  mutate(position = ifelse (str_dct(documentId, "EERE-2009-BT-BC-0021-0440"), "1", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, "EERE-2009-BT-BC-0021-0174"), "5", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2009-BT-BC-0021-0440"), "1", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2009-BT-BC-0021-0174"), "5", position)) %>% 
   #conservation standards for refrigerated beverage vending machines 
-  mutate(position = ifelse (str_dct(documentId, "EERE-2013-BT-STD-0022-0052"), "3", position)) %>% 
-  mutate(position = ifelse (str_dct(documentId, "EERE-2013-BT-STD-0022-0051"), "5", position)) %>% #assumption
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2013-BT-STD-0022-0052"), "3", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2013-BT-STD-0022-0051"), "5", position)) #assumption
 
   
 
