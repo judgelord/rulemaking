@@ -880,8 +880,8 @@ orgInfo <- tribble(
 #join orgInfo into orginial dataset
 ###################################################
 d %<>% 
-  left_join(orgInfo) %>% 
-  select(agencyAcronym, title, commenttext, organization, org.comment, org, org.type, org.ej.community)
+  left_join(orgInfo)
+  #select(agencyAcronym, title, commenttext, organization, org.comment, org, org.type, org.ej.community, everything())
   #filter(grepl("earthjustice", org, ignore.case = TRUE))
 
 
@@ -894,8 +894,8 @@ d %<>%
   mutate(position = NA) %>% 
   #putting turtle species on international trade list, not org.comment
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-ES-2013-0052-0013"), "1", position)) %>% 
-  mutate(position = ifelse (is.na(position) & str_dct(documentId, "FWS-HQ-ES-2013-0052-0010"), "3", position)) %>% 
-  mutate(position = ifelse (is.na(position) & str_dct(documentId, "FWS-HQ-ES-2013-0052-0016"), "2", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-ES-2013-0052-0010"), "3", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-ES-2013-0052-0016"), "2", position)) %>% 
   #listing white rhino as threatened
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-ES-2013-0055-0577"), "3", position)) %>% 
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "FWS-HQ-ES-2013-0055-0580"), "2", position)) %>% 
