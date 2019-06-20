@@ -224,10 +224,6 @@ d <- STARTOVER
 d %<>% 
   mutate(org = NA) 
 
-check <- d %>% 
-  select(mass, docketId, documentId , attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org) %>% 
-  filter(str_dct(org, ".*"), str_dct(title, "community"))
-
 #broader rules
 #############
 d %<>% 
@@ -247,9 +243,13 @@ d %<>%
   mutate(org = ifelse(is.na(org) & grepl(".*company", title, ignore.case = TRUE), 
                       str_rpl(title, "company.*", "Company"), 
                       org)) %>%
+  #conservancy
+  mutate(org = ifelse(is.na(org) & grepl(".*conservancy", title, ignore.case = TRUE), 
+                      str_rpl(title, ".*company", "conservancy"), 
+                      org)) %>%
   #department
   mutate(org = ifelse(is.na(org) & grepl("department", title, ignore.case = TRUE), 
-                      str_ext(title, "\\w+ department.*"), 
+                      str_ext(title, "\\w+ \\w+ \\w+ \\w+ department.*"), 
                       org)) %>%
   #center
   mutate(org = ifelse(is.na(org) & grepl(".*Center", title, ignore.case = TRUE), 
@@ -287,17 +287,26 @@ d %<>%
   mutate(org = ifelse(is.na(org) & grepl(".*LLC", title, ignore.case = TRUE), 
                       str_rpl(title, "LLC.*", "LLC"), 
                       org)) %>% 
-  ##FIXME
   #coalition
-  mutate(org = ifelse(is.na(org) & grepl(".*LLC", title, ignore.case = TRUE), 
-                      str_rpl(title, "LLC.*", "LLC"), 
+  mutate(org = ifelse(is.na(org) & grepl("coalition", title, ignore.case = TRUE), 
+                      str_ext(title, "\\w+ \\w+ \\w+ coalition"), 
                       org)) %>% 
   #institute
-  mutate(org = ifelse(is.na(org) & grepl(".*LLC", title, ignore.case = TRUE), 
-                      str_rpl(title, "LLC.*", "LLC"), 
+  mutate(org = ifelse(is.na(org) & grepl("insitute", title, ignore.case = TRUE), 
+                      str_ext(title, "\\w+ \\w+ \\w+ institute"), 
                       org)) %>% 
-  #council
+  #alliance
+  mutate(org = ifelse(is.na(org) & grepl("alliance", title, ignore.case = TRUE), 
+                      str_ext(title, "\\w+ \\w+ \\w+ institute"), 
+                      org)) %>% 
   #growers
+  mutate(org = ifelse(is.na(org) & grepl("growers", title, ignore.case = TRUE), 
+                      str_ext(title, "\\w+ \\w+ \\w+ growers"), 
+                      org)) %>% 
+  #council, could use fixing
+  mutate(org = ifelse(is.na(org) & grepl("council", title, ignore.case = TRUE), 
+                      str_ext(title, ".* council"), 
+                      org)) %>% 
   #mass mailer campaign 
   mutate(org = ifelse(is.na(org) & grepl(".*mass mailer campaign", title, ignore.case = TRUE), 
                     str_rm(title, "mass mailer campaign.*"), 
@@ -694,7 +703,6 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(documentId, "NPS-2015-0006-0007"), T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(documentId, "NPS-2015-0006-0009"), T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(documentId, "NPS-2014-0004-1150"), T, org.comment))
-#leaving the rest as n/a, don't seem to have an associated org or org.comment 
 
 #Comment from South Coast Air Quality Management District IN TITLE FIX
 #this is a problem in NHTSA
@@ -713,6 +721,7 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "request for extension"), T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "director|president|attorney"), T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "farm$"), T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "\\(") & agencyAcronym == "FDA", T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, ".*") & agencyAcronym == "FDA", T, org.comment)) %>% 
   #specific true
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "National Association of County and City Health Officials") & agencyAcronym == "FDA", T, org.comment)) %>%
@@ -772,7 +781,7 @@ na <- d %>%
 
 business <- d %>% 
   select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(title, "director|president|attorney"))
+  filter(str_dct(title, "\\("))
 
 
 noName <- d %>% 
