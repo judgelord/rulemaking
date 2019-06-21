@@ -4,7 +4,7 @@
 
 
 # load("ascending/allcomments.Rdata")
-# load("data/mass.Rdata")
+# load(here("data/masscomments.Rdata"))
 # docs <- filter(all, documentId %in% mass$documentId)
 
 dim(d)
@@ -13,6 +13,8 @@ head(d)
 docs <- d %>% filter(org.comment)
 dim(docs)
 
+save(docs, file = "data/org_comments.Rdata")
+# load("data/org_comments.Rdata")
 docs %<>% 
   mutate(file = str_c(documentId, "-1.pdf"),
          attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
@@ -35,20 +37,23 @@ dim(download)
 download %<>% filter(!file %in% list.files("comments/") ) %>%
   filter(!attach.url %in% c("","NULL"), !is.null(attach.url) )
 dim(docs)
+names(download)
 dim(download)
 head(download$documentId)
 
-# files that we have not already tried
-# Save data on failed downloads 
+# Load data on failed downloads 
 load("data/comment_fails.Rdata")
 
+# files that we have not already tried
 download %<>% anti_join(fails)
+# download %<>% filter(attachmentCount > 1)
+dim(download)
+head(download$attach.url)
 
 # test
-i <- 5
+i <- 3
 download.file(download$attach.url[i], 
               destfile = str_c("comments/", download$file[i]) ) 
-
 
 # FIXME
 # should use purrr walk() here and in get-attachments  
