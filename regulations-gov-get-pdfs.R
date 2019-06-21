@@ -38,6 +38,12 @@ dim(docs)
 dim(download)
 head(download$documentId)
 
+# files that we have not already tried
+# Save data on failed downloads 
+load("data/comment_fails.Rdata")
+
+download %<>% anti_join(fails)
+
 # test
 i <- 5
 download.file(download$attach.url[i], 
@@ -77,4 +83,5 @@ for(i in 1:round(dim(download)[1]/78)){
     }}
   Sys.sleep(600) # 10 min
 }
+
 

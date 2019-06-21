@@ -28,13 +28,18 @@ files <- tibble(file = list.files("comments")) %>% distinct()
 dim(files)
 
 files %<>% mutate(pdf = str_detect(file, "pdf"))
+files %>% count(pdf)
+files$file[1]
+
+totext(files$file[1])
 
 ## FOR TESTING 
 # files <- head(files)
 # file_name = files$file[1]
 
+library(pdftools)
 totext <- function(file_name){
-  # paste pages
+  # default value is NA
   text <- NA
   # if the file is a pdf, run pdf_text
   if(str_detect(file_name, "pdf")){
@@ -53,6 +58,11 @@ totext <- function(file_name){
 
 ## If possible, read text (returns a list of char)
 files$text <- map(files$file, possibly(totext, NA_real_, quiet = T))
+
+## Inspect
+files$text[1]
+files %>% mutate(missing = is.na(text)) %>% count(missing)
+
 
 # A helper function to clean strings
 Clean_String <- function(string){
@@ -75,6 +85,8 @@ files %<>%
 head(files$documentId)
 head(files$url)
 names(files)
+files$text_clean[1]
+files %>% mutate(missing = text_clean == "NA") %>% count(missing)
 
 # data that only contains file names and short text
 comment_text_short <- files %>% select(documentId, text_clean_short, url)
@@ -82,11 +94,21 @@ comment_text_short <- files %>% select(documentId, text_clean_short, url)
 save(comment_text_short, file = "data/comment_text_short.Rdata") # <100 MB
 save(files, file = "data/comment_text.Rdata") # >100 MB
 
+
+# Save data on failed downloads 
+fails2 <- files %>% filter(is.na(text)) %>% select(file)
+dim(fails2)
+load("data/comment_fails.Rdata")
+fails %<>% full_join(fails2)
+save(fails, file = "data/comment_fails.Rdata") 
+
 q()
+n
 git add data/comment_text_short.Rdata
 git commit -m "update comment text short Rdata sample"
 git pull
 git push
+judgelord
 ```
 
 

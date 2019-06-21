@@ -25,6 +25,7 @@ requires <- c("gmailr",
               # "MCMCpack",
               "gtools",
               #"textreadr",
+              "pdftools",
               "tidyverse")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
 install.packages(c(requires[to_install], "NA"), repos = "https://cloud.r-project.org/" )
@@ -56,6 +57,8 @@ library(tidytext)
 library(topicmodels)
 library(textfeatures)
 library(cleanNLP)
+library(pdftools)
+library(tidyverse)
 # library(textreadr)
 
 knitr::opts_chunk$set(echo = TRUE, 
