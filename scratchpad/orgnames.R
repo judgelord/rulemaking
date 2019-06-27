@@ -46,7 +46,7 @@ str_ext <- function(string, pattern) {
 #searching through EPA 
 #d <- topdockets %>% filter(agencyAcronym == "EPA")
 
-d <- d %>% filter(agencyAcronym == "OSHA")
+d <- d %>% filter(agencyAcronym == "CFPB")
 #looking through docket after
 #group by docket, orgname
 #summarize org.comment
@@ -58,7 +58,6 @@ unique(d$docketId)
 #d <- mass %>% filter(agencyAcronym == "EPA")
 
 
-#later select later.. Forest Service
 
 #all the agency list
 unique(d$agencyAcronym)
@@ -108,16 +107,16 @@ d %<>%
 
 
 ###all listed agency acronymns 
-# "OSHA"  "HUD"  "IRS"   "NRC"   "CFPB"  "NOAA"  "OTS"   "HHS"   "USCIS" "CMS"   "ED"    "DOD"   "ETA"   "BLM"   "FNS"   "FAA"   "ATF"   "DOI"  
+# "IRS"   "CFPB"  "NOAA"  "OTS"   "HHS"   "USCIS" "CMS"   "ED"    "DOD"   "ETA"   "BLM"   "FNS"   "FAA"   "ATF"   "DOI"  
 #[26] "OCC"   "EBSA"  "SSA"   "BSEE"  "OSM"   "BOEM"  "WHD"   "OMB"   "FEMA"  "FHWA"  "PHMSA" "BIA"   "OFCCP" "ACF"   "DOL"   "CDC"   "OPM"   "LMSO"  "CPSC"  "EEOC"  "MMS" 
 
 #Notes: 
 #############################
 #completed agencies
-#FWS #NPS #FDA #EERE #EPA #FDA #VA
+#FWS #NPS #FDA #EERE #EPA #FDA #VA #OSHA
 
 #messy agencies
-#NHTSA
+#NHTSA #OSHA #HUD (CAN FIX) #NRC(all are marked in organization)
 ##############################
 
 sum(is.na(d$numberOfCommentsReceived))
@@ -228,10 +227,11 @@ d$organization <- gsub(" $", "", d$organization, ignore.case = TRUE)
 STARTOVER <- d
 d <- STARTOVER
 
+
 #Org variable
 ########################################################################################################
 d %<>% 
-  mutate(org = NA) 
+  mutate(org = NA)
 
 #broader rules
 #############
@@ -623,7 +623,11 @@ d %<>%
 
 temp <- d
 d <- temp 
-  
+
+
+na <- d %>% 
+  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(is.na(org.comment), str_dct(org, ".*"))
 #org
 ##############################
 #mutate org to lower
@@ -830,7 +834,16 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitter|comment submission") & is.na(org), F, org.comment)) %>% 
   #true
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, ".*") & agencyAcronym == "VA", T, org.comment))
-  
+
+#IRS
+d %<>%
+  #false
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, str_c("No public comment", "No comment submitted", "Withdraw needs additional information", "Explicit language",
+                                                                        "incorrect information", "should be posted as a comment", "No comment public", "wrong Regulation", 
+                                                                        "Incorrect information", "No attachment", "Removed due to language", "This public comment was redacted",
+                                                                        "Posted to incorrect docket.", "incomplete information", 
+                                                                                     sep = "|")), F, org.comment))
+
 
 #filling in org after org.comment
 d %<>%
@@ -848,7 +861,7 @@ unique(d$docketId)
 
 na <- d %>% 
   select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(is.na(org.comment))
+  filter(is.na(org.comment), str_dct(org, ".*"))
 
 true <- d %>% 
   select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org, congress) %>% 
