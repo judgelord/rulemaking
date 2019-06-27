@@ -580,7 +580,7 @@ d %<>%
                     "CREDO Action", 
                     org)) %>% 
   #Public Citizen
-  mutate(org = ifelse(is.na(org) & grepl(".*Public Citizen members", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & grepl(".*Public Citizen", commenttext, ignore.case = TRUE), 
                       "Public Citizen", 
                       org)) %>% 
   #no-reply@democracyinaction.org
@@ -751,7 +751,7 @@ d %<>%
   #finding false
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(mass, "mass"), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "as one of the 1.3 million|as one of 1.3 million|an one of the 1.3 million") & str_dct(commenttext, "national parks conservation association") & agencyAcronym == "NPS", F, org.comment)) %>%
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, str_c("none", "unknown", "individual", "citizen", "self", "not applicable", "private", "personal", "lover", "mr.", "mrs.", "ms",
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(organization, str_c("none", "unknown", "individual", "^citizen$", "self", "not applicable", "private", "personal", "lover", "mr.", "mrs.", "ms",
                                                                         "retired", "dr", "miss ", "mr ", sep = "|")), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I urge you not to adopt the proposed rule .* impacts on public safety") & agencyAcronym == "NPS", F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "as a citizen") & agencyAcronym == "NPS", F, org.comment)) %>% 
@@ -822,9 +822,9 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "International Scientific Association for Probiotics and Prebiotics") & agencyAcronym == "FDA", T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "International Food Additives Council") & agencyAcronym == "FDA", T, org.comment)) %>% 
 #false
-  mutate(org.comment = ifelse(is.na(org.comment) & attachmentCount == 0, F, org.comment))
+  mutate(org.comment = ifelse(is.na(org.comment) & attachmentCount == 0 & agencyAcronym == "FDA", F, org.comment))
 
-#NA
+#VA
 d %<>%
   #false
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitter|comment submission") & is.na(org), F, org.comment)) %>% 
@@ -851,11 +851,11 @@ na <- d %>%
   filter(is.na(org.comment))
 
 true <- d %>% 
-  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org, congress) %>% 
   filter(org.comment == T)
 
 false <- d %>% 
-  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org, congress) %>% 
   filter(org.comment == F)
 
 noName <- d %>% 
@@ -870,16 +870,16 @@ test <- d %>%
 #PUT DOCKET OPTIONS HERE
 docketTestTRUE <- d %>% 
   select(rin, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "VA-2016-VHA-0011"), org.comment == T)
+  filter(str_dct(docketId, "OSHA-2007-0072"), org.comment == T)
 
 
 docketTestYES <- d %>% 
   select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "VA-2016-VHA-0011"), org.comment == T, str_dct(commenttext, "support"))
+  filter(str_dct(docketId, "OSHA-2007-0072"), org.comment == T, str_dct(commenttext, "support"))
 
 docketTestNO <- d %>% 
   select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "VA-2016-VHA-0011"), org.comment == T, str_dct(commenttext, "oppose"))
+  filter(str_dct(docketId, "OSHA-2007-0072"), org.comment == T, str_dct(commenttext, "oppose"))
 
 
 false <- d %>% 
@@ -1060,11 +1060,21 @@ d %<>%
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2015-N-1514-0133"), "3", position)) %>% 
   #Menthol in Cigarettes, Tobacco Products
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2013-N-0521-0397"), "5", position)) %>% 
-  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2013-N-0521-0377"), "4", position))
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2013-N-0521-0377"), "4", position)) %>% 
 #VA
   #AP44- Proposed Rule - Advanced Practice Registered Nurses
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "VA-2016-VHA-0011-60042"), "2", position)) %>% 
-  mutate(position = ifelse(is.na(position) & str_dct(documentId, "VA-2016-VHA-0011-216807"), "4", position))
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "VA-2016-VHA-0011-216807"), "4", position)) %>% 
+#OSHA
+  #Tracking of Workplace Injuries and Illnesses #split administration
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "OSHA-2013-0023-2031"), "2", position)) %>% #commenting on the newer repeal of improve tracking of workplace injuries
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "OSHA-2013-0023-0240"), "2", position)) %>% #commenting on the older improve tracking of workplace injuries
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "OSHA-2013-0023-1387"), "4", position)) %>% #commenting on the older improve tracking of workplace injuries
+  #Occupational Exposure to Beryllium, commenting on new proposal that revokes 2017 provisions
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "OSHA-H005C-2006-0870-2093"), "2", position)) %>% 
+  #Occupational Exposure to Crystalline Silica, face significant risk
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "OSHA-2010-0034-1964"), "2", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "OSHA-2010-0034-2166"), "4", position))
 
 
   
