@@ -46,7 +46,7 @@ str_ext <- function(string, pattern) {
 #searching through EPA 
 #d <- topdockets %>% filter(agencyAcronym == "EPA")
 
-d <- d %>% filter(agencyAcronym == "FDA")
+d <- d %>% filter(agencyAcronym == "OSHA")
 #looking through docket after
 #group by docket, orgname
 #summarize org.comment
@@ -108,11 +108,17 @@ d %<>%
 
 
 ###all listed agency acronymns 
-# "NHTSA" "FDA"   "OSHA"  "HUD"   "VA"    "IRS"   "NRC"   "CFPB"  "NOAA"  "OTS"   "HHS"   "USCIS" "CMS"   "ED"    "DOD"   "ETA"   "BLM"   "FNS"   "FAA"   "ATF"   "DOI"  
+# "OSHA"  "HUD"  "IRS"   "NRC"   "CFPB"  "NOAA"  "OTS"   "HHS"   "USCIS" "CMS"   "ED"    "DOD"   "ETA"   "BLM"   "FNS"   "FAA"   "ATF"   "DOI"  
 #[26] "OCC"   "EBSA"  "SSA"   "BSEE"  "OSM"   "BOEM"  "WHD"   "OMB"   "FEMA"  "FHWA"  "PHMSA" "BIA"   "OFCCP" "ACF"   "DOL"   "CDC"   "OPM"   "LMSO"  "CPSC"  "EEOC"  "MMS" 
 
+#Notes: 
+#############################
 #completed agencies
-#FWS #NPS #FDA #EERE #EPA
+#FWS #NPS #FDA #EERE #EPA #FDA #VA
+
+#messy agencies
+#NHTSA
+##############################
 
 sum(is.na(d$numberOfCommentsReceived))
 sum(is.na(d$commentText))
@@ -818,8 +824,14 @@ d %<>%
 #false
   mutate(org.comment = ifelse(is.na(org.comment) & attachmentCount == 0, F, org.comment))
 
+#NA
+d %<>%
+  #false
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitter|comment submission") & is.na(org), F, org.comment)) %>% 
+  #true
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, ".*") & agencyAcronym == "VA", T, org.comment))
   
-  
+
 #filling in org after org.comment
 d %<>%
   mutate(org = ifelse(is.na(org) & org.comment == T & str_dct(title, "\\("), 
@@ -838,28 +850,36 @@ na <- d %>%
   select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
   filter(is.na(org.comment))
 
+true <- d %>% 
+  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(org.comment == T)
+
+false <- d %>% 
+  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(org.comment == F)
+
 noName <- d %>% 
   select(mass, congress,docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
   filter(org.comment == T, is.na(org))
 
 test <- d %>% 
   select(mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(commenttext, "friends of the earth urges"))
+  filter(str_dct(title, "comment submitter"), is.na(org.comment))
 
 
 #PUT DOCKET OPTIONS HERE
 docketTestTRUE <- d %>% 
   select(rin, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "FDA-2013-N-0521"), org.comment == T)
+  filter(str_dct(docketId, "VA-2016-VHA-0011"), org.comment == T)
 
 
 docketTestYES <- d %>% 
   select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "FDA-2013-N-0521"), org.comment == T, str_dct(commenttext, "support"))
+  filter(str_dct(docketId, "VA-2016-VHA-0011"), org.comment == T, str_dct(commenttext, "support"))
 
 docketTestNO <- d %>% 
   select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "FDA-2013-N-0521"), org.comment == T, str_dct(commenttext, "oppose"))
+  filter(str_dct(docketId, "VA-2016-VHA-0011"), org.comment == T, str_dct(commenttext, "oppose"))
 
 
 false <- d %>% 
@@ -1041,7 +1061,11 @@ d %<>%
   #Menthol in Cigarettes, Tobacco Products
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2013-N-0521-0397"), "5", position)) %>% 
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2013-N-0521-0377"), "4", position))
-  
+#VA
+  #AP44- Proposed Rule - Advanced Practice Registered Nurses
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "VA-2016-VHA-0011-60042"), "2", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "VA-2016-VHA-0011-216807"), "4", position))
+
 
   
   
