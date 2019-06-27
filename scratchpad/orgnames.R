@@ -297,7 +297,7 @@ d %<>%
                       org)) %>% 
   #institute
   mutate(org = ifelse(is.na(org) & grepl("institute|insitute", title, ignore.case = TRUE), 
-                      str_ext(title, "\\w+ \\w+ \\w+ institute"), 
+                      str_ext(title, ".*institute"), 
                       org)) %>% 
   #academy
   mutate(org = ifelse(is.na(org) & grepl("academy of", title, ignore.case = TRUE), 
@@ -778,9 +778,6 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(documentId, "NPS-2015-0006-0009"), T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(documentId, "NPS-2014-0004-1150"), T, org.comment))
 
-#Comment from South Coast Air Quality Management District IN TITLE FIX
-#this is a problem in NHTSA
-
 #FDA
 d %<>%
   #false
@@ -813,12 +810,13 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "California Strawberry Commission") & agencyAcronym == "FDA", T, org.comment)) %>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Citizens for Health") & agencyAcronym == "FDA", T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "International Scientific Association for Probiotics and Prebiotics") & agencyAcronym == "FDA", T, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "International Food Additives Council") & agencyAcronym == "FDA", T, org.comment))
-
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "International Food Additives Council") & agencyAcronym == "FDA", T, org.comment)) %>% 
+#false
+  mutate(org.comment = ifelse(is.na(org.comment) & attachmentCount == 0, F, org.comment))
 
   
   
-#org after org.comment
+#filling in org after org.comment
 d %<>%
   mutate(org = ifelse(is.na(org) & org.comment == T & str_dct(title, "\\("), 
                       str_ext(title, "\\w+ \\w+ \\w+ \\w+ \\("), org)) %>% 
@@ -835,7 +833,7 @@ unique(d$docketId)
 
 na <- d %>% 
   select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(is.na(org.comment), attachmentCount > 0)
+  filter(is.na(org.comment))
 
 business <- d %>% 
   select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
@@ -848,7 +846,7 @@ noName <- d %>%
 
 test <- d %>% 
   select(mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(title, "board of"))
+  filter(str_dct(commenttext, "friends of the earth urges"))
 
 
 #NPS-2018-0007, NPS-2014-0004, NPS-2015-0006
