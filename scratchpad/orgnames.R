@@ -108,8 +108,11 @@ d %<>%
 
 
 ###all listed agency acronymns 
-#"FWS"   "NPS"   "EERE"  "EPA"   "NHTSA" "FDA"   "OSHA"  "HUD"   "VA"    "IRS"   "NRC"   "CFPB"  "NOAA"  "OTS"   "HHS"   "USCIS" "CMS"   "ED"    "DOD"   "ETA"   "BLM"   "FNS"   "FAA"   "ATF"   "DOI"  
+# "NHTSA" "FDA"   "OSHA"  "HUD"   "VA"    "IRS"   "NRC"   "CFPB"  "NOAA"  "OTS"   "HHS"   "USCIS" "CMS"   "ED"    "DOD"   "ETA"   "BLM"   "FNS"   "FAA"   "ATF"   "DOI"  
 #[26] "OCC"   "EBSA"  "SSA"   "BSEE"  "OSM"   "BOEM"  "WHD"   "OMB"   "FEMA"  "FHWA"  "PHMSA" "BIA"   "OFCCP" "ACF"   "DOL"   "CDC"   "OPM"   "LMSO"  "CPSC"  "EEOC"  "MMS" 
+
+#completed agencies
+#FWS #NPS #FDA #EERE #EPA
 
 sum(is.na(d$numberOfCommentsReceived))
 sum(is.na(d$commentText))
@@ -411,6 +414,7 @@ d %<>%
   mutate(org = ifelse(is.na(org), organization, org))
 
 
+
 #Specific Cases
 ###############
 
@@ -620,7 +624,7 @@ d <- temp
 ##org is who your mobilized by
 d %<>% 
   mutate(org = tolower(org)) %>% 
-  mutate(org = str_remove(org, "^comment from|^from|^re |- comment$|-comment$|comment$")) %>% 
+  mutate(org = str_remove(org, "^comment from|^from|^re |- comment$|-comment$|comment$|^request for extension|^request for an extension")) %>% 
   mutate(org = ifelse(str_detect(org, str_c("^none$", "^unknown$", "^individual$", "citizen$", "self$", "not applicable", "^private$", "personal", "lover", "mr.$", "mrs.$", "ms$",
                                          "retired", "dr$", "miss$", "mr$", "ms.$", "mr.$", "^na$", "^me$", "^-$|^--$", "street$", "^happy$", "^r$", "^home$", "please select", "^brain$", "^no name$",
                                          "no one$", "^nol longer", "no organization$", "- select -", "- none - ","--none--", "concerned citizen$", "-none-", "select...", "send$", "^love$", "^n.a.$",
@@ -826,19 +830,13 @@ d %<>%
   
   
 #TESTING  
-##########  
-
+##########
 
 unique(d$docketId)
 
 na <- d %>% 
   select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
   filter(is.na(org.comment))
-
-business <- d %>% 
-  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(title, "commerce"))
-
 
 noName <- d %>% 
   select(mass, congress,docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
@@ -849,14 +847,16 @@ test <- d %>%
   filter(str_dct(commenttext, "friends of the earth urges"))
 
 
-#NPS-2018-0007, NPS-2014-0004, NPS-2015-0006
+#  "FDA-2008-N-0326" "FDA-2014-N-2235" "FDA-2011-N-0899" "FDA-1997-N-0020" "FDA-2014-N-0189" "FDA-2013-N-0500"
+#"FDA-2015-N-1514" "FDA-2013-N-0521"
 docketTestTRUE <- d %>% 
-  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "NPS-2015-0006"), org.comment == T)
+  select(rin, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(docketId, "FDA-2011-F-0172"), org.comment == T)
+
 
 docketTest <- d %>% 
   select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "NPS-2014-0004"), is.na(org.comment), str_dct(commenttext, "on behalf"))
+  filter(str_dct(docketId, "FDA-2011-N-0920"), org.comment == T, str_dct(commenttext, "support"))
 
 false <- d %>% 
   select(mass, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
@@ -927,8 +927,10 @@ orgInfo <- tribble(
   "west energy alliance", "", "no", #fix
   "the independent petroleum association of america", "corp group", "no", 
   "the america exploration & production council", "corp group", "no", 
-  "Congressional Sportsmen's Foundation", "ngo", "no", 
-  "American Petroleum Institute", "corp group", "no"
+  "congressional sportsmen's foundation", "ngo", "no", 
+  "american petroleum institute", "corp group", "no", 
+  "prevention insitute", "ngo", "yes" #claims health equity community work
+  
 )
 
 #these are in addition to our official organization comments 
@@ -988,14 +990,36 @@ d %<>%
   
 #correct now on
 d %<>% 
+  #EERE
   #new energy conservation standards for manufactured housing
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2009-BT-BC-0021-0440"), "1", position)) %>% 
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2009-BT-BC-0021-0174"), "5", position)) %>% 
   #conservation standards for refrigerated beverage vending machines 
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2013-BT-STD-0022-0052"), "3", position)) %>% 
-  mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2013-BT-STD-0022-0051"), "5", position)) #assumption
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2013-BT-STD-0022-0051"), "5", position)) %>%  #assumption
+  #FDA
+  #Food Labeling; Revision of the Nutrition and Supplement Facts #split across administrations
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2012-N-1210-2019"), "", position)) %>% #opposed to the new changes made on an old docket in Trump
+  #Standards for the Growing, Harvesting, Packing, and Holding of Produce for Human Consumption
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-N-0921-19154"), "5", position)) %>% #National Onion #supports the extension, doesn't support the docket
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-N-0921-1257"), "2", position)) %>% #National Onion #doesn't support
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-N-0921-1235"), "2", position)) %>% 
+  #General and Plastic Surgery Devices: Restricted Sale, Distribution, and Use of Sunlamp Products 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2015-N-1765-4781"), "5", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2015-N-1765-1002"), "2", position)) %>% 
+  #Current Good Manufacturing Practice and Hazard Analysis and Risk-Based Preventive Controls For Human Food 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-N-0920-1752"), "2", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-N-0920-1182"), "4", position)) %>% 
+  #Food Labeling; Nutrition Labeling of Standard Menu Items in Restaurants and Similar Retail Food Establishments #split across administrations
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-F-0172-1649"), "", position)) %>% #opposed to the delays made in Trump
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-F-0172-0457"), "4", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-F-0172-2860"), "3", position)) %>% 
+
 
   
+  
+  
+
 
 
 
@@ -1011,44 +1035,6 @@ position <- d %>%
 
 
 
-
-
-#Testing
-##########################
-example <- d %>% 
-  select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(is.na(org.comment))
-  
-  
-  count(org) %>% 
-  arrange(-n)
-  #find out large numbers of seen organizations
-
-NPS <- d %>% 
-  select(documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(org.comment == F)
-    
-#Test for org.comment
-org.comment <- d %>% 
-  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, organization, org.comment, org, text_clean_short) %>% 
-  filter(numberOfCommentsReceived > 20)
-
-
-
-org.comment1 <- d %>% 
-  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(organization, "\\d\\d\\d\\d$"))
-#these are in addition to our official
-
-Docket <- d %>% 
-  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, congress, org.comment, org, submitterName) %>% 
-  filter(grepl("NPS-2014-0004-2345", documentId, ignore.case = TRUE))
-
-
-true <- d %>% 
-  select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(org.comment == T, attachmentCount == 0)
-  
 
 
 
