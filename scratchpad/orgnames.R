@@ -638,7 +638,7 @@ d %<>%
   mutate(org = ifelse(str_detect(org, str_c("^none$", "^unknown$", "^individual$", "citizen$", "self$", "not applicable", "^private$", "personal", "lover", "mr.$", "mrs.$", "ms$",
                                          "retired", "dr$", "miss$", "mr$", "ms.$", "mr.$", "^na$", "^me$", "^-$|^--$", "street$", "^happy$", "^r$", "^home$", "please select", "^brain$", "^no name$",
                                          "no one$", "^nol longer", "no organization$", "- select -", "- none - ","--none--", "concerned citizen$", "-none-", "select...", "send$", "^love$", "^n.a.$",
-                                         "^\\.$", "not specified", "^other$", "foekf", "what a shame this is", "no affiliation", "^usa$", "^LFJJHK$", "None. Plain ol' concerned citizen.",
+                                         "^\\.$", "not specified", "^other$", "foekf", "what a shame this is", "no affiliation", "^usa$", "^LFJJHK$", "None. Plain ol' concerned citizen.", "anonymous anonymous",
                               sep = "|")), NA, org))
 
 
@@ -843,6 +843,13 @@ d %<>%
                                                                         "Incorrect information", "No attachment", "Removed due to language", "This public comment was redacted",
                                                                         "Posted to incorrect docket.", "incomplete information", 
                                                                                      sep = "|")), F, org.comment))
+#CFPB
+d %<>%
+  #false
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "anonymous anonymous"), F, org.comment))
+
+  
+
 
 
 #filling in org after org.comment
@@ -877,7 +884,7 @@ noName <- d %>%
 
 test <- d %>% 
   select(mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(title, "comment submitter"), is.na(org.comment))
+  filter(str_dct(title, "anonymous anonymous"))
 
 
 #PUT DOCKET OPTIONS HERE
