@@ -787,7 +787,7 @@ d %<>%
   #false
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "write-in campaign|write in campaign"), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "multiple signatures"), F, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "anonymous"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "anonymous|Comment from Anonymous"), F, org.comment)) %>% 
   #true
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Inc\\.$"), T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Association$"), T, org.comment)) %>% 
@@ -847,16 +847,20 @@ test <- d %>%
   filter(str_dct(commenttext, "friends of the earth urges"))
 
 
-#  "FDA-2008-N-0326" "FDA-2014-N-2235" "FDA-2011-N-0899" "FDA-1997-N-0020" "FDA-2014-N-0189" "FDA-2013-N-0500"
-#"FDA-2015-N-1514" "FDA-2013-N-0521"
+#PUT DOCKET OPTIONS HERE
 docketTestTRUE <- d %>% 
   select(rin, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "FDA-2011-F-0172"), org.comment == T)
+  filter(str_dct(docketId, "FDA-2013-N-0521"), org.comment == T)
 
 
-docketTest <- d %>% 
+docketTestYES <- d %>% 
   select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "FDA-2011-N-0920"), org.comment == T, str_dct(commenttext, "support"))
+  filter(str_dct(docketId, "FDA-2013-N-0521"), org.comment == T, str_dct(commenttext, "support"))
+
+docketTestNO <- d %>% 
+  select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(docketId, "FDA-2013-N-0521"), org.comment == T, str_dct(commenttext, "oppose"))
+
 
 false <- d %>% 
   select(mass, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
@@ -990,14 +994,14 @@ d %<>%
   
 #correct now on
 d %<>% 
-  #EERE
+#EERE
   #new energy conservation standards for manufactured housing
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2009-BT-BC-0021-0440"), "1", position)) %>% 
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2009-BT-BC-0021-0174"), "5", position)) %>% 
   #conservation standards for refrigerated beverage vending machines 
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2013-BT-STD-0022-0052"), "3", position)) %>% 
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "EERE-2013-BT-STD-0022-0051"), "5", position)) %>%  #assumption
-  #FDA
+#FDA
   #Food Labeling; Revision of the Nutrition and Supplement Facts #split across administrations
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2012-N-1210-2019"), "", position)) %>% #opposed to the new changes made on an old docket in Trump
   #Standards for the Growing, Harvesting, Packing, and Holding of Produce for Human Consumption
@@ -1014,6 +1018,41 @@ d %<>%
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-F-0172-1649"), "", position)) %>% #opposed to the delays made in Trump
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-F-0172-0457"), "4", position)) %>% 
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-F-0172-2860"), "3", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-N-0920-1152"), "3", position)) %>% 
+  #prohibiting the extralabel use of cephalosporin antimicrobial drugs in food-producing animals
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2008-N-0326-0286"), "2", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2008-N-0326-0255"), "4", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2008-N-0326-0166"), "4", position)) %>% 
+  #EIS- Investigational Use of Oxitec OX513A Mosquitoes
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2014-N-2235-1358"), "oppose", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2014-N-2235-1200"), "support", position)) %>% 
+  #EIS- Preliminary Finding of No Significant Impact For a Genetically Engineered Atlantic Salmon
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-N-0899-1218"), "oppose", position)) %>%
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2011-N-0899-0737"), "support", position)) %>% #only support example could find
+  #Deeming Tobacco Products To Be Subject to the Federal Food, Drug, and Cosmetic Act
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2014-N-0189-60210"), "5", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2014-N-0189-72301"), "2", position)) %>% 
+  #Supplemental Applications Proposing Labeling Changes for Approved Drugs and Biological Products
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2013-N-0500-0055"), "4", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2013-N-0500-0019"), "2", position)) %>% 
+  #Nicotine Exposure Warnings and Child-Resistant Packaging for Liquid Nicotine, Nicotine-Containing E-Liquid(s), and Other Tobacco Products
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2015-N-1514-0008"), "4", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2015-N-1514-0133"), "3", position)) %>% 
+  #Menthol in Cigarettes, Tobacco Products
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2013-N-0521-0397"), "5", position)) %>% 
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "FDA-2013-N-0521-0377"), "4", position))
+  
+
+  
+  
+  
+  
+ 
+
+  
+
+
+  
 
 
   
