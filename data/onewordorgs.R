@@ -4,6 +4,7 @@ orgs <- str_spl(
 c("350
 3M
 AARP
+AAUW
 ACD
 ACM
 Acrisure
@@ -33,6 +34,7 @@ regence
 SkyTruth
 Transamerica
 TriNet
+USCCB
 Walmart
 waterlegacy
 WSCHR

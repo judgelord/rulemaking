@@ -15,7 +15,7 @@ d %<>%
   left_join(comment_text_short)
 
 
-#function to change string remove to str_rm which is no longer case senstitive
+#functions for case sensitive string manipulation
 str_rm_all <- function(string, pattern) {
   str_remove_all(string, regex(pattern, ignore_case = TRUE))
 }
@@ -50,9 +50,9 @@ str_spl <- function(string, pattern) {
 #searching through EPA 
 #d <- topdockets %>% filter(agencyAcronym == "EPA")
 
-#|DOI|OSM|BOEM|WHD|OMB|FHWA|PHMSA|BIA|OFCCP|ACF|DOL|CDC|OPM|LMSO|CPSC|EEOC|MMS|USCIS|CMS|ED|DOD|ETA|BLM|FNS|FAA|NOAA|OTS|HHS|NRC|EBSA|SSA|DOI
+#|DOI|OSM|BOEM|WHD|DOL|CDC|OPM|LMSO|CPSC||MMS|USCIS|CMS|ED|DOD|ETA|BLM|FNS|FAA|NOAA|OTS|HHS|NRC|EBSA|SSA|DOI
 
-d <- d %>% filter(str_dct(agencyAcronym, "PHSMA||CDC"))
+d <- d %>% filter(str_dct(agencyAcronym, "OMB|OFCCP|ACF|EEOC|DOD|ETA"))
 
 #looking through docket after
 #group by docket, orgname
@@ -745,7 +745,7 @@ d %<>%
 #EPA 
 d %<>% 
   #finding true 
-  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by \\w+ \\w+") & str_dct(title, "director|CEO|president|manager|attorney|chief executive officer") & attachmentCount >= 1, T, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by \\w+ \\w+") & str_dct(title, "director|CEO|president|manager|attorney|chief executive officer|executive coordinator") & attachmentCount >= 1, T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by") & str_dct(title, "natural resources defense council"), T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by \\w+ \\w+$") & agencyAcronym == "EPA" & attachmentCount > 1, T, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "comment submitted by earthjustice"), T, org.comment)) %>% 
@@ -957,7 +957,38 @@ d %<>%
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "\\w+, \\w+ \\w+$") & agencyAcronym == "BIA", F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "[[:digit:]][[:digit:]] - \\w+$") & agencyAcronym == "BIA", F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & is.na(org) & is.na(organization) & agencyAcronym == "OPM", F, org.comment))
-  
+
+#PHMSA, CDC
+d %<>%
+  #true
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, ".*") & agencyAcronym == "PHMSA", T, org.comment)) %>% 
+  #false
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I'm concerned that some of our most treasured nation") & agencyAcronym == "PHMSA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "Thank you for taking steps to better protect our neighborhood") & agencyAcronym == "PHMSA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "Dear U.S. Department of Transportation") & agencyAcronym == "PHMSA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I have copied the summary, below, as disseminated") & agencyAcronym == "PHMSA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "PHMSA,") & agencyAcronym == "PHMSA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "Im writing to express my grave concerns") & agencyAcronym == "PHMSA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "Im writing to express my concerns about") & agencyAcronym == "PHMSA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I'm|Im |I am") & agencyAcronym == "PHMSA", F, org.comment))
+
+#OFCCP, ACF
+d %<>%
+  #true
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, ".*") & agencyAcronym == "OFCCP", T, org.comment)) %>% 
+  #false
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "User error. No file attached."), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "withdrawn"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "Distinct comments on compensation tool submitted by AAUW") & agencyAcronym == "OFCCP", F, org.comment)) %>%  #how do i make it so one is different? check in on if even want that
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "It is outrageous that gender-based wage") & agencyAcronym == "OFCCP", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "Please consider the administrative burden") & agencyAcronym == "OFCCP", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I wish to express my strong support for the Office") & agencyAcronym == "OFCCP", F, org.comment)) %>% 
+  #true
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, ".*") & agencyAcronym == "ACF", T, org.comment))
+
+
+
+
 
 
 
@@ -1000,7 +1031,7 @@ test1 <- d %>%
 
 test <- d %>% 
   select(mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(is.na(org), is.na(org.comment))
+  filter(str_dct(commenttext, "Im"))
 
 
 #PUT DOCKET OPTIONS HERE
