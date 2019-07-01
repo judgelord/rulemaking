@@ -35,6 +35,10 @@ str_dct <- function(string, pattern) {
 str_ext <- function(string, pattern) {
   str_extract(string, regex(pattern, ignore_case = TRUE))
 }
+
+str_spl <- function(string, pattern) {
+  str_split(string, regex(pattern, ignore_case = TRUE))
+}
 ## A sample of high-profile rules
 #load(here("data/masscomments.Rdata"))
 #load(here("data/toporgs.RData"))
@@ -48,7 +52,7 @@ str_ext <- function(string, pattern) {
 
 #|DOI|OSM|BOEM|WHD|OMB|FHWA|PHMSA|BIA|OFCCP|ACF|DOL|CDC|OPM|LMSO|CPSC|EEOC|MMS|USCIS|CMS|ED|DOD|ETA|BLM|FNS|FAA|NOAA|OTS|HHS|NRC|EBSA|SSA|DOI
 
-d <- d %>% filter(str_dct(agencyAcronym, "BIA|PHSMA|FHWA|CDC|OPM|LMSO"))
+d <- d %>% filter(str_dct(agencyAcronym, "PHSMA||CDC"))
 
 #looking through docket after
 #group by docket, orgname
@@ -243,7 +247,7 @@ d %<>%
   mutate(org = ifelse(is.na(org), organization, org)) %>% 
   mutate(org = ifelse(str_dct(org, "^[[:alpha:]]\\. \\w+"), NA, org)) %>% 
   mutate(org = ifelse(str_dct(org, "^[[:alpha:]]\\.\\w+"), NA, org)) %>% 
-  mutate(org = ifelse(str_dct(org, "^\\w+$") & !str_dct(org, orgs), NA, org))
+  mutate(org = ifelse(str_dct(org, "^\\w+$") & !str_dct(org, orgsShort), NA, org))
 
 
 #check the orgs that got lost 
@@ -942,6 +946,22 @@ d %<>%
   #true
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, ".*") & str_dct(title, ".*") & str_detect(title, org) & agencyAcronym == "EBSA", T, org.comment))
 
+#LMSO, FHWA, BIA, OPM
+d %<>%
+  #false
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "Human resource") & agencyAcronym == "LMSO", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I am writing to express my opposition to the Labor Department")& agencyAcronym == "LMSO", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "I am writing to endorse the comments submitted to") & agencyAcronym == "FHWA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & is.na(org) & agencyAcronym == "FHWA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "\\w+, \\w+$") & agencyAcronym == "BIA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "\\w+, \\w+ \\w+$") & agencyAcronym == "BIA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, "[[:digit:]][[:digit:]] - \\w+$") & agencyAcronym == "BIA", F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & is.na(org) & is.na(organization) & agencyAcronym == "OPM", F, org.comment))
+  
+
+
+
+  
 #org.commment
 d %<>%
   mutate(org = ifelse(is.na(org) & org.comment == T & str_dct(title, "\\("), 
@@ -955,7 +975,7 @@ d %<>%
   
 #TESTING  
 ##########
-
+#BIA|PHSMA|FHWA|CDC|OPM|LMSO
 unique(d$docketId)
 
 na <- d %>% 
@@ -964,7 +984,7 @@ na <- d %>%
 
 true <- d %>% 
   select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org, congress) %>% 
-  filter(org.comment == T, agencyAcronym == "EBSA")
+  filter(org.comment == T)
 
 false <- d %>% 
   select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org, congress) %>% 
@@ -976,11 +996,11 @@ noName <- d %>%
 
 test1 <- d %>% 
   select(mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(agencyAcronym == "OCC")
+  filter(agencyAcronym == "CDC")
 
 test <- d %>% 
   select(mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(title, org), agencyAcronym == "EBSA", is.na(org))
+  filter(is.na(org), is.na(org.comment))
 
 
 #PUT DOCKET OPTIONS HERE

@@ -1,10 +1,15 @@
 
-
-orgs <- str_split(
+#list of one word org name
+orgs <- str_spl(
 c("350
 3M
 AARP
-Advantix Systems
+ACD
+ACM
+Acrisure
+ACS
+ACUITY
+Acushnetompany
 Aetna
 AFSCME
 API
@@ -19,16 +24,16 @@ HMS
 Humana
 microsoft
 motionfirst
-NAR
+^NAR$
 oceana
 offshore systems
 oneDigital
 pennenvironment
 regence
-REMAX Select Properties/KGD INC.
 SkyTruth
 Transamerica
 TriNet
+Walmart
 waterlegacy
 WSCHR
 WSUSA
@@ -36,6 +41,14 @@ WTP
 WZF
 XeniumHR
 YDL
-YRMC
-Zimmer"), "\n"
-)
+YRMC"), "\n"
+) %>% 
+  unlist()
+
+orgsShort <- str_c(orgs, collapse = "|")
+
+
+#Advantix Systems
+#REMAX Select Properties/KGD INC.
+
+
