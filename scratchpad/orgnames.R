@@ -46,9 +46,10 @@ str_ext <- function(string, pattern) {
 #searching through EPA 
 #d <- topdockets %>% filter(agencyAcronym == "EPA")
 
-#|ATF|DOI|OCC|EBSA|SSA|BSEE|OSM|BOEM|WHD|OMB|FHWA|PHMSA|BIA|OFCCP|ACF|DOL|CDC|OPM|LMSO|CPSC|EEOC|MMS|USCIS|CMS|ED|DOD|ETA|BLM|FNS|FAA|NOAA|OTS|HHS|NRC|EBSA|SSA|DOI
+#|DOI|EBSA|SSA|BSEE|OSM|BOEM|WHD|OMB|FHWA|PHMSA|BIA|OFCCP|ACF|DOL|CDC|OPM|LMSO|CPSC|EEOC|MMS|USCIS|CMS|ED|DOD|ETA|BLM|FNS|FAA|NOAA|OTS|HHS|NRC|EBSA|SSA|DOI
 
-d <- d %>% filter(str_dct(agencyAcronym, "ATF|OCC"))
+d <- d %>% filter(str_dct(agencyAcronym, "EBSA|SSA|BSEE"))
+
 #looking through docket after
 #group by docket, orgname
 #summarize org.comment
@@ -237,9 +238,9 @@ d %<>%
   mutate(org = NA) %>% 
   #bring over organization to org
   mutate(org = ifelse(is.na(org), organization, org)) %>% 
-  mutate(org = ifelse(str_detect(org, "^[[:alpha:]]\\. \\w+"), NA, org)) %>% 
-  mutate(org = ifelse(str_detect(org, "^[[:alpha:]]\\.\\w+"), NA, org)) %>% 
-  mutate(org = ifelse(str_detect(org, "^\\w+$") & !str_detect(org, "earthjustice|earthworks|greenpeace|pennenvironment|350|care2|waterlegacy|biofuelwatch"), NA, org))
+  mutate(org = ifelse(str_dct(org, "^[[:alpha:]]\\. \\w+"), NA, org)) %>% 
+  mutate(org = ifelse(str_dct(org, "^[[:alpha:]]\\.\\w+"), NA, org)) %>% 
+  mutate(org = ifelse(str_dct(org, "^\\w+$") & !str_dct(org, "earthjustice|earthworks|greenpeace|pennenvironment|350|care2|waterlegacy|biofuelwatch|chevron"), NA, org))
 
 #broader rules
 #############
@@ -293,11 +294,11 @@ d %<>%
                       str_rm(title, "comment from"), 
                       org)) %>% 
   #corp 
-  mutate(org = ifelse(is.na(org) & grepl("corp|corp\\.", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & grepl("corp |corp\\.", title, ignore.case = TRUE), 
                       str_rm(title, "comment from"), 
                       org)) %>% 
   #Inc. 
-  mutate(org = ifelse(is.na(org) & grepl(".*Inc\\..*|.*Inc .*", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & grepl(".*Inc\\..*|.*Inc \\.*", title, ignore.case = TRUE), 
                       str_rm(title, "comment from"), 
                       org)) %>% 
   #LLP
@@ -656,11 +657,11 @@ d %<>%
                       str_ext(commenttext, "\\w+ \\w+ \\w+ co"), 
                       org)) %>% 
   #corp 
-  mutate(org = ifelse(is.na(org) & grepl("corp|corp.", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & grepl("corp |corp\\.", commenttext, ignore.case = TRUE), 
                       str_ext(commenttext, "\\w+ \\w+ \\w+ corp"), 
                       org)) %>% 
   #Inc. 
-  mutate(org = ifelse(is.na(org) & grepl(".*Inc\\..*|.*Inc .*", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & grepl(".*Inc\\..*|.*Inc \\.*", commenttext, ignore.case = TRUE), 
                       str_ext(commenttext, "\\w+ \\w+ \\w+ inc"), 
                       org)) %>% 
   #LLP
@@ -919,6 +920,14 @@ d %<>%
   #true
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, ".*") & agencyAcronym == "OCC", T, org.comment))
 
+#BSEE
+d %<>%
+  #false
+  mutate(org.comment = ifelse(is.na(org.comment) & is.na(org) & str_dct(commenttext, "Dear Director Angelle"), F, org.comment)) %>%
+  mutate(org.comment = ifelse(is.na(org.comment) & is.na(org) & str_dct(commenttext, "BPs Deepwater Horizon tragedy killed 11 people"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & is.na(org) & str_dct(commenttext, "Dear Director Angelle, A dolphin pushes her dead"), F, org.comment)) %>%
+  mutate(org.comment = ifelse(is.na(org.comment) & is.na(org) & str_dct(title, "comment on") & agencyAcronym == "BSEE", F, org.comment))
+  #true
 
 
 #org.commment
@@ -939,7 +948,7 @@ unique(d$docketId)
 
 na <- d %>% 
   select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(is.na(org.comment), !str_dct(org, "inc"))
+  filter(is.na(org.comment))
 
 true <- d %>% 
   select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org, congress) %>% 
@@ -959,22 +968,24 @@ test1 <- d %>%
 
 test <- d %>% 
   select(mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(!str_dct(title, "comment on"), is.na(org.comment), str_dct(org, ".*"))
+  filter(str_dct(title, "comment on"), is.na(org.comment), is.na(org), agencyAcronym != "BSEE")
 
 
 #PUT DOCKET OPTIONS HERE
+#"ATF-2018-0001" "OCC-2011-0001" "OCC-2017-0012" "ATF-2018-0002" "OCC-2014-0021"
+
 docketTestTRUE <- d %>% 
   select(rin, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "OSHA-2007-0072"), org.comment == T)
+  filter(str_dct(docketId, "ATF-2018-0001"), org.comment == T)
 
 
 docketTestYES <- d %>% 
   select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "OSHA-2007-0072"), org.comment == T, str_dct(commenttext, "support"))
+  filter(str_dct(docketId, "ATF-2018-0001"), org.comment == T, str_dct(commenttext, "support"))
 
 docketTestNO <- d %>% 
   select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "OSHA-2007-0072"), org.comment == T, str_dct(commenttext, "oppose"))
+  filter(str_dct(docketId, "ATF-2018-0001"), org.comment == T, str_dct(commenttext, "oppose"))
 
 
 false <- d %>% 
@@ -1163,7 +1174,14 @@ d %<>%
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "OSHA-H005C-2006-0870-2093"), "2", position)) %>% 
   #Occupational Exposure to Crystalline Silica, face significant risk
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "OSHA-2010-0034-1964"), "2", position)) %>% 
-  mutate(position = ifelse(is.na(position) & str_dct(documentId, "OSHA-2010-0034-2166"), "4", position))
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "OSHA-2010-0034-2166"), "4", position)) %>% 
+#ATF
+  #Bump-Stock-Type Devices  
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "ATF-2018-0001-34129"), "4", position)) %>%
+  mutate(position = ifelse(is.na(position) & str_dct(documentId, "ATF-2018-0001-34129"), "4", position)) %>% 
+  
+
+  
 
 
   
