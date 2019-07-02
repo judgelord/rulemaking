@@ -139,7 +139,7 @@ GFHS
 GFY
 GlaxoSmithKline
 Goodrich
-gop
+^gop$
 Governor
 GreenbergFarrow
 GSH
@@ -244,7 +244,6 @@ MTN
 Multisorb
 MVN
 NAACP
-Nags
 NBC
 NEC
 NEMI
