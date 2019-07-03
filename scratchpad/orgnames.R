@@ -221,14 +221,6 @@ d$organization <- gsub(" \\(.*| \\[.*", "", d$organization, ignore.case = TRUE)
 d$organization <- gsub(" $", "", d$organization, ignore.case = TRUE)
 
 ################################################################################
-#TO DO:
-#create new org variable, that starts with organization and then builds on it 
-#forest service, national research council, national oceangraphic and atmospheric administration and fish and wildlife service
-
-STARTOVER1 <- d
-d <- STARTOVER1
-
-
 
 
 #Org variable
