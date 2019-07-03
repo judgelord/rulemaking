@@ -1,0 +1,307 @@
+---
+title: "DOE_FERC_COMMENTS-scraper"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    #code_folding: hide
+
+---
+
+
+```{r setup, include=FALSE, echo = FALSE}
+## Run a setup.R script to load R packages and set defaults
+# source(here::here("setup.R")) ## Alternatively: source("https://raw.githubusercontent.com/judgelord/PS811/master/setup.R")
+## Modify some defaults for this example
+knitr::opts_chunk$set(fig.height = 4,
+                      fig.width = 8,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+
+In addition to `tidyverse` packages, this example uses the `rvest`, `magrittr`, `pdftools`, and `here` packages.
+
+```{r libraries}
+library(tidyverse)
+library(rvest)
+library(magrittr)
+library(pdftools)
+library(here)
+```
+
+The aim is to make a table with both the text of letters and information from the FERC website, such as the date the document was received. 
+
+Here are the major steps 
+
+1. Scrape the table of document metadata
+
+2. Extract the links to download the files 
+
+3. Convert the pdfs to text and add this text to the table
+
+Some challenges:  
+
+- FERC's database can only be accessed in an interactive .asp session where the URL does not vary.  
+      - SOLUTION: I just downloaded the raw HTML for the results pages. One could use the navigation functions of `rvest` or `selenium`, but with only ~30 pages, it was faster to click through and download them.  
+      
+- Some lines in the table include links to more than one file (for example when a legislator included a letter from a constituent, it was scanned as a separate file), so there are more files than rows in the table. 
+    - SOLUTION: use `dplyr`'s `gather()` make the table into one row per file, and then reverse this with `spread()` after merging in the text from the pdfs. 
+
+
+Load saved html files from a elibrary [search](https://elibrary.ferc.gov/idmws/search/fercgensearch.asp)
+```{r}
+web_pages <- list.files(here("FERC", "html"), pattern = ".htm")
+# web_pages <- web_pages[1] ## for testing the whole function
+# web_page <- web_pages[1] ## for testing parts of the function
+web_pages
+```
+
+```{r, include=FALSE}
+web_page <- web_pages[1] ## for testing parts of the function
+```
+---
+
+# Build a function to scrape the table and download the files
+
+## 1. Get the raw HTML
+```{r}
+  html <- read_html(here("FERC", "html", web_page))
+```
+
+## 2. Extract the table
+I want the 3rd table on this page, so I use `html_table` to turn  "<table>" node 3 into a data frame. I give the columns proper names. 
+
+I then use `gather()` to turn "wide" data  with one observation per letter and a column for each file type into "long data" with one observation per letter-per-file with "key" and "value" pairs where the "value" is the file type (the new `link_text` column).
+
+The `date` column has two dates in it, so I `separate()` it into two columns.
+
+Here and there, I use `dplyr` and `stringr` to clean up the table, keeping rows with a congressional submission and with certain document types (for now) and using `mutate()` + `str_replace` to edit the text. 
+```{r}
+  table <- html %>% 
+    html_nodes("table") %>%
+    .[[3]] %>% # I happen to be interested in the third table on this page
+    html_table(fill = T) %>% # turn html in to a data frame
+    rename(id = X1,
+           date = X2,
+           docket = X3,
+           summary = X4) %>% 
+    filter(str_detect(id, "Submittal")) %>% # clean it up a bit
+    gather(key = key, value = link_text, -id, -date, -docket, -summary) %>% #FIXME get private/public
+    select(-key) %>% 
+    filter(link_text %in% c("Image", "PDF", "FERC Generated PDF", "MicroFilm") ) %>% #FIXME add doc types
+    separate(date, c("doc_date", "filed_date"), sep = "\n\t") %>%
+    mutate(doc_date = as.Date(doc_date, "%m/%d/%Y"),
+           filed_date = as.Date(filed_date, "%m/%d/%Y") ) %>%
+    mutate(id = str_remove(id, "Submittal")) %>% 
+    mutate(id = str_replace(id, "Document Components", "(partial)"))
+```
+
+Now I subset that table to exclude "MicroFilm" files because there is nothing to download. This makes the table the same length as the list of URLs I'll extract, so I make sure it is arranged in the same way the URLs will appear and give it an index number to merge on. 
+```{r}
+  table_files <- table %>%
+    filter(link_text %in% c("Image", "PDF", "FERC Generated PDF") ) %>% #FIXME
+    arrange(id) %>% # id numbers count up
+    arrange(desc(filed_date)) %>% # dates count down 
+    mutate(index = row_number()) # add an index
+  
+```
+
+---
+
+## 3. Get the file URLs
+
+"a" nodes contain linked text. 
+```{r}
+  urls <- html %>% 
+    html_nodes("table") %>%
+    html_nodes("a") 
+```
+
+The URLs themselves are in the "href" attribute, which we can extract with `html_attr()`. However, there is a problem; they have no file extensions. Luckily, the linked text says what kind of file it is, so we can add a ".pdf" or ".tif" extension, depending on whether the linked text contains "PDF" or "Image" using `mutate()` and `str_replace`.
+```{r}
+  urls <- tibble(
+    link_text = html_text(urls), # the linked text 
+    url = html_attr(urls, "href") ) %>% # the url (an html attribute)
+    mutate(fileID = str_extract(url, "[0-9].*"), # the url contains the file name, but in this case, not the extension
+           file_extention = str_replace(link_text, ".*PDF", ".pdf"), # but the linked text tells us the file type
+           file_extention = str_replace(file_extention, "Image", ".tif") ) %>%
+    filter(str_detect(url, "opennat")) %>%  # filter to get rows that have the files we want
+    filter(link_text %in% c("Image", "PDF", "FERC Generated PDF") ) %>% # filter to pdf files
+    mutate(index = row_number()) # add index 
+head(urls)
+```
+
+## 4. Merge the table of URLs and the file URLs.
+```{r}
+  # merge with table by index
+  d <- full_join(table_files, urls)  %>%
+    # add the file name and file extension
+    mutate(file_name = paste0(id, "-", fileID, file_extention) ) 
+  # filter out files we already have
+  to_download <- d %>% 
+    filter(!file_name %in% list.files(here("FERC")) ) 
+  
+glimpse(to_download)
+```
+
+## 5. Download each file with `walk()` from `purrr`.
+```{r, eval = TRUE} 
+  ## Now we can use the function download.file(url, destfile)
+  ## walk2() takes two vectors, .x and .y, and applies the function .f(.x, .y)
+  ## Here, .x is url, .y is destfile, and .f is download.file():
+  walk2(to_download$url, here("FERC", to_download$file_name), download.file)
+```
+
+## 6. Merge the URL data with the full table
+(i.e., add back in those MicroFilm observations we filtered out before)
+```{r}
+  # Finally, select the columns we want and merge with the full table (i.e., add back those )
+  d %<>% 
+    select(id, doc_date, filed_date, docket, summary, file_name, url, link_text) %>% 
+    filter(!is.na(id)) %>%
+    full_join(table) %>% 
+    distinct()
+```
+
+## 7 Once working, put #1-6 together into a new function `scraper()`: 
+```{r}
+scraper <- function(web_page){
+  
+  # Get raw html
+  html <- read_html(here("FERC", "html", web_page))
+  table <- html %>% 
+    html_nodes("table") %>%
+    .[[3]] %>% # I happen to be interested in the third table on this page
+    html_table(fill = T) %>% # turn html in to a data frame
+    rename(id = X1,
+           date = X2,
+           docket = X3,
+           summary = X4) %>% 
+    filter(str_detect(id, "Submittal")) %>% # clean it up a bit
+    gather(key = key, value = link_text, -id, -date, -docket, -summary) %>% #FIXME get private/public
+    filter(link_text %in% c("Image", "PDF", "FERC Generated PDF", "MicroFilm") ) %>% #FIXME add doc types
+    separate(date, c("doc_date", "filed_date"), sep = "\n\t") %>%
+    mutate(doc_date = as.Date(doc_date, "%m/%d/%Y"),
+           filed_date = as.Date(filed_date, "%m/%d/%Y") ) %>%
+    # arrange(desc(link_text)) %>% # image before pdf
+    arrange(id) %>% # id numbers count up
+    arrange(desc(filed_date)) %>% # dates count down 
+    mutate(id = str_remove(id, "Submittal")) %>% 
+    mutate(id = str_replace(id, "Document Components", "(partial)")) %>% 
+    select(-key)
+  
+  table_files <- table %>%
+    filter(link_text %in% c("Image", "PDF", "FERC Generated PDF") ) %>% #FIXME
+    mutate(index = row_number()) # add an index
+  
+  urls <- html %>% 
+    html_nodes("table") %>%
+    html_nodes("a") # "a" nodes contain url linked text
+  
+  urls <- tibble(
+    link_text = html_text(urls), # the linked text 
+    url = html_attr(urls, "href") ) %>% # the url (an html attribute)
+    mutate(fileID = str_extract(url, "[0-9].*"), # the url contains the file name, but in this case, not the extension
+           file_extention = str_replace(link_text, ".*PDF", ".pdf"), # but the linked text tells us the file type
+           file_extention = str_replace(file_extention, "Image", ".tif") ) %>%
+    filter(str_detect(url, "opennat")) %>%  # filter to get rows that have the files we want
+    filter(link_text %in% c("Image", "PDF", "FERC Generated PDF") ) %>% # filter to pdf files
+    mutate(index = row_number()) # add index 
+  # merge with table by index
+  d <- full_join(table_files, urls)  %>%
+    # add the file name and file extension
+    mutate(file_name = paste0(id, "-", fileID, file_extention) ) 
+  # filter out files we already have
+  to_download <- d %>% 
+    filter(!file_name %in% list.files(here("FERC")) ) 
+    
+  ## Now we can use the function download.file(url, destfile)
+  ## walk2() takes two vectors, .x and .y, and applies the function .f(.x, .y)
+  ## Here, .x is url, .y is destfile, and .f is download.file():
+  walk2(to_download$url, here("FERC", to_download$file_name), download.file)
+  # Finally, select the columns we want and merge with the full table
+  d %<>% 
+    select(id, doc_date, filed_date, docket, summary, file_name, url, link_text) %>% 
+    filter(!is.na(id)) %>%
+    full_join(table) %>% 
+    distinct()
+  return(d)
+}
+```
+
+
+# Apply this function to extract the table and download all files linked on each page
+```{r, eval=TRUE}
+## map_dfr() takes a vector, .x and applies the function .f(.x), 
+## binding the results as rows in a data frame
+tables <- map_dfr(web_pages, scraper)
+```
+
+### Test to see which files downloaded. 
+```{r, eval=TRUE}
+# Logical texts: did the file download? 
+tables %<>% mutate(file_downloaded = file_name %in% list.files(here("FERC")))
+tables %<>% mutate(file_nameNA = is.na(file_name))
+dim(tables)
+list.files(here("FERC"))
+tables %>% group_by(link_text, file_nameNA) %>% tally()
+tables %>% group_by(link_text, file_downloaded) %>% tally()
+```
+
+# Convert pdf letters to text 
+This function uses `pdf_text` (we can also OCR images, but I have not yet done so).
+```{r, eval=FALSE}
+totext <- function(file_name){
+  # paste pages
+  text <- NA
+  if(str_detect(file_name, "pdf")){
+  text <- pdf_text(here("FERC", file_name))  %>% 
+    paste(collapse = "<pagebreak>")
+  }
+  return(text)
+}
+## The tables data
+d <- tables
+## If possible, read text
+d$text <- map(d$file_name, possibly(totext, NA_real_, quiet = T))
+ 
+## Rename 
+d %<>% rename(ID = id, 
+              DATE = doc_date, 
+              SUBJECT = summary)
+## Split availability status from summary
+d %<>% separate(SUBJECT, into = c("SUBJECT", "availability"), sep = "Availability: ") 
+###################################
+# FOR ONE OBS PER FILE SPREADSHEET 
+###################################
+## name 
+FERC_letters <- d
+## save
+save(FERC_files, file = here("data", "FERC_files.Rdata"))
+######################################
+# FOR ONE OBS PER LETTER SPREADSHEET 
+#####################################
+# helper function
+Clean_String <- function(string){
+  string %<>% 
+    stringr::str_replace_all("[^a-zA-Z\\s]", " ") %>% 
+    stringr::str_replace_all("[\\s]+", " ")
+  return(string)
+}
+# collapse to one obs per ID
+FERC_letters <- d %>%
+  group_by(id) %>% 
+  mutate(link_text = paste(link_text, collapse = "; "),
+         file_name = paste(file_name, collapse = "; "),
+         url = paste(url, collapse = "; "),
+         text = paste(text, collapse = "<pagebreak>")) %>% 
+  distinct() %>% 
+  mutate(text_clean = Clean_String(text)) %>% 
+  mutate(text_clean = str_remove_all(text_clean, "NA pagebreak|pagebreak NA|FERC PDF Unofficial |Document Conten| s tif ")) %>%
+  arrange(desc(id)) %>%
+  ungroup() 
+head(FERC_letters$text_clean)
+## save
+save(FERC_letters, file = here("data", "FERC_letters.Rdata"))
+```

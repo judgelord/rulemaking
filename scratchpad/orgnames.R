@@ -7,14 +7,12 @@ load(here("data/comment_text_short.Rdata"))
 
       
 #subsetting data from 'all' with matching docketId in 'mass'
-#saving
 d <- all %>% 
   filter(docketId %in% mass$docketId)
 
 #merge comment_text by documentID value
 d %<>% 
   left_join(comment_text_short)
-
 
 #functions for case sensitive string manipulation
 str_rm_all <- function(string, pattern) {
@@ -44,14 +42,11 @@ str_spl <- function(string, pattern) {
 #load(here("data/masscomments.Rdata"))
 #load(here("data/toporgs.RData"))
 
-##LUCY
 ##Load in top org sample 
 #load(here("data/topdockets.RData"))
 
 #searching through EPA 
 #d <- topdockets %>% filter(agencyAcronym == "EPA")
-
-#|DOI|BOEM|WHD|DOL|NOAA|OTS|HHS|NRC|BLM|DOD|CMS|ETA|FNS
 
 d <- d %>% filter(str_dct(agencyAcronym, "NOAA"))
 
@@ -64,8 +59,6 @@ unique(d$docketId)
 
 #FIXME
 #d <- mass %>% filter(agencyAcronym == "EPA")
-
-
 
 #all the agency list
 unique(d$agencyAcronym)
@@ -113,15 +106,15 @@ d %<>%
 # d %>% filter(commentsPartial>9) %>% select(commentText)
 
 
-###all listed agency acronymns 
-# "IRS"   "CFPB"  "NOAA"  "OTS"   "HHS"   "USCIS" "CMS"   "ED"    "DOD"   "ETA"   "BLM"   "FNS"   "FAA"   "ATF"   "DOI" #CFPB
-#[26] "OCC"   "EBSA"  "SSA"   "BSEE"  "OSM"   "BOEM"  "WHD"   "OMB"   "FEMA"  "FHWA"  "PHMSA" "BIA"   "OFCCP" "ACF"   "DOL"   "CDC"   "OPM"   "LMSO"  "CPSC"  "EEOC"  "MMS" 
-
 #Notes: 
 #############################
+###all listed agency acronymns 
+# "IRS"   "CFPB"  "NOAA"  "OTS"   "HHS"   "USCIS" "CMS"   "ED"    "DOD"   "ETA"   "BLM"   "FNS"   "FAA"   "ATF"   "DOI" #CFPB  "OPM"  "LMSO"  "CPSC"
+# "OCC"   "EBSA"  "SSA"   "BSEE"  "OSM"   "BOEM"  "WHD"   "OMB"   "FEMA"  "FHWA"  "PHMSA" "BIA"   "OFCCP" "ACF"   "DOL"   "CDC" "EEOC"  "MMS" 
+
 #completed agencies
 #FWS #NPS #FDA #EERE #EPA #FDA #VA #IRS #CFPB #OSHA #ATF #OFCCP #ACF #ETA #DOD #EEOC #PHMSA #CDC #BSEE #EBSA #OCC
-#DOI #MMS #EBSA #CPSC #LMSO #OPM #OSM #CMS #ED #DOD #ETA #BLM #FNS
+#DOI #MMS #EBSA #CPSC #LMSO #OPM #OSM #CMS #ED #DOD #ETA #BLM #FNS #NOAA
 
 #big or messy agencies
 #NHTSA #WHD #NRC(all are marked in organization with sentences)
@@ -1315,7 +1308,9 @@ load(file ="ascending/allcomments2.Rdata")
 d <- allcomments2
 
 #############################################################
-
+ALLtrue <- d %>% 
+  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org, congress) %>% 
+  filter(org.comment == T)
 
 
 toporgs <- d %>% 
