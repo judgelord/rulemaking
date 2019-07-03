@@ -5,6 +5,7 @@ load(here("data/allcomments.Rdata"))
 load(here("data/masscomments.Rdata"))
 load(here("data/comment_text_short.Rdata"))
 
+      
 #subsetting data from 'all' with matching docketId in 'mass'
 #saving
 d <- all %>% 
@@ -50,9 +51,9 @@ str_spl <- function(string, pattern) {
 #searching through EPA 
 #d <- topdockets %>% filter(agencyAcronym == "EPA")
 
-#|DOI|BOEM|WHD|DOL|CDC||MMS|USCIS||FAA|NOAA|OTS|HHS|NRC|SSA|BLM|DOD|CMS|ED|ETA|FNS
+#|DOI|BOEM|WHD|DOL|CDC||MMS|USCIS||FAA|NOAA|OTS|HHS|NRC|BLM|DOD|CMS|ETA|FNS
 
-d <- d %>% filter(str_dct(agencyAcronym, "SSA|ED"))
+d <- d %>% filter(str_dct(agencyAcronym, "FWS"))
 
 #looking through docket after
 #group by docket, orgname
@@ -273,195 +274,195 @@ lostorg <- d %>%
 #############
 d %<>% 
   #sponsored by
-  mutate(org = ifelse(is.na(org) & grepl("sponsor... by [[:upper:]]", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "sponsor... by [[:upper:]]"), 
                       str_rm_all(title, ".* sponsor... by|\\(.*"), 
                       org)) %>% 
   #association
-  mutate(org = ifelse(is.na(org) & grepl(".*association|assn", title, ignore.case = TRUE) & !grepl("association of", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*association|assn") & !str_dct(title, "association of"), 
                       str_rpl(title, "association.*", "Association"), 
                       org)) %>% 
   #association of
-  mutate(org = ifelse(is.na(org) & grepl(".*association of.*", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*association of.*"), 
                       str_rpl(title, ".*association", "Association"), 
                       org)) %>% 
   #company
-  mutate(org = ifelse(is.na(org) & grepl(".*company", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*company"), 
                       str_rpl(title, "company.*", "Company"), 
                       org)) %>%
   #conservancy
-  mutate(org = ifelse(is.na(org) & grepl(".*conservancy", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*conservancy"), 
                       str_rpl(title, ".*company", "conservancy"), 
                       org)) %>%
   #department
-  mutate(org = ifelse(is.na(org) & grepl("department", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "department"), 
                       str_ext(title, ".*department.*"), 
                       org)) %>%
   #center
-  mutate(org = ifelse(is.na(org) & grepl(".*Center", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*Center"), 
                       str_ext(title,"\\w+ center.*"), 
                       org)) %>%
   #community1
-  mutate(org = ifelse(is.na(org) & grepl("community", title, ignore.case = TRUE) & !str_dct(title, "community$"), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "community") & !str_dct(title, "community$"), 
                       str_ext(title, "\\w+ community.*"), 
                       org)) %>%
   #community2
-  mutate(org = ifelse(is.na(org) & grepl("community$", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "community$"), 
                       str_ext(title, "\\w+ \\w+ \\w+ community"), 
                       org)) %>%
   #cooperative
-  mutate(org = ifelse(is.na(org) & grepl(".*cooperative", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*cooperative"), 
                       str_rpl(title, "cooperative.*", "Cooperative"), 
                       org)) %>% 
   #commission
-  mutate(org = ifelse(is.na(org) & grepl(".*commision|commission", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*commision|commission"), 
                       str_rpl(title, "commision.*|commission.*", "Commission"), 
                       org)) %>% 
   #co. 
-  mutate(org = ifelse(is.na(org) & grepl(".*Co\\.$", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*Co\\.$"), 
                       str_rm(title, "comment from"), 
                       org)) %>% 
   #corp 
-  mutate(org = ifelse(is.na(org) & grepl("corp |corp\\.", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "corp |corp\\."), 
                       str_rm(title, "comment from"), 
                       org)) %>% 
   #Inc. 
-  mutate(org = ifelse(is.na(org) & grepl(".*Inc\\..*|.*Inc \\.*", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*Inc\\..*|.*Inc \\.*"), 
                       str_rm(title, "comment from"), 
                       org)) %>% 
   #LLP
-  mutate(org = ifelse(is.na(org) & grepl(".*LLP", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*LLP"), 
                       str_rpl(title, "LLP.*", "LLP"), 
                       org)) %>% 
   #LLC
-  mutate(org = ifelse(is.na(org) & grepl(".*LLC|LC", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*LLC|LC"), 
                       str_rpl(title, "LLC.*", "LLC"), 
                       org)) %>% 
   #coalition
-  mutate(org = ifelse(is.na(org) & grepl("coalition", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "coalition"), 
                       str_ext(title, "\\w+ \\w+ \\w+ coalition"), 
                       org)) %>% 
   #institute
-  mutate(org = ifelse(is.na(org) & grepl("institute|insitute", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "institute|insitute"), 
                       str_ext(title, ".*institute"), 
                       org)) %>% 
   #academy
-  mutate(org = ifelse(is.na(org) & grepl("academy of", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "academy of"), 
                       str_ext(title, "academy of.*"), 
                       org)) %>% 
   #society1 
-  mutate(org = ifelse(is.na(org) & grepl("society$", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "society$"), 
                       str_ext(title,  "\\w+ \\w+ \\w+ society"), 
                       org)) %>% 
   #society2
-  mutate(org = ifelse(is.na(org) & grepl("society", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "society"), 
                       str_ext(title,  "\\w+ society \\w+ \\w+"), 
                       org)) %>% 
   #alliance
-  mutate(org = ifelse(is.na(org) & grepl("alliance", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "alliance"), 
                       str_ext(title, ".*alliance"), 
                       org)) %>% 
   #growers
-  mutate(org = ifelse(is.na(org) & grepl("growers", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "growers"), 
                       str_ext(title, "\\w+ \\w+ \\w+ growers"), 
                       org)) %>% 
   #council, could use fixing
-  mutate(org = ifelse(is.na(org) & grepl("council", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "council"), 
                       str_ext(title, ".* council"), 
                       org)) %>% 
   #mass mailer campaign 
-  mutate(org = ifelse(is.na(org) & grepl(".*mass mailer campaign", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*mass mailer campaign"), 
                     str_rm(title, "mass mailer campaign.*"), 
                     org)) %>% 
   #member mass email
-  mutate(org = ifelse(is.na(org) & grepl(".*member mass email", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*member mass email"), 
                       str_rm(title, "member mass email.*"), 
                       org)) %>% 
   #comment from
-  mutate(org = ifelse(is.na(org) & grepl("comment from", title, ignore.case = TRUE) & agencyAcronym == "EPA", 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "comment from") & agencyAcronym == "EPA", 
                       str_rm(title, ".*comment from"), 
                       org)) %>% 
   #schools
-  mutate(org = ifelse(is.na(org) & grepl(".*school", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*school"), 
                     str_rpl(title, "school.*", "School"), 
                     org)) %>% 
   #farms
-  mutate(org = ifelse(is.na(org) & grepl(".*farm", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*farm"), 
                       str_ext(title, "\\w+ \\w+ \\w+ farm"), 
                       org)) %>%
   #farms2
-  mutate(org = ifelse(is.na(org) & grepl(".*farm", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*farm"), 
                       str_ext(title, "\\w+ \\w+\\. farm"), 
                       org)) %>%
   #farms3
-  mutate(org = ifelse(is.na(org) & grepl(".*farm", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*farm"), 
                       str_ext(title, ".*farm"), 
                       org)) %>%
   #federation1
-  mutate(org = ifelse(is.na(org) & grepl("federation$", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "federation$"), 
                       str_ext(title, "\\w+ \\w+ \\w+ federation"), 
                       org)) %>% 
   #federation2
-  mutate(org = ifelse(is.na(org) & grepl("federation", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "federation"), 
                       str_ext(title, "\\w+ federation.*"), 
                       org)) %>% 
   #church
-  mutate(org = ifelse(is.na(org) & grepl(".*church", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*church"), 
                     str_rpl(title, "church.*", "Church"), 
                     org)) %>% 
   #partnership
-  mutate(org = ifelse(is.na(org) & grepl("partnership", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "partnership"), 
                       str_ext(title, ".*partnership"), 
                       org)) %>% 
   #partnership
-  mutate(org = ifelse(is.na(org) & grepl("union", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "union"), 
                       str_ext(title, ".*union.*"), 
                       org)) %>% 
   #public health
-  mutate(org = ifelse(is.na(org) & grepl("public health", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "public health"), 
                       str_ext(title, ".*public health.*"), 
                       org)) %>% 
   #foundation
-  mutate(org = ifelse(is.na(org) & grepl("foundation", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "foundation"), 
                       str_ext(title, ".*foundation.*"), 
                       org)) %>% 
   #foundation
-  mutate(org = ifelse(is.na(org) & grepl("board of", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "board of"), 
                       str_ext(title, "\\w+ board of.*"), 
                       org)) %>% 
   #university
-  mutate(org = ifelse(is.na(org) & grepl("university", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "university"), 
                       str_ext(title, "\\w+ \\w+ \\w+ university"), 
                       org)) %>% 
   #city of
-  mutate(org = ifelse(is.na(org) & grepl("city of", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "city of"), 
                       str_ext(title, ".*city of.*"), 
                       org)) %>% 
   #city of
-  mutate(org = ifelse(is.na(org) & grepl("commerce", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "commerce"), 
                       str_ext(title, ".*commerce.*"), 
                       org)) %>% 
   #names
-  mutate(org = ifelse(is.na(org) & grepl(".*, .*president, .*, .*", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*, .*president, .*, .*"), 
                       str_rm(title, ".*, .*president, .*,"), 
                       org)) %>% 
   #names2
-  mutate(org = ifelse(is.na(org) & grepl(".*, .*president,.*", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, ".*, .*president,.*"), 
                     str_rm(title, ".*, .*president,"), 
                     org)) %>%
   #names3
-  mutate(org = ifelse(is.na(org) & grepl("president,.*", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "president,.*"), 
                       str_rm(title, ".*president,"), 
                       org)) %>% 
   #testimony from
-  mutate(org = ifelse(is.na(org) & grepl("testimony from.*", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "testimony from.*"), 
                       str_rm(title, "testimony from"), 
                       org)) %>% 
   #request for an extension
-  mutate(org = ifelse(is.na(org) & grepl("request for extension from .*", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "request for extension from .*"), 
                       str_rm(title, "request for extension from"), 
                       org)) %>% 
   #group
-  mutate(org = ifelse(is.na(org) & grepl("group.*", title, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(title, "group.*"), 
                     str_ext(title, ".*group.*"), 
                     org))
 
@@ -472,15 +473,15 @@ d %<>%
 #docket
 d %<>% 
   #Western Energy Alliance, The Independent Petroleum Association of America, the American Exploration & Production Council
-  mutate(org = ifelse(is.na(org) & grepl("NPS-2015-0006-0008", documentId, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(documentId, "NPS-2015-0006-0008"), 
                       "American Petroleum Institute, Western Energy Alliance, The Independent Petroleum Association of America, the American Exploration & Production Council", 
                       org)) %>% 
   #National Parks Conservation Association, the Natural Resources Defense Council, The Wilderness Society, Sierra Club, Park Rangers for Our Lands, the Ohio Environmental Council
-  mutate(org = ifelse(is.na(org) & grepl("NPS-2015-0006-0015", documentId, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(documentId, "NPS-2015-0006-0015"), 
                       "National Parks Conservation Association; the Natural Resources Defense Council; The Wilderness Society; Sierra Club; Park Rangers for Our Lands; the Ohio Environmental Council", 
                       org)) %>% 
   #Trustees for Alaska, National Parks Conservation Association, Denali Citizens Council, Center for Biological Diversity, The Wilderness Society, Defenders of Wildlife, Copper Country Alliance, Northern Alaska Environmental Center, Alaska Center for the Environment, Natural Resources Defense Council, and Audubon Alaska
-  mutate(org = ifelse(is.na(org) & grepl("NPS-2015-0006-0015", documentId, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(documentId, "NPS-2015-0006-0015"), 
                       "Trustees for Alaska; National Parks Conservation Association; Denali Citizens Council; Center for Biological Diversity; The Wilderness Society; Defenders of Wildlife; Copper Country Alliance; Northern Alaska Environmental Center; Alaska Center for the Environment; Natural Resources Defense Council; Audubon Alaska", 
                       org)) %>% 
   #Central Sierra Environmental Resource Center
@@ -500,73 +501,73 @@ d %<>%
   
 #title
 d %<>% 
-mutate(org = ifelse(is.na(org) & grepl(".*WildEarth Guardians.*|.*WildEarthGuardians.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*WildEarth Guardians.*|.*WildEarthGuardians.*"), 
                     "WildEarth Guardians", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Care2.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Care2.*"), 
                     "Care2", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Jane Goodall Institute.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Jane Goodall Institute.*"), 
                     "Jane Goodall Institute", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Humane Society International.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Humane Society International.*"), 
                     "Humane Society International", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Defenders of Wildlife.*|Defenders of Wildlife.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Defenders of Wildlife.*|Defenders of Wildlife.*"), 
                     "Defenders of Wildlife", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*League of Conservation Voters.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*League of Conservation Voters.*"), 
                     "League of Conservation Voters", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Care2.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Care2.*"), 
                     "Care2", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Sierra Club.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Sierra Club.*"), 
                     "Sierra Club", 
                      org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Environmental Action.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Environmental Action.*"), 
                     "Environmental Action", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*CascadiaWildlands.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*CascadiaWildlands.*"), 
                     "CascadiaWildlands", 
                      org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Cascadia Wildlands.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Cascadia Wildlands.*"), 
                     "Cascadia Wildlands", 
                      org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Sierra Club.*|SierraClub", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Sierra Club.*|SierraClub"), 
                     "Sierra Club", 
                      org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Biological Diversity.*|,*Center for Biological Diversity.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Biological Diversity.*|,*Center for Biological Diversity.*"), 
                     "Center for Biological Diversity", 
                      org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Colorado Wolf & Wildlife Center.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Colorado Wolf & Wildlife Center.*"), 
                     "Colorado Wolf & Wildlife Center", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Williams Community Forest Project.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Williams Community Forest Project.*"), 
                     "Williams Community Forest Project", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Binghamton Zoo.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Binghamton Zoo.*"), 
                     "Binghamton Zoo", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl("Animal Rescute Site.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, "Animal Rescute Site.*"), 
                     "Animal Rescue Site", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Big Game Forever.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Big Game Forever.*"), 
                     "Big Game Forever", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*International Fund For Animal Welfare.*", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*International Fund For Animal Welfare.*"), 
                     "International Fund For Animal Welfare", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*Missourians for a Balanced Energy Future", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*Missourians for a Balanced Energy Future"), 
                     "Missourians for a Balanced Energy Future", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*NPCA", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*NPCA"), 
                     "National Parks Conservation Association", 
                     org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl(".*PEW", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, ".*PEW"), 
                       "Pew Research Center", 
                       org)) %>% 
-mutate(org = ifelse(is.na(org) & grepl("festival foods", title, ignore.case = TRUE), 
+mutate(org = ifelse(is.na(org) & str_dct(title, "festival foods"), 
                       "Festival Foods", 
                       org)) %>% 
 mutate(org = ifelse(is.na(org) & str_dct(title, "Union of Concerned Scientists"), 
@@ -588,86 +589,86 @@ mutate(org = ifelse(is.na(org) & str_dct(organization, "U.S. Chamber of Commerce
 #text
 d %<>% 
   #International Fund for Animal Welfare
-  mutate(org = ifelse(is.na(org) & grepl(".*International Fund For Animal Welfare.*", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*International Fund For Animal Welfare.*", commenttext, ignore.case = TRUE), 
                       "International Fund For Animal Welfare", 
                       org)) %>% 
   #Endangered Species Coalition
-  mutate(org = ifelse(is.na(org) & grepl(".*Endangered Species Coalition.*", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*Endangered Species Coalition.*", commenttext, ignore.case = TRUE), 
                       "International Fund For Animal Welfare", 
                       org)) %>% 
   #Conservation Northwest
-  mutate(org = ifelse(is.na(org) & grepl(".*Conservation Northwest.*", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*Conservation Northwest.*", commenttext, ignore.case = TRUE), 
                       "Conservation Northwest", 
                       org)) %>% 
   #Save Our Environment, making caps matter because happens a lot in the text
-  mutate(org = ifelse(is.na(org) & grepl(".*Save Our Environment.*", commenttext), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*Save Our Environment.*", commenttext), 
                       "Save Our Environment", 
                       org)) %>%
   #Oregon Wild
-  mutate(org = ifelse(is.na(org) & grepl(".*Oregon Wild.*", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*Oregon Wild.*", commenttext, ignore.case = TRUE), 
                       "Oregon Wild", 
                       org)) %>% 
   #Audobon California
   #FIXME
-  mutate(org = ifelse(is.na(org) & grepl(".*Audobon California.*", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*Audobon California.*", commenttext, ignore.case = TRUE), 
                       "Audobon California", 
                       org)) %>% 
   #Care2
-  mutate(org = ifelse(is.na(org) & grepl(".*Care2.*", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*Care2.*", commenttext, ignore.case = TRUE), 
                       "Care2", 
                       org)) %>% 
   #Sierra Club
-  mutate(org = ifelse(is.na(org) & grepl(".*Sierra Club.*", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*Sierra Club.*", commenttext, ignore.case = TRUE), 
                       "Sierra Club", 
                       org)) %>% 
   #CREDO Action
-  mutate(org = ifelse(is.na(org) & grepl(".*CREDO Action", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*CREDO Action", commenttext, ignore.case = TRUE), 
                     "CREDO Action", 
                     org)) %>% 
   #Public Citizen
-  mutate(org = ifelse(is.na(org) & grepl(".*Public Citizen", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*Public Citizen", commenttext, ignore.case = TRUE), 
                       "Public Citizen", 
                       org)) %>% 
   #no-reply@democracyinaction.org
   #FIXME
-  mutate(org = ifelse(is.na(org) & grepl("Melissa Drapeau <no-reply@democracyinaction.org>", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, "Melissa Drapeau <no-reply@democracyinaction.org>", commenttext, ignore.case = TRUE), 
                     str_rpl(commenttext, "Melissa Drapeau.*", "Democracy In Action"), 
                     org)) %>% 
   #American Lung Association
-  mutate(org = ifelse(is.na(org) & grepl("See attached letter from 617 health professionals", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, "See attached letter from 617 health professionals", commenttext, ignore.case = TRUE), 
                       str_rpl(commenttext, "See attached letter from 617 health professionals.*", "American Lung Association"), 
                         org)) %>% 
   #Power Shift Network
   #FIXME
-  mutate(org = ifelse(is.na(org) & grepl("I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, "I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network", commenttext, ignore.case = TRUE), 
                       str_rpl(commenttext, "I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network.*", "Power Shift Network"), 
                       org)) %>% 
   #Trustees for Alaska
-  mutate(org = ifelse(is.na(org) & grepl("written by Trustees for Alaska", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, "written by Trustees for Alaska", commenttext, ignore.case = TRUE), 
                       "Trustees for Alaska", 
                       org)) %>% 
   #National Parks Conservation Association
-  mutate(org = ifelse(is.na(org) & grepl("National Parks Conservation Association", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, "National Parks Conservation Association", commenttext, ignore.case = TRUE), 
                       "National Parks Conservation Association", 
                       org)) %>% 
   #Catharsis on the Mall
-  mutate(org = ifelse(is.na(org) & grepl("catharsis on the mall", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, "catharsis on the mall", commenttext, ignore.case = TRUE), 
                       "Catharsis on the Mall", 
                       org)) %>% 
   #The November Project
-  mutate(org = ifelse(is.na(org) & grepl("november project", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, "november project", commenttext, ignore.case = TRUE), 
                       "November Project", 
                       org)) %>% 
   #The Board of Directors of the Society for Ethnomusicology
-  mutate(org = ifelse(is.na(org) & grepl("The Board of Directors of the Society for Ethnomusicology", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, "The Board of Directors of the Society for Ethnomusicology", commenttext, ignore.case = TRUE), 
                       "The Board of Directors of the Society for Ethnomusicology", 
                       org)) %>% 
   #Doyon, Limited
-  mutate(org = ifelse(is.na(org) & grepl("Doyon, Limited", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, "Doyon, Limited", commenttext, ignore.case = TRUE), 
                       "Doyon, Limited", 
                       org)) %>% 
   #Collier Resources Company
-  mutate(org = ifelse(is.na(org) & grepl("Collier Resources", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, "Collier Resources", commenttext, ignore.case = TRUE), 
                       "Collier Resources", 
                       org)) %>% 
   #central sierra environmental resource center
@@ -691,23 +692,23 @@ d %<>%
                       str_ext(commenttext, "\\w+ \\w+ \\w+ institute"), 
                       org)) %>% 
   #co. 
-  mutate(org = ifelse(is.na(org) & grepl(".*Co\\.$", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*Co\\.$", commenttext, ignore.case = TRUE), 
                       str_ext(commenttext, "\\w+ \\w+ \\w+ co"), 
                       org)) %>% 
   #corp 
-  mutate(org = ifelse(is.na(org) & grepl("corp |corp\\.", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, "corp |corp\\.", commenttext, ignore.case = TRUE), 
                       str_ext(commenttext, "\\w+ \\w+ \\w+ corp"), 
                       org)) %>% 
   #Inc. 
-  mutate(org = ifelse(is.na(org) & grepl(".*Inc\\..*|.*Inc \\.*", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*Inc\\..*|.*Inc \\.*", commenttext, ignore.case = TRUE), 
                       str_ext(commenttext, "\\w+ \\w+ \\w+ inc"), 
                       org)) %>% 
   #LLP
-  mutate(org = ifelse(is.na(org) & grepl(".*LLP", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*LLP", commenttext, ignore.case = TRUE), 
                       str_ext(commenttext, "\\w+ \\w+ \\w+ llp"), 
                       org)) %>% 
   #LLC
-  mutate(org = ifelse(is.na(org) & grepl(".*LLC|LC", commenttext, ignore.case = TRUE), 
+  mutate(org = ifelse(is.na(org) & str_dct(commenttext, ".*LLC|LC", commenttext, ignore.case = TRUE), 
                       str_ext(commenttext, "\\w+ \\w+ \\w+ llc"), 
                       org))
 
@@ -737,6 +738,8 @@ d %<>%
 d %<>%
   mutate(congress = NA) %>% 
   mutate(congress = ifelse(str_dct(organization, "house of representatives|^senate"), T, congress)) %>% 
+  mutate(congress = ifelse(str_dct(organization, "Congress of the United States"), T, congress)) %>%
+  mutate(congress = ifelse(str_dct(organization, "congress"), T, congress)) %>% 
   mutate(congress = ifelse(str_dct(title, "submitted by.*Senator|letter from.*senator"), T, congress)) %>% 
   mutate(congress = ifelse(str_dct(title, "submitted by.*representative|house of representatives|house of representative"), T, congress)) %>% 
   mutate(congress = ifelse(str_dct(documentId, "NPS-2015-0006-0003"), T, congress))
@@ -767,12 +770,12 @@ d %<>%
 
 #mass comment campaign results in false
 d %<>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & grepl(str_c("mass comment campaign", "mass postcard campaign", "mass mail Campaign",
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(title, str_c("mass comment campaign", "mass postcard campaign", "mass mail Campaign",
                                                                "mass e-mail campaign", "Mass Mail Comment Campaign.", "mass e-mail/letter campaign",
                                                                "mass e-mail and letter campaign", "mass paper campaign", "Mass Mail",
                                                                "mass e-mail and postcard campaign","mass e-mail  and letter campaign",
                                                                "Mass signature campaign", "mass Comment campaing", "Mass comment Campaingn",
-                                                              sep = "|"), title, ignore.case = TRUE), F, org.comment))
+                                                              sep = "|")), F, org.comment))
 
 #EPA 
 d %<>% 
@@ -1050,12 +1053,12 @@ d %<>%
 d %<>%
   #false
   mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, "at pima medical institute"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, "with the"), F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(org, "staff at|attended|faculty"), F, org.comment)) %>% 
   mutate(org.comment = ifelse(is.na(org.comment) & is.na(org) & is.na(organization) & agencyAcronym == "ED" , F, org.comment)) %>% 
-  mutate(org.comment = ifelse(is.na(org.comment) & is.na(org) & is.na(organization) & agencyAcronym == "SSA" , F, org.comment))
-
+  mutate(org.comment = ifelse(is.na(org.comment) & is.na(org) & is.na(organization) & agencyAcronym == "SSA" , F, org.comment)) %>% 
+  mutate(org.comment = ifelse(is.na(org.comment) & str_dct(commenttext, "To Whom It May Concern") & agencyAcronym == "SSA", F, org.comment))
   
-
-
 
 #additional org coding
 d %<>%
@@ -1070,99 +1073,70 @@ d %<>%
                       organization, 
                       org))
 
-  
-#TESTING  
-##########
-#BIA|PHSMA|FHWA|CDC|OPM|LMSO
-unique(d$docketId)
 
-na <- d %>% 
-  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(is.na(org.comment))
+#TESTING/TOOLS (function step by step)
+#########################################################################################################################################################################################################
 
-true <- d %>% 
-  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org, congress) %>% 
-  filter(org.comment == T)
+#org.comment
+#######################
 
-false <- d %>% 
-  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org, congress) %>% 
-  filter(org.comment == F)
-
-noName <- d %>% 
-  select(mass, congress,docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(org.comment == T, is.na(org))
-
-agency <- d %>% 
-  select(congress, mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(agencyAcronym == "ETA")
-
-test1 <- d %>% 
-  select(mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(congress ==T)
-
-test <- d %>% 
-  select(mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(organization, "ABC Tree Farms"))
-
-
-#PUT DOCKET OPTIONS HERE
-#"ATF-2018-0001" "OCC-2011-0001" "OCC-2017-0012" "ATF-2018-0002" "OCC-2014-0021"
-
-docketTestTRUE <- d %>% 
-  select(rin, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "ATF-2018-0001"), org.comment == T)
-
-
-docketTestYES <- d %>% 
-  select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "ATF-2018-0001"), org.comment == T, str_dct(commenttext, "support"))
-
-docketTestNO <- d %>% 
-  select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "ATF-2018-0001"), org.comment == T, str_dct(commenttext, "oppose"))
-
-
-false <- d %>% 
-  select(mass, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(org.comment == F)
-
-true <- d %>% 
-  select(mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(org.comment == T)
-#incorrecly marked false
-
-
-
-
-
-##############################################
-#Finding org.comment by docket
-
-unique(d$docketId)
-
-docketTEST <- d %>% 
-  select(docketId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "EPA-HQ-OAR-2007-0492"), is.na(org.comment)) %>% 
-  count(org, .drop = FALSE) %>% 
-  arrange(-n)
-
+#sort by docket to see captured T, F, NA
 docket <- d %>% 
   group_by(org.comment, docketId, .drop = F) %>%
   summarize(n=n()) %>% 
   arrange(docketId)
 
-#count by org.comment and docket
+#find the missing org.comments
+missing <- d %>% 
+  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org, congress) %>% 
+  filter(is.na(org.comment))
+
+#check the true org.comments
+true <- d %>% 
+  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org, congress) %>% 
+  filter(org.comment == T)
+
+#check the false org.comments
+false <- d %>% 
+  select(mass, docketId, documentId, mass, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org, congress) %>% 
+  filter(org.comment == F)
+
+#check to see if there are org.comment where there is no org
+noName <- d %>% 
+  select(mass, congress,docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(org.comment == T, is.na(org))
+
+#test frame to try out different strings to code T and F
+test <- d %>% 
+  select(mass, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(commenttext, ""))
 
 
-docketTest <- d %>% 
-  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "EPA-HQ-OAR-2002-0056"), is.na(org.comment))
-         
-         
-         #is.na(org.comment))
-#######################################################
-  
+#Position
+###########################
 
+#PUT DOCKET OPTIONS HERE
+#"ATF-2018-0001" "OCC-2011-0001" "OCC-2017-0012" "ATF-2018-0002" "OCC-2014-0021"
+
+#find dockets
+unique(d$docketId)
+
+#find when org.comment is true for each docket
+docketTestTRUE <- d %>% 
+  select(rin, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(docketId, "ATF-2018-0001"), org.comment == T)
+
+#check quick supporting
+docketTestYES <- d %>% 
+  select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(docketId, "ATF-2018-0001"), org.comment == T, str_dct(commenttext, "support"))
+
+#check quick opposing
+docketTestNO <- d %>% 
+  select(congress, docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
+  filter(str_dct(docketId, "ATF-2018-0001"), org.comment == T, str_dct(commenttext, "oppose"))
+
+#########################################################################################################################################################################################################
 
 
 #creating dataframe for org information, tribble
@@ -1193,8 +1167,8 @@ orgInfo <- tribble(
   "the america exploration & production council", "corp group", "no", 
   "congressional sportsmen's foundation", "ngo", "no", 
   "american petroleum institute", "corp group", "no", 
-  "prevention insitute", "ngo", "yes" #claims health equity community work
-  
+  "prevention insitute", "ngo", "yes", #claims health equity community work
+  "gun owners of america", "ngo", "no"
 )
 
 #join orgInfo into orginial dataset
@@ -1313,49 +1287,8 @@ d %<>%
   #Bump-Stock-Type Devices  
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "ATF-2018-0001-34129"), "4", position)) %>%
   mutate(position = ifelse(is.na(position) & str_dct(documentId, "ATF-2018-0001-34129"), "4", position)) %>% 
-  
-
-  
-
-
-  
-  
-  
-  
- 
-
-  
-
-
-  
-
-
-  
-  
-  
-
-
-
-
-positionCheck <- d %>% 
-  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(documentId, "NPS-2018-0005-175662"))
-
-
-position <- d %>% 
-  select(docketId, documentId, attachmentCount, numberOfCommentsReceived, agencyAcronym, title, commenttext, organization, org.comment, org) %>% 
-  filter(str_dct(docketId, "NPS-2018-0005"), org.comment == T)
-  
-
-
-
-
-
-
 
 ######################################################################################################################################################################################
-
-
 
 
 unique(d$organization)[1:100]
@@ -1421,9 +1354,9 @@ tocode <- filter(toporgs, docketType == "Rulemaking") %>%
   arrange(-numberPerDocket)
 
 write.csv(tocode, here("data/tocode.csv"))
-
-
 ##################################
+
+
 textcomments <- d %>% filter(docketType == "Rulemaking") %>%
   filter(comment == T)
 
@@ -1449,77 +1382,3 @@ unique(d$docketId)
 save(textcomments, file = here("ascending/textcoments.Rdata"))
 
 }
-
-
-
-
-
-
-#change
-
-
-#Notes
-###########################################################
-
-#test for missing orgs not the unknown
-showme <- d %>% 
-  select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization,org)
-
-testUnknown <- d %>% 
-  select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org, numberOfCommentsReceived) %>% 
-  filter(!grepl("unknown", title, ignore.case = TRUE), is.na(organization), is.na(org))
-
-test <- d %>% 
-  select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
-  filter(is.na(organization), is.na(org))
-
-
-#running smaller test for speciifc rules 
-test1 <- d %>% 
-  select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
-  filter(grepl("Animal Rescute Site", title, ignore.case = TRUE), is.na(organization))
-
-test2 <- d %>% 
-  select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
-  filter(grepl("school", org, ignore.case = TRUE))
-
-# The comments received are identical in content and format
-test3 <- d %>% 
-  select(docketId, attachmentCount, agencyAcronym, title, commenttext, organization, org) %>% 
-  filter(!grepl(str_c("This is a mass letter campaign.", 
-                      "This is a mass postcard campaign.",
-                      "These comments were labeled incorrectly to refer",
-                      "This comment was labeled incorrectly to refer",
-                      "This is a mass e-mail campaign.",
-                      "This is a mass e-mail/letter campaign.",
-                      "This is a mass e-mail and letter campaign.",
-                      "This is a mass paper campaign.",
-                      "This is a mass e-mail and postcard campaign.",
-                      sep = "|"), 
-                commenttext, ignore.case = TRUE) & grepl(".", commenttext, ignore.case = TRUE), 
-         is.na(organization), is.na(org))
-
-
-##########################################################################################################
-#before leave whatever is an org.comment = T, save a filter down version
-
-
-#make a word   filter(str_dct(title, "^\\w+$"))
-
-
-#   #mass mail
-#   #creating other by getting rid of common phrasing of unknowns
-#   mutate(org = ifelse(is.na(org) & grepl("EPA", agencyAcronym, ignore.case = TRUE) & !grepl(str_c("This is a mass letter campaign.",
-#                                                                                                     "This is a mass postcard campaign.",
-#                                                                                                     "These comments were labeled incorrectly to refer",
-#                                                                                                     "This comment was labeled incorrectly to refer",
-#                                                                                                     "This is a mass e-mail campaign.",
-#                                                                                                     "This is a mass e-mail/letter campaign.",
-#                                                                                                     "This is a mass e-mail and letter campaign.",
-#                                                                                                     "This is a mass paper campaign.",
-#                                                                                                     "This is a mass e-mail and postcard campaign.",
-#                                                                                                     "This is a mass e-mail  and letter campaign.",
-#                                                                                                     "A sample PDF has been provided for review",
-#                                                                                                     sep = "|"),
-#                                                              commenttext, ignore.case = TRUE) & grepl(".", commenttext, ignore.case = TRUE), "other", org))
-

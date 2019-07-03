@@ -133,6 +133,7 @@ FWNA
 FXI
 G. Boren Services
 ^GD$
+G.O.A.
 GEOA
 Gerdau
 GFHS
@@ -244,6 +245,7 @@ MTN
 Multisorb
 MVN
 NAACP
+N.R.A
 NBC
 NEC
 NEMI
@@ -375,6 +377,8 @@ USDA
 U.S. House Committee on Education and the Workforce
 U.S. Labs
 U.S. Military
+U.S. House of Representatives
+U.S. Senate
 UB
 UCH
 UEP
