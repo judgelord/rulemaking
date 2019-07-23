@@ -48,18 +48,6 @@ str_spl <- function(string, pattern) {
 #searching through EPA 
 #d <- topdockets %>% filter(agencyAcronym == "EPA")
 
-d <- d %>% filter(str_dct(agencyAcronym, "NOAA"))
-
-#looking through docket after
-#group by docket, orgname
-#summarize org.comment
-
-#checking topdockets, 5 top dockets 
-unique(d$docketId)
-
-#FIXME
-#d <- mass %>% filter(agencyAcronym == "EPA")
-
 #all the agency list
 unique(d$agencyAcronym)
 

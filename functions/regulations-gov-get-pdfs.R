@@ -1,20 +1,32 @@
+ssh -Y judgelord@linstat.ssc.wisc.edu
+cd /project/judgelord/rulemaking
+ls
+R
+length(list.files("comments"))
+source("setup.R")
+
 ## This script downloads pdf attachments only
 ## The advantage of this approach is that it does not require using the API to get file names
-## However, after it is run, one should run regulation-gov-get-attachments.R to get non-pdfs 
+## However, after it is run, one should run regulation-gov-get-attachments.R on the fails to get non-pdfs 
 
+# ALL MASS COMMENTS DOWNLOADED 
+load(here("data/masscomments.Rdata"))
+# d <- mass
 
-# load("ascending/allcomments.Rdata")
-# load(here("data/masscomments.Rdata"))
-# docs <- filter(all, documentId %in% mass$documentId)
+load("ascending/allcomments.Rdata")
+d <- filter(all, docketId %in% mass$docketId)
 
 dim(d)
 names(d)
 head(d)
-docs <- d %>% filter(org.comment)
+docs <- d %>% filter(attachmentCount>0, !is.na(organization))# %>%  filter(org.comment)
 dim(docs)
 
-save(docs, file = "data/org_comments.Rdata")
+# SUBSET TO ORG COMMENTS 
+# save(docs, file = "data/org_comments.Rdata")
 # load("data/org_comments.Rdata")
+
+
 docs %<>% 
   mutate(file = str_c(documentId, "-1.pdf"),
          attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
@@ -29,6 +41,12 @@ docs$attach.url[1]
 
 
 #################################
+# files we do have 
+downloaded <- docs %>% filter(file %in% list.files("comments/") )
+dim(downloaded)
+head(downloaded)
+sum(downloaded$numberOfCommentsReceived)
+
 # to DOWNLOAD 
 download <- docs 
 dim(download)
@@ -51,7 +69,7 @@ dim(download)
 head(download$attach.url)
 
 # test
-i <- 3
+i <- 6
 download.file(download$attach.url[i], 
               destfile = str_c("comments/", download$file[i]) ) 
 
@@ -60,15 +78,19 @@ download.file(download$attach.url[i],
 
 
 # loop over downloading attachments 78 at a time (regulations.gov blocks after 78?)
-# need to run this loop about n/78 times to get everything
+# run this loop about n/78 times to get everything
 for(i in 1:round(dim(download)[1]/78)){
   # filter out files already downloaded
-  download %<>% filter(!file %in% list.files("comments/") ) 
+  download %<>% filter(!file %in% list.files("comments/"),
+                       !file %in% fails$file) 
   
-  ## Reset error counter inside function 
+  ## Reset error counter
   errorcount <<- 0
+  
   #for(i in 1:dim(download)[1]){ 
   for(i in 1:78){ 
+    print(i)
+    
     if(errorcount < 5){
       # download to comments folder 
       tryCatch({ # tryCatch handles errors
@@ -77,16 +99,32 @@ for(i in 1:round(dim(download)[1]/78)){
       },
       error = function(e) {
         errorcount <<- errorcount+1
-        print(errorcount)
+        print(paste("error", errorcount))
         if( str_detect(e[[1]][1], "cannot open URL") ){
-          download$file[i] <<- "cannot open URL.csv" # this is a dummy file in the comments folder, which will cause this url to be filtered out for future runs of the loop
+          fails <<- rbind(fails, download$file[i])# this will cause this url to be filtered out for future runs of the loop
         }
         print(e)
+        if(str_detect(e, "SSL connect error|500 Internal Server Error")){
+          beep()
+          Sys.sleep(600) # wait 10
+          errorcount <<- 0 # reset error counter 
+        }
       })
-      print(i)
-      Sys.sleep(1) # pausing between requests does not seem to help, but makes it easier to stop failed calls
-    }}
-  Sys.sleep(600) # 10 min
-}
 
+      Sys.sleep(1) # pausing between requests does not seem to help, but makes it easier to stop failed calls
+    }
+    ## If 5 errors, wait and reset (sometimes you get "cannot open URL 5x in a row)
+    if(errorcount == 5){
+      print("paused after 5 errors")
+      # beep()
+      Sys.sleep(600) # wait 10 min
+      errorcount <<- 0 # reset error counter 
+    }
+    
+    } # end loop over batch
+  Sys.sleep(60) # wait 1 min
+} # end main loop
+
+# Save data on failed downloads 
+save(fails, file = "data/comment_fails.Rdata")
 
