@@ -3,17 +3,19 @@ cd /project/judgelord/rulemaking
 ls
 R
 length(list.files("comments"))
+
 source("setup.R")
 
 ## This script downloads pdf attachments only
 ## The advantage of this approach is that it does not require using the API to get file names
 ## However, after it is run, one should run regulation-gov-get-attachments.R on the fails to get non-pdfs 
 
-# ALL MASS COMMENTS DOWNLOADED 
-load(here("data/masscomments.Rdata"))
-# d <- mass
 
+load(here("data/masscomments.Rdata"))
 load("ascending/allcomments.Rdata")
+
+# ALL MASS COMMENTS DOWNLOADED 
+# NON-MASS COMMENTS ON MASS DOCKETS:
 d <- filter(all, docketId %in% mass$docketId)
 
 dim(d)
@@ -31,7 +33,7 @@ docs %<>%
   mutate(file = str_c(documentId, "-1.pdf"),
          attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
                             documentId,
-                            "&attachmentNumber=1&contentType=pdf"))
+                            "&attachmentNumber=1"))
 
 
 # Inspect
@@ -43,6 +45,8 @@ docs$attach.url[1]
 #################################
 # files we do have 
 downloaded <- docs %>% filter(file %in% list.files("comments/") )
+
+# inspect 
 dim(downloaded)
 head(downloaded)
 sum(downloaded$numberOfCommentsReceived)
@@ -54,10 +58,12 @@ dim(download)
 # files we don't have 
 download %<>% filter(!file %in% list.files("comments/") ) %>%
   filter(!attach.url %in% c("","NULL"), !is.null(attach.url) )
+
+# inspect 
 dim(docs)
 names(download)
 dim(download)
-head(download$documentId)
+head(download)
 
 # Load data on failed downloads 
 load("data/comment_fails.Rdata")
@@ -65,11 +71,13 @@ load("data/comment_fails.Rdata")
 # files that we have not already tried
 download %<>% anti_join(fails)
 # download %<>% filter(attachmentCount > 1)
+
+# inspect 
 dim(download)
 head(download$attach.url)
 
 # test
-i <- 6
+i <- 15
 download.file(download$attach.url[i], 
               destfile = str_c("comments/", download$file[i]) ) 
 
@@ -117,12 +125,12 @@ for(i in 1:round(dim(download)[1]/78)){
     if(errorcount == 5){
       print("paused after 5 errors")
       # beep()
-      Sys.sleep(600) # wait 10 min
+      Sys.sleep(60) # wait 10 min
       errorcount <<- 0 # reset error counter 
     }
     
     } # end loop over batch
-  Sys.sleep(60) # wait 1 min
+  Sys.sleep(600) # wait 10 min (5 min is not enough)
 } # end main loop
 
 # Save data on failed downloads 
