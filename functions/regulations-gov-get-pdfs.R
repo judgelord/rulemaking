@@ -50,6 +50,7 @@ downloaded <- docs %>% filter(file %in% list.files("comments/") )
 dim(downloaded)
 head(downloaded)
 sum(downloaded$numberOfCommentsReceived)
+write.table(sum(downloaded$numberOfCommentsReceived), file = "data/downloaded.tex")
 
 # to DOWNLOAD 
 download <- docs 
@@ -125,7 +126,7 @@ for(i in 1:round(dim(download)[1]/78)){
     if(errorcount == 5){
       print("paused after 5 errors")
       # beep()
-      Sys.sleep(60) # wait 10 min
+      Sys.sleep(600) # wait 10 min
       errorcount <<- 0 # reset error counter 
     }
     
