@@ -130,9 +130,12 @@ for(i in 1:round(dim(download)[1]/78)){
     }
     
     } # end loop over batch
+  
+
+  # Save data on failed downloads 
+  save(fails, file = "data/comment_fails.Rdata")
+  
   Sys.sleep(600) # wait 10 min (5 min is not enough)
 } # end main loop
 
-# Save data on failed downloads 
-save(fails, file = "data/comment_fails.Rdata")
 
