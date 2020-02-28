@@ -1,21 +1,11 @@
 # load packages and functions 
-source("setup.R")
-source("regulations-gov-API-search.R")
+source("setup.R") # this file is located in the main directory https://github.com/judgelord/rulemaking
+source("regulations-gov-API-search.R") # this file is located at https://github.com/judgelord/rulemaking/tree/master/functions
        
 # load data from regulations.gov API search
-load("data/masscomments.Rdata")
-d <- mass 
-load("data/recentcomments.Rdata")
+load("data/allcomments-sample.Rdata)
 
-# FIXME 
-# sample allcomments matching mass ids
-
-# selecting ones most needed for now
-# FIXME 
-d %<>% filter(docketType == "Rulemaking")
-# /FIXME
-
-# filter out docs already scraped
+# filter out docs already scraped (presumes you have a folder in this directory called "comments" where you keep scraped files
 d %<>% filter(!stringr::str_detect(documentId, list.files("comments/") ))
 
 ## initialize and call api to get urls 
