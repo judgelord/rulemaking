@@ -3,9 +3,9 @@ source("setup.R") # this file is located in the main directory https://github.co
 source("regulations-gov-API-search.R") # this file is located at https://github.com/judgelord/rulemaking/tree/master/functions
        
 # load data from regulations.gov API search
-load("data/allcomments-sample.Rdata)
+load("data/allcomments-sample.Rdata")
 
-# filter out docs already scraped (presumes you have a folder in this directory called "comments" where you keep scraped files
+# filter out docs already scraped (presumes you have a folder in this directory called "comments" where you keep scraped files)
 d %<>% filter(!stringr::str_detect(documentId, list.files("comments/") ))
 
 ## initialize and call api to get urls 
