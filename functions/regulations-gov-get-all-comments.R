@@ -41,6 +41,7 @@ content <- fromJSON(rawToChar(raw.result$content))
 d <- as.data.frame(content[[1]])
 
 # to strings 
+#FIXME mutate_at/if
 if("organization" %in% names(d)){d$organization %<>% as.character()}
 if("commentDueDate" %in% names(d)){d$commentDueDate %<>% as.character()}
 if("commentStartDate" %in% names(d)){d$commentStartDate %<>% as.character()}
@@ -111,7 +112,7 @@ while (error < 61) {
     page <- page + 1
   }
   
-  # save after each million docs
+  # save after each half million docs
   if (grepl("000$|500$", page)){
     save(d, page, skip, file = paste0(page, "comments.Rdata") ) 
     d <- temp
