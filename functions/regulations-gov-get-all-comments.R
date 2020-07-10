@@ -53,7 +53,7 @@ error <- 0
 skip <- NA
 
 ##################################################################################
-# If adding to saved results, first run: load("data/comments.Rdata")
+# If adding to saved results, first run: load("data/comments.Rdata") 
 
 # loop until API fails for more than 1 hour
 while (error < 61) {
@@ -83,7 +83,7 @@ while (error < 61) {
   
   # If call fails, wait a minute
   if (error > 0) {
-    print(paste("Error", raw.result$status_code,"on page", page, "- waiting", error,"minutes" ))
+    message(print(paste("Error", raw.result$status_code,"on page", page, "- waiting", error,"minutes" )))
     Sys.sleep(60)
   }
   
@@ -98,27 +98,31 @@ while (error < 61) {
     if("commentStartDate" %in% names(temp)){temp$commentStartDate %<>% as.character()}
     if("postedDate" %in% names(temp)){temp$postedDate %<>% as.character()}
     
-    # merge with previous pages
+    # merge with previous pages silently
+    suppressMessages(
     d %<>% full_join(temp)
+    )
     
-    print(paste("Page", page, "added at", Sys.time()))
+    message(paste("Page", page, "added at", Sys.time()))
     page <- page + 1
   }
   
   # If server error more than twice, skip
   if (raw.result$status_code == 500 & error > 1) {
-    print(paste("Skipping page", page))
+    message(paste("Skipping page", page))
     skip <- c(skip, page)
     page <- page + 1
   }
   
-  # save after each half million docs
+  # save after each half million docs (it takes ~30 minutes to get 500k and you don't want to start over if you hit an error)
   if (grepl("000$|500$", page)){
     save(d, page, skip, file = paste0(page, "comments.Rdata") ) 
     d <- temp
   }
   
 }# END LOOP 
+
+# Save last comments
 save(d, page, skip, file = paste0("lastcomments.Rdata") ) 
 save.image()
 
