@@ -1,9 +1,7 @@
-ssh -Y judgelord@linstat.ssc.wisc.edu
-cd /project/judgelord/rulemaking
-ls
-R
+# check comments folder
 length(list.files("comments"))
 
+# load packages
 source("setup.R")
 
 ## This script downloads pdf attachments only
@@ -12,21 +10,29 @@ source("setup.R")
 
 
 load(here("data/masscomments.Rdata"))
+dim(all)
+names(all)
+
 load("ascending/allcomments.Rdata")
+dim(all)
+names(all)
 
 # ALL MASS COMMENTS DOWNLOADED 
 # NON-MASS COMMENTS ON MASS DOCKETS:
 d <- filter(all, docketId %in% mass$docketId)
 
+# CFPB Comments
+d <- filter(all, agencyAcronym %in% c("CFPB"))
+
 dim(d)
 names(d)
 head(d)
-docs <- d %>% filter(attachmentCount>0, !is.na(organization))# %>%  filter(org.comment)
-dim(docs)
 
-# SUBSET TO ORG COMMENTS 
-# save(docs, file = "data/org_comments.Rdata")
-# load("data/org_comments.Rdata")
+# subset to download
+docs <- d %>% filter(attachmentCount>0, # subset to those with attachments
+                     #org.comment, # comments identified as a org comment 
+                     !is.na(organization))# comments with an org name identified
+dim(docs)
 
 
 docs %<>% 
@@ -78,7 +84,7 @@ dim(download)
 head(download$attach.url)
 
 # test
-i <- 15
+i <- 1
 download.file(download$attach.url[i], 
               destfile = str_c("comments/", download$file[i]) ) 
 
@@ -89,6 +95,8 @@ download.file(download$attach.url[i],
 # loop over downloading attachments 78 at a time (regulations.gov blocks after 78?)
 # run this loop about n/78 times to get everything
 for(i in 1:round(dim(download)[1]/78)){
+  n <- i*78
+  N <- nrow(download)
   # filter out files already downloaded
   download %<>% filter(!file %in% list.files("comments/"),
                        !file %in% fails$file) 
@@ -96,9 +104,11 @@ for(i in 1:round(dim(download)[1]/78)){
   ## Reset error counter
   errorcount <<- 0
   
-  #for(i in 1:dim(download)[1]){ 
   for(i in 1:78){ 
-    print(i)
+    #print(i)
+    #print(paste(n, "of", N))
+    #print(Sys.time())
+    messsage(paste(i, "of", 78, "|", n, "of", N, "downloaded at", Sys.time()))
     
     if(errorcount < 5){
       # download to comments folder 
@@ -108,24 +118,24 @@ for(i in 1:round(dim(download)[1]/78)){
       },
       error = function(e) {
         errorcount <<- errorcount+1
-        print(paste("error", errorcount))
+        message(paste("error", errorcount))
         if( str_detect(e[[1]][1], "cannot open URL") ){
           fails <<- rbind(fails, download$file[i])# this will cause this url to be filtered out for future runs of the loop
         }
-        print(e)
+        message(e)
         if(str_detect(e, "SSL connect error|500 Internal Server Error")){
-          beep()
+          beepr::beep()
           Sys.sleep(600) # wait 10
           errorcount <<- 0 # reset error counter 
         }
       })
 
-      Sys.sleep(1) # pausing between requests does not seem to help, but makes it easier to stop failed calls
+      Sys.sleep(.1) # pausing between requests does not seem to help, but makes it easier to stop failed calls
     }
-    ## If 5 errors, wait and reset (sometimes you get "cannot open URL 5x in a row)
+    ## If 5 errors, wait and reset (sometimes you get "cannot open URL" 5x in a row)
     if(errorcount == 5){
-      print("paused after 5 errors")
-      # beep()
+      message("paused after 5 errors")
+      beepr::beep()
       Sys.sleep(600) # wait 10 min
       errorcount <<- 0 # reset error counter 
     }
