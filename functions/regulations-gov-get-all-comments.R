@@ -1,14 +1,24 @@
 # This script gets all documents (e.g. public comments) from regulations.gov
 
+# I keep keep data I have already downloaded in ascending order in a directory called "ascending"
+directory <- "ascending"
+
+# The api call below loads data in ascending order. 
+# To start with the earliest comment, set page to 1
+# To dowload more recent comments, either change order to "DESC" or specify a page of results to start at
+page <- 1
+
 ## load packages
 source("setup.R")
 
-# set defaults 
+
+
+# set defaults for regulations.gov api call
 url  <- "https://api.data.gov"
 rpp <- 1000 # 1000 = max results per page
 order <- "ASC" # DESC = Decending, ASC = Ascending 
 sortby <- "postedDate" #docketId (Docket ID) docId (Document ID) title (Title) postedDate (Posted Date) agency (Agency) documentType (Document Type) submitterName (Submitter Name) organization (Organization)
-pages <- c(1, (seq(100000)*rpp)+1) # up to 100,000,000 results
+pages <- c(1, (seq(1000000)*rpp)+1) # up to 100,000,000 results
 documenttype <- "PS" # "N%2BPR%2BFR%2BPS%2BSR%2BO"
 ## N: Notice, 
 ## PR: Proposed Rule, 
@@ -21,7 +31,7 @@ documenttype <- "PS" # "N%2BPR%2BFR%2BPS%2BSR%2BO"
 source("api-key.R") 
 api_key <- api_key
 
-## initial API call (page 1, first 1000 results)
+## initial API call (first page of 1000 results)
 raw.result <- GET(
   url = url,
   path = paste0(
@@ -30,7 +40,7 @@ raw.result <- GET(
     "&so=", order,
     "&sb=", sortby,
     "&dct=", "PS", # searching Public Submissions
-    "&po=", pages[1]
+    "&po=", pages[page]
   )
 )
 raw.result$status_code
@@ -39,8 +49,10 @@ raw.result$status_code
 content <- fromJSON(rawToChar(raw.result$content))
 # make a data frame 
 d <- as.data.frame(content[[1]])
+unique(d$postedDate)
 
-# to strings 
+
+# to strings (to gaurentee consistent classes)
 #FIXME mutate_at/if
 if("organization" %in% names(d)){d$organization %<>% as.character()}
 if("commentDueDate" %in% names(d)){d$commentDueDate %<>% as.character()}
@@ -48,7 +60,7 @@ if("commentStartDate" %in% names(d)){d$commentStartDate %<>% as.character()}
 if("postedDate" %in% names(d)){d$postedDate %<>% as.character()}
 
 # initialize
-page <- 2
+page <- page
 error <- 0
 skip <- NA
 
@@ -103,7 +115,8 @@ while (error < 61) {
     d %<>% full_join(temp)
     )
     
-    message(paste("Page", page, "added at", Sys.time()))
+    message(paste("Page", page, "added", Sys.time()))
+    
     page <- page + 1
   }
   
@@ -116,7 +129,8 @@ while (error < 61) {
   
   # save after each half million docs (it takes ~30 minutes to get 500k and you don't want to start over if you hit an error)
   if (grepl("000$|500$", page)){
-    save(d, page, skip, file = paste0(page, "comments.Rdata") ) 
+    message("Saving", paste0(page, "comments.Rdata"))
+    save(d, page, skip, file = here::here(directory, paste0(page, "comments.Rdata"))) 
     d <- temp
   }
   
@@ -126,7 +140,9 @@ while (error < 61) {
 save(d, page, skip, file = paste0("lastcomments.Rdata") ) 
 save.image()
 
+# Save recent comments
 save(d, file = "data/recentcomments.Rdata")
 
+head(d$postedDate)
 
 

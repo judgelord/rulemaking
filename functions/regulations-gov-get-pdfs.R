@@ -21,12 +21,18 @@ names(all)
 # NON-MASS COMMENTS ON MASS DOCKETS:
 d <- filter(all, docketId %in% mass$docketId)
 
-# CFPB Comments
-d <- filter(all, agencyAcronym %in% c("CFPB"))
+# Comments from one agency
+d <- filter(all, agencyAcronym %in% c("DOT"))
 
 dim(d)
 names(d)
 head(d)
+
+d %<>% 
+  mutate(file = str_c(documentId, "-1.pdf"),
+         attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
+                            documentId,
+                            "&attachmentNumber=1"))
 
 # subset to download
 docs <- d %>% filter(attachmentCount>0, # subset to those with attachments
@@ -34,12 +40,6 @@ docs <- d %>% filter(attachmentCount>0, # subset to those with attachments
                      !is.na(organization))# comments with an org name identified
 dim(docs)
 
-
-docs %<>% 
-  mutate(file = str_c(documentId, "-1.pdf"),
-         attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
-                            documentId,
-                            "&attachmentNumber=1"))
 
 
 # Inspect
@@ -105,10 +105,7 @@ for(i in 1:round(dim(download)[1]/78)){
   errorcount <<- 0
   
   for(i in 1:78){ 
-    #print(i)
-    #print(paste(n, "of", N))
-    #print(Sys.time())
-    messsage(paste(i, "of", 78, "|", n, "of", N, "downloaded at", Sys.time()))
+    message(paste(download$file[i], "|", i, "of", 78, "|", n, "of", N-78+n, "downloaded at", Sys.time()))
     
     if(errorcount < 5){
       # download to comments folder 
@@ -146,7 +143,14 @@ for(i in 1:round(dim(download)[1]/78)){
   # Save data on failed downloads 
   save(fails, file = "data/comment_fails.Rdata")
   
-  Sys.sleep(600) # wait 10 min (5 min is not enough)
+  Sys.sleep(500) # wait 10 min (5 min is not enough)
 } # end main loop
+
+
+
+
+
+
+
 
 
