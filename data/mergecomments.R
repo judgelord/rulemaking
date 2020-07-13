@@ -1,7 +1,33 @@
-library(here)
-source(here("setup.R"))
+# This script saves "allcomments.Rdata"--all comments posted to regulations.gov
+# It joins Rdata subsets of comment metadata from the regulations.gov API 
+# These data are created by "functions/regulations-gov-get-all-comments.R"
+source(here::here("setup.R"))
 load(here("ascending/lastcomments.Rdata"))
 all <- d
+
+load(here("ascending/13000comments.Rdata"))
+all %<>% full_join(d)
+
+load(here("ascending/12500comments.Rdata"))
+all %<>% full_join(d)
+
+load(here("ascending/12000comments.Rdata"))
+all %<>% full_join(d)
+
+load(here("ascending/11500comments.Rdata"))
+all %<>% full_join(d)
+
+load(here("ascending/11000comments.Rdata"))
+all %<>% full_join(d)
+
+load(here("ascending/10500comments.Rdata"))
+all %<>% full_join(d)
+
+load(here("ascending/10000comments.Rdata"))
+all %<>% full_join(d)
+
+load(here("ascending/9500comments.Rdata"))
+all %<>% full_join(d)
 
 load(here("ascending/9000comments.Rdata"))
 all %<>% full_join(d)
@@ -57,13 +83,15 @@ all %<>% full_join(d)
 load(here("ascending/500comments.Rdata"))
 all %<>% full_join(d)
 
+dim(all)
+
 #####################################
 # save all
 save(all, 
      file = "ascending/allcomments.Rdata")
 
 #####################################
-# save mass comment campaigns only to data folder
+# save comments with non-attachment text only to data folder
 textcomments <- filter(all, nchar(commentText)> 240)
 dim(textcomments)
 save(textcomments,
@@ -74,3 +102,5 @@ save(textcomments,
 mass <- filter(all, numberOfCommentsReceived > 99)
 save(mass,
      file = "data/masscomments.Rdata")
+
+
