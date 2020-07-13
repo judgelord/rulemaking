@@ -1,5 +1,6 @@
 # check comments folder
-length(list.files("comments"))
+directory <- "comments"
+length(list.files(directory))
 
 # load packages
 source("setup.R")
@@ -17,32 +18,43 @@ load("ascending/allcomments.Rdata")
 dim(all)
 names(all)
 
-# ALL MASS COMMENTS DOWNLOADED 
-# NON-MASS COMMENTS ON MASS DOCKETS:
-d <- filter(all, docketId %in% mass$docketId)
+# urls for first attachments 
+all %<>% 
+  mutate(file = str_c(documentId, "-1.pdf"),
+         attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
+                            documentId,
+                            "&attachmentNumber=1"),
+         downloaded = file %in% list.files(here::here("comments")) )
+
+
+# inspect missing files
+all %>% 
+  filter(!downloaded,
+         #org.comment, # comments identified as a org comment 
+         #!is.na(organization), # comments with an org name identified
+         attachmentCount > 0) %>% 
+         count(agencyAcronym) %>% knitr::kable()
+
+
+# # NON-MASS COMMENTS ON MASS DOCKETS:
+# d <- filter(all, docketId %in% mass$docketId)
 
 # Comments from one agency
-d <- filter(all, agencyAcronym %in% c("DOT"))
+d <- filter(all, agencyAcronym %in% c("FDA"))
 
 dim(d)
 names(d)
 head(d)
 
-d %<>% 
-  mutate(file = str_c(documentId, "-1.pdf"),
-         attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
-                            documentId,
-                            "&attachmentNumber=1"))
+
 
 # subset to download
-docs <- d %>% filter(attachmentCount>0, # subset to those with attachments
-                     #org.comment, # comments identified as a org comment 
-                     !is.na(organization))# comments with an org name identified
-dim(docs)
-
-
+docs <- d %>% filter(#org.comment, # comments identified as a org comment 
+                     #!is.na(organization), # comments with an org name identified
+                     attachmentCount>0) # subset to those with attachment
 
 # Inspect
+dim(docs)
 docs$file[1]
 docs$attach.url[1]
 
@@ -50,7 +62,7 @@ docs$attach.url[1]
 
 #################################
 # files we do have 
-downloaded <- docs %>% filter(file %in% list.files("comments/") )
+downloaded <- docs %>% filter(downloaded)
 
 # inspect 
 dim(downloaded)
@@ -63,8 +75,9 @@ download <- docs
 dim(download)
 
 # files we don't have 
-download %<>% filter(!file %in% list.files("comments/") ) %>%
-  filter(!attach.url %in% c("","NULL"), !is.null(attach.url) )
+download %<>% filter(!downloaded,
+                     !attach.url %in% c("","NULL"), 
+                     !is.null(attach.url) )
 
 # inspect 
 dim(docs)
@@ -88,8 +101,7 @@ i <- 1
 download.file(download$attach.url[i], 
               destfile = str_c("comments/", download$file[i]) ) 
 
-# FIXME
-# should use purrr walk() here and in get-attachments  
+# FIXME should use purrr walk() here and in get-attachments  
 
 
 # loop over downloading attachments 78 at a time (regulations.gov blocks after 78?)
@@ -105,7 +117,7 @@ for(i in 1:round(dim(download)[1]/78)){
   errorcount <<- 0
   
   for(i in 1:78){ 
-    message(paste(download$file[i], "|", i, "of", 78, "|", n, "of", N-78+n, "downloaded at", Sys.time()))
+    message(paste(download$file[i], "|", i, "of", 78, "|", n-78+i, "of", N, "downloaded at", Sys.time()))
     
     if(errorcount < 5){
       # download to comments folder 
@@ -142,7 +154,7 @@ for(i in 1:round(dim(download)[1]/78)){
 
   # Save data on failed downloads 
   save(fails, file = "data/comment_fails.Rdata")
-  
+  message("Pausing to prevent regulations.gov security from blocking this IP address")
   Sys.sleep(500) # wait 10 min (5 min is not enough)
 } # end main loop
 
