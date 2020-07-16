@@ -2,85 +2,87 @@
 # It joins Rdata subsets of comment metadata from the regulations.gov API 
 # These data are created by "functions/regulations-gov-get-all-comments.R"
 source(here::here("setup.R"))
-load(here("ascending/lastcomments.Rdata"))
+directory <- "ascending2"
+
+load(here("ascending2", "lastcomments.Rdata"))
 all <- d
 
-load(here("ascending/13000comments.Rdata"))
+load(here(directory,  "13000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/12500comments.Rdata"))
+load(here(directory, "12500comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/12000comments.Rdata"))
+load(here(directory,  "12000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/11500comments.Rdata"))
+load(here(directory,  "11500comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/11000comments.Rdata"))
+load(here(directory,  "11000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/10500comments.Rdata"))
+load(here(directory,  "10500comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/10000comments.Rdata"))
+load(here(directory,  "10000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/9500comments.Rdata"))
+load(here(directory,  "9500comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/9000comments.Rdata"))
+load(here(directory,  "9000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/8500comments.Rdata"))
+load(here(directory,  "8500comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/8000comments.Rdata"))
+load(here(directory,  "8000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/7500comments.Rdata"))
+load(here(directory,  "7500comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/7000comments.Rdata"))
+load(here(directory,  "7000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/6500comments.Rdata"))
+load(here(directory,  "6500comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/6000comments.Rdata"))
+load(here(directory,  "6000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/5500comments.Rdata"))
+load(here(directory,  "5500comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/5000comments.Rdata"))
+load(here(directory,  "5000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/4500comments.Rdata"))
+load(here(directory,  "4500comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/4000comments.Rdata"))
+load(here(directory,  "4000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/3500comments.Rdata"))
+load(here(directory,  "3500comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/3000comments.Rdata"))
+load(here(directory,  "3000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/2500comments.Rdata"))
+load(here(directory,  "2500comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/2000comments.Rdata"))
+load(here(directory,  "2000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/1500comments.Rdata"))
+load(here(directory,  "1500comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/1000comments.Rdata"))
+load(here(directory,  "1000comments.Rdata"))
 all %<>% full_join(d)
 
-load(here("ascending/500comments.Rdata"))
+load(here(directory,  "500comments.Rdata"))
 all %<>% full_join(d)
 
 dim(all)
@@ -88,14 +90,14 @@ dim(all)
 #####################################
 # save all
 save(all, 
-     file = "ascending/allcomments.Rdata")
+     file = here(directory,  "allcomments.Rdata"))
 
 #####################################
 # save comments with non-attachment text only to data folder
 textcomments <- filter(all, nchar(commentText)> 240)
 dim(textcomments)
 save(textcomments,
-     file = "ascending/textcomments.Rdata")
+     file = here(directory,  "textcomments.Rdata"))
 
 #####################################
 # save mass comment campaigns only to data folder

@@ -9,12 +9,7 @@ source("setup.R")
 ## The advantage of this approach is that it does not require using the API to get file names
 ## However, after it is run, one should run regulation-gov-get-attachments.R on the fails to get non-pdfs 
 
-
-load(here("data/masscomments.Rdata"))
-dim(all)
-names(all)
-
-load("ascending/allcomments.Rdata")
+load("ascending2/allcomments.Rdata")
 dim(all)
 names(all)
 
@@ -33,36 +28,35 @@ all %>%
          #org.comment, # comments identified as a org comment 
          #!is.na(organization), # comments with an org name identified
          attachmentCount > 0) %>% 
-         count(agencyAcronym) %>% knitr::kable()
+         count(agencyAcronym, sort = T) %>% knitr::kable()
 
+d <- all
 
-# # NON-MASS COMMENTS ON MASS DOCKETS:
+# # MASS DOCKETS:
+# load(here("data/masscomments.Rdata"))
 # d <- filter(all, docketId %in% mass$docketId)
 
-# Comments from one agency
-d <- filter(all, agencyAcronym %in% c("FDA"))
+## Comments from one agency
+# d <- filter(all, agencyAcronym %in% c("DOT"))
 
-dim(d)
-names(d)
+# Inspect
+nrow(d)
 head(d)
-
-
 
 # subset to download
 docs <- d %>% filter(#org.comment, # comments identified as a org comment 
-                     #!is.na(organization), # comments with an org name identified
+                     !is.na(organization), # comments with an org name identified
                      attachmentCount>0) # subset to those with attachment
 
 # Inspect
-dim(docs)
-docs$file[1]
-docs$attach.url[1]
+nrow(docs)
+docs %>% head() %>% select(file, attach.url, downloaded)
 
 
-
+docs %>%  count(agencyAcronym, sort = T) %>% knitr::kable()
 #################################
 # files we do have 
-downloaded <- docs %>% filter(downloaded)
+downloaded <- filter(docs, downloaded)
 
 # inspect 
 dim(downloaded)
@@ -71,26 +65,33 @@ sum(downloaded$numberOfCommentsReceived)
 write.table(sum(downloaded$numberOfCommentsReceived), file = "data/downloaded.tex")
 
 # to DOWNLOAD 
-download <- docs 
-dim(download)
-
 # files we don't have 
-download %<>% filter(!downloaded,
+download <- filter(docs,
+                     !downloaded,
                      !attach.url %in% c("","NULL"), 
+                     !is.na(attach.url),
                      !is.null(attach.url) )
 
 # inspect 
 dim(docs)
-names(download)
 dim(download)
-head(download)
+download %>% head() %>% select(file, attach.url, downloaded)
+download %>%  count(agencyAcronym, sort = T) %>% knitr::kable()
+
+download %<>% filter(agencyAcronym == "DOT")
 
 # Load data on failed downloads 
 load("data/comment_fails.Rdata")
 
-# files that we have not already tried
+# drop files that we have already tried and failed to download
 download %<>% anti_join(fails)
-# download %<>% filter(attachmentCount > 1)
+
+# inspect 
+dim(download)
+head(download$attach.url)
+
+
+download %<>% filter(!file %in% list.files("comments/") ) 
 
 # inspect 
 dim(download)
@@ -100,26 +101,29 @@ head(download$attach.url)
 i <- 1
 download.file(download$attach.url[i], 
               destfile = str_c("comments/", download$file[i]) ) 
-
-# FIXME should use purrr walk() here and in get-attachments  
+Sys.sleep(400) # wait after downloading the first one so we don't hit the limit on the first loop
 
 
 # loop over downloading attachments 78 at a time (regulations.gov blocks after 78?)
+# FIXME should use purrr walk() here and in get-attachments
+# for(attachment_n in 1:max(download$attachmentCount)){} # loop to capture multiple attachments, starting with first file for all with attachmentCoung > 0, then subsetting to attachmentCount > 1, etc
+N <- nrow(download)
+
 # run this loop about n/78 times to get everything
-for(i in 1:round(dim(download)[1]/78)){
-  n <- i*78
-  N <- nrow(download)
+for(i in 1:round(nrow(download)/78)){
+  # n complete
+  n <- (i-1)*78
   # filter out files already downloaded
-  download %<>% filter(!file %in% list.files("comments/"),
-                       !file %in% fails$file) 
+  download %<>% filter(!file %in% fails$file,
+                       !file %in% list.files("comments/") ) 
   
   ## Reset error counter
   errorcount <<- 0
   
   for(i in 1:78){ 
-    message(paste(download$file[i], "|", i, "of", 78, "|", n-78+i, "of", N, "downloaded at", Sys.time()))
+    message(paste(n+i, "of", N, download$file[i], "at", Sys.time()))
     
-    if(errorcount < 5){
+    if(errorcount < 5 & nrow(download) > 0){
       # download to comments folder 
       tryCatch({ # tryCatch handles errors
         download.file(download$attach.url[i], 
@@ -133,7 +137,7 @@ for(i in 1:round(dim(download)[1]/78)){
         }
         message(e)
         if(str_detect(e, "SSL connect error|500 Internal Server Error")){
-          beepr::beep()
+          # beepr::beep()
           Sys.sleep(600) # wait 10
           errorcount <<- 0 # reset error counter 
         }
@@ -143,8 +147,8 @@ for(i in 1:round(dim(download)[1]/78)){
     }
     ## If 5 errors, wait and reset (sometimes you get "cannot open URL" 5x in a row)
     if(errorcount == 5){
-      message("paused after 5 errors")
-      beepr::beep()
+      message("--paused after 5 errors")
+      # beepr::beep()
       Sys.sleep(600) # wait 10 min
       errorcount <<- 0 # reset error counter 
     }
@@ -154,13 +158,11 @@ for(i in 1:round(dim(download)[1]/78)){
 
   # Save data on failed downloads 
   save(fails, file = "data/comment_fails.Rdata")
-  message("Pausing to prevent regulations.gov security from blocking this IP address")
-  Sys.sleep(500) # wait 10 min (5 min is not enough)
+  message("Pausing to prevent regulations.gov from blocking this IP address")
+  Sys.sleep(400) # wait 400 seconds (300 is not enough)
 } # end main loop
 
-
-
-
+# If you get blocked (SSL connect error), you need to wait longer than 10 min, 30 min seems about right
 
 
 

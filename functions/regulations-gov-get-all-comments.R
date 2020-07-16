@@ -1,15 +1,17 @@
 # This script gets all documents (e.g. public comments) from regulations.gov
 
-# I keep keep data I have already downloaded in ascending order in a directory called "ascending"
-directory <- "ascending"
+## load required packages
+source("setup.R")
 
+# I keep keep data I have already downloaded in ascending order in a directory called "ascending"
+directory <- "ascending2"
+list.files(here::here(directory))
 # The api call below loads data in ascending order. 
 # To start with the earliest comment, set page to 1
 # To dowload more recent comments, either change order to "DESC" or specify a page of results to start at
 page <- 1
 
-## load packages
-source("setup.R")
+
 
 
 
@@ -137,12 +139,14 @@ while (error < 61) {
 }# END LOOP 
 
 # Save last comments
-save(d, page, skip, file = paste0("lastcomments.Rdata") ) 
+load("lastcomments.Rdata")
+save(d, page, skip, file = here::here(directory, "lastcomments.Rdata") ) 
 save.image()
 
 # Save recent comments
 save(d, file = "data/recentcomments.Rdata")
 
-head(d$postedDate)
+tail(d %>% drop_na(postedDate) %>% .$postedDate)
+
 
 
