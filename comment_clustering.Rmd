@@ -55,13 +55,13 @@ text$commentText %<>%
   stemDocument() %>% 
   removePunctuation()
 
-sentiment <- unnest_tokens(text,word, commentText) %>% 
+sentiment <- unnest_tokens(text, word, commentText) %>% 
   inner_join(get_sentiments("afinn")) %>% 
   group_by(documentId) %>%
   summarise(sentiment = sum(score)/n()) %>% 
   ungroup()
 
-clean <- unnest_tokens(text,word, commentText) %>% 
+clean <- unnest_tokens(text, word, commentText) %>% 
   anti_join(stop_words) %>%
   group_by(documentId) %>%
   summarise(commenttext = str_c(word, collapse = " ")) %>% 

@@ -9,7 +9,7 @@ save( total , file = "totalcomments.tex")
 rins <- length(unique(all$rin))
 save( rins, file = "RINcount.tex")
 
-massRINs <- filter(all, numberOfCommentsReceived > 100)
+massRINs <- filter(all, numberOfCommentsReceived > 99)
 
 total <- sum(massRINs$numberOfCommentsReceived)
 total

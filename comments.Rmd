@@ -35,7 +35,7 @@ regs.gov$postedDate %<>% as.Date()
 regs.gov$commentStartDate %<>% as.Date()
 regs.gov$openForComment %<>% as.logical()
 regs.gov$year <- as.numeric(substr(regs.gov$postedDate, 1, 4))
-
+unique(regs.gov$year)
 # to merge 
 regs.gov  %<>% mutate(RIN = rin)
 
@@ -64,12 +64,12 @@ count <- d %>%
   group_by(agencyAcronym, documentType, mean, median, max, zero, medianW.O.zero) %>% 
   tally() %>% arrange(-n)
 
-kable(count)
+# knitr::kable(count)
 ```
 
 Comments per rule (log):
 ```{r rules-comments-per-year, fig.height = 3.5, fig.width=3.5}
-d %>% filter(year > 2004, !is.na(postedDate),
+d %>% filter(year > 2004, year < 2020, !is.na(postedDate),
              numberOfCommentsReceived>10,
              !is.na(numberOfCommentsReceived)) %>% 
   filter(documentType == "Proposed Rule") %>%

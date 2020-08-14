@@ -125,7 +125,10 @@ head(d$documentId)
 # mass comments to the top
 d %<>% arrange(desc(numberOfCommentsReceived))  %>% 
   # make a variable indicating comment is unique
-  mutate(mass2 = ifelse(numberOfCommentsReceived > 99 | mass == "Mass Comments", "Mass Comments", "Other Comments"))
+  #FIXME ADD OTHER INDICATOR
+  mutate(mass2 = ifelse(numberOfCommentsReceived > 99,#| mass == "Mass Comments", 
+         "Mass Comments", 
+         "Other Comments"))
 
 # format data
 d$postedDate %<>% as.Date()
@@ -154,8 +157,8 @@ d %<>%
 
 
 ```{r comments-per-year, fig.height=3.5, fig.width=3.5}
-d %>% 
-  filter(year > 2004) %>% 
+p <- d %>% 
+  filter(year > 2004, year < 2020) %>% 
   group_by(year) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
@@ -168,14 +171,16 @@ d %>%
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
+
+ggsave(filename="Figs/comments-per-year.pdf", plot = p, height=3.5, width=3.5)
 ```
 
 
 
 
 ```{r comments-mass-vs-unique, fig.height=3.1, fig.width=5}
-d %>% 
-  filter(year > 2004) %>% 
+p <- d %>% 
+  filter(year > 2004, year < 2020) %>% 
   group_by(year, mass2) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
@@ -188,13 +193,15 @@ d %>%
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
+
+ggsave(filename="Figs/comments-mass-vs-unique.pdf", p, height=3.1, width=5)
 ```
 
 
 
 ```{r comments-support-vs-oppose, fig.height=3.1, fig.width=5}
-d %>% 
-  filter(year > 2004, !is.na(position)) %>% 
+p <- d %>% 
+  filter(year > 2004, year < 2020, !is.na(position) ) %>% 
   group_by(year, position) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
@@ -209,17 +216,22 @@ d %>%
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
+
+p
+
+ggsave(filename="Figs/comments-support-vs-oppose.pdf", p, height=3.1, width=5)
+
 ```
 
 ```{r comments-mass-support-vs-oppose, fig.height=3.1, fig.width=5}
-d %>% 
-  filter(year > 2004, !is.na(position), position != "\"support\" and \"oppose\"") %>% 
-  group_by(year, position, mass) %>% 
+p <- d %>% 
+  filter(year > 2004, year < 2020, !is.na(position), position != "\"support\" and \"oppose\"") %>% 
+  group_by(year, position, mass2) %>% #FIXME should be mass not mass2
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
   geom_col(aes(x = factor(year), 
                y = yearTotal, 
-               fill = mass) ) + 
+               fill = mass2) ) + 
   scale_y_continuous(labels = scales::comma) + 
   labs(x = "", 
        y = paste("Total Comments"),
@@ -229,6 +241,10 @@ d %>%
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
+
+p
+
+ggsave(filename="Figs/comments-mass-support-vs-oppose.pdf", p, height=3.1, width=5)
 ```
 
 
@@ -296,6 +312,8 @@ ggsave(filename=str_c("Figs/", "sent-", unique(Text$year), unique(Text$docketId)
 }
 support_oppose(id)
 walk(unique(d$docketId), safely(support_oppose))
+
+
 ```
 
 ```{r comments-mass, fig.height=3.1, fig.width=5}
@@ -315,13 +333,14 @@ d %>%
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
 
-
+ggsave(filename="Figs/comments-mass.pdf", p, height=3.1, width=5)
 ``` 
 
 
-```{r comments-form, fig.height=3.1, fig.width=5}
-d %>% 
-  filter(year > 2004) %>% 
+```{r comments-from, fig.height=3.1, fig.width=5}
+unique(d$year)
+p <- d %>% 
+  filter(year > 2004, year < 2020) %>% 
   group_by(year, commentform) %>% 
   summarise(yearTotal = sum(numberOfCommentsReceived)) %>%
   ggplot() + 
@@ -335,6 +354,8 @@ d %>%
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_text(angle = 45))
+
+ggsave(filename="Figs/comments-from.pdf", p, height=3.1, width=5)
 ``` 
 
 
