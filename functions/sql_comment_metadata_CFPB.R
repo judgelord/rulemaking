@@ -79,64 +79,42 @@ dbDisconnect(con)
 # load(here::here("data", "comment_metadata_CFPB.Rdata"))
 names(comments_cfpb)
 
-# Davis Polk Data
-df <- read_csv(here::here("data", "Rule_Progress.csv"))
-df %<>% filter(str_detect(Agencies, "CFPB"))
-df %<>% mutate(rin = str_extract(Citation, "RIN.*") %>% 
-                 str_remove_all("RIN| ") %>% 
-                 str_remove_all(" ") %>% 
-                 str_replace("-|—|–", "zzz")%>%
-                 str_remove(regex("\\W+")) %>% 
-                 str_replace("zzz", "-"))
+# Dodd-Frank rules from Davis Polk Data
+df <- read_csv(here::here("data", "dockets_to_scrape.csv"))
+names(df)
+df %<>% filter(str_detect(agency, "CFPB"))
 
-## correrctions to Davis Polk Data
-df %<>% mutate(rin = ifelse(str_detect(Citation, 
-                                       "12 CFR part 1041"), 
-                            "3170-AA40",
-                            rin))
+# Subset to Dodd-Frank rules
+df_rins <- df$RIN %>% na.omit() %>% unique()
+df_docekts <- df$identifier %>% na.omit() %>% unique()
 
-# comments_cfpb %>% filter(str_detect(docket_title, "diversity policies and practices"))
-df %<>% mutate(docket_id = ifelse(str_detect(Citation, 
-                                       "Release No. 34-75050"), 
-                                  "CFPB-2013-0029",
-                            "other"))
+comments_cfpb_df <- comments_cfpb %>% filter(docket_id %in% df_docekts | rin %in% df_rins)
 
-df %<>% mutate(docket_id = ifelse(str_detect(Citation, 
-                                             "3170-AA02"), 
-                                  "CFPB-2011-0005",
-                                  docket_id))
+comments_cfpb_df %>% filter(!rin %in% df_rins) %>% select(docket_id, rin) %>% distinct()
 
-df %>% select(rin, Citation, docket_id)
-df %>% select(rin, Citation, `Regulator Summary`) %>% filter(is.na(rin)) %>% knitr::kable()
+comments_cfpb_df %>% 
+  filter(!docket_id %in% df_docekts) %>% 
+  select(docket_id, rin) %>% 
+  distinct() %>% knitr::kable()
 
-
-# filter regulations.gov data
-comments_cfpb_df <- comments_cfpb %>% filter(rin %in% df$rin | docket_id %in% df$docket_id)
 
 comments_cfpb_df$docket_id %>% unique()
 comments_cfpb_df$rin %>% unique()
 
 # look back to see how many we matched 
-matched <- df %>% filter(rin %in% comments_cfpb_df$rin | docket_id %in% comments_cfpb_df$docket_id)
+matched <- df %>% filter(RIN %in% comments_cfpb_df$rin | identifier %in% comments_cfpb_df$docket_id)
 unmatched <- df %>% anti_join(matched)
-unmatched$rin %>% unique() 
+unmatched %>% select(RIN, identifier) %>% distinct()
 
-unmatched %>% select(Citation, `Regulator Summary`)
 
 # To investigate 
 # 12 CFR Part 1082 [Docket No. CFPB-2011-0005] RIN 3170-AA02 State Official Notification Rule 
 
 # 0 comments
-"12 CFR Part 1090\nRIN 3170-AA30"
+"12 CFR Part 1090  3170-AA30 CFPB-2012-0040"
+"3170-AA36 CFPB-2013-0006"
 
-# In Unified agenda but not regulations.gov :
-# Ability-to-Repay and Qualified Mortgage Standards Under the Truth in Lending
-"3170-AA16" 
-"12 CFR Part 1070\nRIN 3170-AA01"
 
-# FED Rins:
-"1557-AD62" 
-"1557-AD64" 
 
 
 
@@ -163,3 +141,4 @@ res <- dbSendQuery(con, "SELECT * FROM comments_cfpb_df WHERE agency_acronym = '
 dbFetch(res) %>% head()
 dbClearResult(res)
 dbDisconnect(con)
+
