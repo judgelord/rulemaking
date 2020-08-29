@@ -10,3 +10,5 @@ api_key.R
 login.R
 comment_metadata.sqlite
 500comments.Rdata
+ascending
+linstat

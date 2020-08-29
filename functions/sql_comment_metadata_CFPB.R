@@ -99,6 +99,11 @@ df %<>% mutate(docket_id = ifelse(str_detect(Citation,
                                   "CFPB-2013-0029",
                             "other"))
 
+df %<>% mutate(docket_id = ifelse(str_detect(Citation, 
+                                             "3170-AA02"), 
+                                  "CFPB-2011-0005",
+                                  docket_id))
+
 df %>% select(rin, Citation, docket_id)
 df %>% select(rin, Citation, `Regulator Summary`) %>% filter(is.na(rin)) %>% knitr::kable()
 
@@ -112,7 +117,46 @@ comments_cfpb_df$rin %>% unique()
 # look back to see how many we matched 
 matched <- df %>% filter(rin %in% comments_cfpb_df$rin | docket_id %in% comments_cfpb_df$docket_id)
 unmatched <- df %>% anti_join(matched)
-unmatched$rin %>% unique() %>% 
-  str_replace("-|—|–", "zzz")%>%
-  str_remove(regex("\\W+")) %>% 
-  str_replace("zzz", "-")
+unmatched$rin %>% unique() 
+
+unmatched %>% select(Citation, `Regulator Summary`)
+
+# To investigate 
+# 12 CFR Part 1082 [Docket No. CFPB-2011-0005] RIN 3170-AA02 State Official Notification Rule 
+
+# 0 comments
+"12 CFR Part 1090\nRIN 3170-AA30"
+
+# In Unified agenda but not regulations.gov :
+# Ability-to-Repay and Qualified Mortgage Standards Under the Truth in Lending
+"3170-AA16" 
+"12 CFR Part 1070\nRIN 3170-AA01"
+
+# FED Rins:
+"1557-AD62" 
+"1557-AD64" 
+
+
+
+# save Rdata 
+save(comments_cfpb_df, file = here::here("data", "comment_metadata_CFPB_df.Rdata"))
+
+
+# Create RSQLite database
+con <- dbConnect(RSQLite::SQLite(), here::here("data", "comment_metadata_CFPB_df.sqlite"))
+
+# check 
+list.files("data")
+
+dbListTables(con)
+dbWriteTable(con, "comments_cfpb_df", comments_cfpb_df, overwrite = T)
+dbListTables(con)
+
+dbListFields(con, "comments_cfpb_df")
+# dbReadTable(con, "comments_cfpb") # oops
+
+# fetch results:
+res <- dbSendQuery(con, "SELECT * FROM comments_cfpb_df WHERE agency_acronym = 'CFPB'")
+
+dbFetch(res) %>% head()
+dbClearResult(res)
