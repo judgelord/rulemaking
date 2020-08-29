@@ -72,6 +72,8 @@ res <- dbSendQuery(con, "SELECT * FROM comments_cfpb WHERE agency_acronym = 'CFP
 dbFetch(res) %>% head()
 dbClearResult(res)
 
+dbDisconnect(con)
+
 ###################################################
 # Subset to Davis Polk Dodd-Frank rules 
 # load(here::here("data", "comment_metadata_CFPB.Rdata"))
@@ -160,3 +162,4 @@ res <- dbSendQuery(con, "SELECT * FROM comments_cfpb_df WHERE agency_acronym = '
 
 dbFetch(res) %>% head()
 dbClearResult(res)
+dbDisconnect(con)
