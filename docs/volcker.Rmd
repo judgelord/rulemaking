@@ -1,0 +1,298 @@
+---
+title: "The Volcker Rule"
+subtitle: 
+author: ""
+output:
+    # pdf_document:
+    #   toc: true
+    #   keep_tex: true
+    html_document:
+      highlight: zenburn
+      toc: true
+      toc_float: true
+      code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = FALSE, 
+                      fig.width=8.5, 
+                      split = T,
+                      fig.align = 'center', 
+                      fig.path='figs/',
+                      warning=FALSE, 
+                      message=FALSE)
+
+library(xml2)
+library(tidyverse)
+library(magrittr)
+library(tidytext)
+library(knitr)
+library(kableExtra)
+
+library(ggplot2); theme_set(theme_bw())
+  options(
+    ggplot2.continuous.color = "viridis",
+    ggplot2.continuous.fill = "viridis"
+  )
+  scale_color_discrete <- function(...)
+    scale_color_viridis_d(...)
+  scale_fill_discrete <- function(...)
+    scale_fill_viridis_d(...)
+  
+  
+kablebox <- . %>%  knitr::kable() %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
+```
+
+
+```{r}
+# links to proposed and final rules
+pr <- "https://www.federalregister.gov/documents/full_text/xml/2011/11/07/2011-27184.xml"
+fr <- "https://www.federalregister.gov/documents/full_text/xml/2014/01/31/2013-31511.xml"
+
+# text marking the end of the preamble
+rule_text_starts <- . %>% {which(str_detect(., "The text of the proposed common rules|^Text of Common Rule"))}
+
+# a function ot extract text
+xml_rule_text <- . %>% 
+  read_xml() %>% 
+  xml_children() %>% 
+  xml_children() %>% 
+  xml_text() %>% 
+  str_squish() %>% 
+  tibble::enframe(value = "text",  name = "id") 
+  
+clean <- . %>%  
+  filter(nchar(text) > 60) %>% 
+  mutate(id = str_pad(id, 4, pad = "0") %>% 
+           paste(text) %>% 
+           str_sub(1,80) %>%
+           str_c("...")) %>% 
+  # remove numbering 
+  mutate(text = text %>% str_replace_all("\\(.\\)|[0-9]|_", " "))
+```
+
+# Proposed Rule
+```{r}
+# extract proposed rule text
+pr %<>% xml_rule_text() 
+
+pr %<>%
+  mutate(preamble = id < rule_text_starts(pr$text))  %>%
+  clean()
+
+# preamble
+# pr %>% kablebox()
+
+# rule text 
+pr %>% filter(preamble == F) %>% kablebox()
+```
+
+# Final Rule
+```{r}
+fr %<>% xml_rule_text() 
+
+fr %<>%
+  mutate(preamble = id < rule_text_starts(fr$text)) %>% 
+  clean
+
+# fr preamble text 
+# fr %>% kablebox()
+
+# rule text 
+fr %>% filter(preamble == F) %>% kablebox()
+
+# tengrams
+pr10 <- pr %>% unnest_tokens(tengram, text, token = "ngrams", n = 10) %>% filter(!is.na(tengram))
+
+fr10 <- fr %>% unnest_tokens(tengram, text, token = "ngrams", n = 10) %>% filter(!is.na(tengram))
+```
+
+# What changed? 
+
+A straightforward method is a 10-gram moving window; detecting 10-word (or longer) phrases from a Proposed Rule are left unchanged in the Final Rule. 10-word phrases from the Proposed Rule that do not appear Final Rule may have been cut or merely changed slightly. Likewise, 10-word phrases from the Final Rule that do not appear in the Proposed Rule may reflect minor edits or entirely new text.
+
+Pros:  
+- straightforward and easy to explain 
+- can be extremely sensitive to moderately sensitive depending on how texts are cleaned 
+- computationally cheap
+
+Cons:  
+- less precise than more computationally-intense methods like Smith-Waterman
+
+## Proposed rule text that was cut or changed in the Final Rule
+```{r pr_tengrams, fig.height=9}
+# rule text without preamble
+frr10 <- filter(fr10, !preamble)
+prr10 <- filter(pr10, !preamble)
+
+prr10 %<>% 
+  mutate(new = !tengram %in% frr10$tengram,
+         word1 = str_extract(tengram, "\\w+") )
+
+prr10 %<>% 
+  group_by(id) %>%
+  # mark transitions from new to new or new to new text
+  mutate(trans = ifelse(new & !lead(new) | !new & lead(new), T, F)) %>% 
+  # if old, the next 9 are also old 
+  mutate(fix =  reduce(map(1:9, ~ lag(trans, ., 0)), `+`)) %>%
+  mutate(new = ifelse(fix>0 & new == T, F, new)) %>% 
+  mutate(word1 = ifelse(trans, str_c(word1, "..."), word1)) 
+
+prr10 %<>% 
+  # collapse words
+  group_by(new, id) %>%
+  summarise(word_count = n(),
+            text = paste(word1, collapse = " ")) 
+
+# counts per section 
+prr10 %>% 
+  select(-text) %>% 
+  spread(key = new, value = word_count) %>% 
+  rename(`Words in Final Rule` = `FALSE`, 
+         `Words not in Final Rule` = `TRUE`)  %>% 
+  kablebox()
+
+prr10 %>% 
+  ggplot() +
+  aes(x = id, y = word_count, fill = new) + 
+  geom_col() +
+  coord_flip() + 
+  labs(fill = "Cut or Changed in Final Rule", 
+       x = "",
+       "Number of words") + 
+  facet_wrap("id", scales = "free", ncol = 1)  +
+  theme_minimal() + 
+  theme(axis.text.y = element_blank(),
+        panel.grid.major.y = element_blank(),
+        strip.text = element_text(hjust = 0),
+        legend.position =  "top")  
+
+# look at a section
+prr10 %>% 
+  #slice(1) %>% 
+  ungroup() %>% 
+  select(-word_count) %>% 
+  spread(key = new, value = text) %>% 
+  rename(`Words in Final Rule` = `FALSE`, 
+         `Words not in Final Rule` = `TRUE`)  %>%
+  kablebox()
+```
+
+---
+
+## Final Rule text that was added or changed from the Proposed Rule
+```{r fr_tengrams, fig.height=15}
+# rule text without preamble
+frr10 <- filter(fr10, !preamble)
+prr10 <- filter(pr10, !preamble)
+
+# final rule 10-grams not in proposed rule 
+frr10 %<>% 
+  mutate(new = !tengram %in% prr10$tengram,
+         word1 = str_extract(tengram, "\\w+") )
+
+frr10 %<>% 
+  group_by(id) %>%
+  # mark transitions from new to new or new to new text
+  mutate(trans = ifelse(new & !lead(new) | !new & lead(new), T, F)) %>% 
+  # if old, the next 9 are also old 
+  mutate(fix =  reduce(map(1:9, ~ lag(trans, ., 0)), `+`)) %>%
+  mutate(new = ifelse(fix>0 & new == T, F, new)) %>% 
+  mutate(word1 = ifelse(trans, str_c(word1, "..."), word1)) 
+
+frr10 %<>% 
+  # collapse words
+  group_by(new, id) %>%
+  summarise(word_count = n(),
+            text = paste(word1, collapse = " ")) 
+
+frr10 %>% 
+  ggplot() +
+  aes(x = id, y = word_count, fill = new) + 
+  geom_col() +
+  coord_flip() + 
+  labs(fill = "Added or Changed in Final Rule", 
+       x = "",
+       "Number of words") + 
+  facet_wrap("id", scales = "free", ncol = 1)  +
+  theme_minimal() + 
+  theme(axis.text.y = element_blank(),
+        panel.grid.major.y = element_blank(),
+        strip.text = element_text(hjust = 0),
+        legend.position =  "top")  
+
+frr10 %>% 
+  ungroup() %>% 
+  select(-word_count) %>% 
+  spread(key = new, value = text) %>% 
+  rename(`Words from Proposed Rule` = `FALSE`, 
+         `Words not from Proposed Rule` = `TRUE`)  %>%
+  kablebox()
+```
+
+<!---
+
+## Final rule **preamble** text that was not in the Proposed Rule preamble
+
+```{r prp_tengrams, eval = TRUE, fig.height=8}
+# preamble text
+frp10 <- filter(fr10, preamble)
+prp10 <- filter(pr10 %>% head(), preamble)
+
+frp10 %<>% 
+  mutate(new = tengram %in% prp10$tengram,
+         word1 = str_extract(tengram, "\\w+") )
+
+frp10 %<>% 
+  # mark transitions from new to new or new to new text
+  mutate(trans = ifelse(new & !lead(new) | !new & lead(new), T, F)) %>% 
+  # if FALSE, the next 9 are also FALSE 
+  mutate(fix =  reduce(map(1:9, ~ lag(trans, ., 0)), `+`)) %>%
+  mutate(new = ifelse(fix>0 & new == T, F, new)) %>% 
+  mutate(word1 = ifelse(trans, str_c(word1, "..."), word1)) %>% 
+  # collapse words
+  group_by(new, id) %>%
+  summarise(word_count = n(),
+            text = paste(word1, collapse = " "))
+
+# counts per section 
+frp10 %>% 
+  select(-text) %>% 
+  spread(key = new, value = word_count) %>% 
+  rename(`In Final Rule` = `FALSE`, 
+         `Not in Final Rule` = `TRUE`)  %>% 
+  kablebox()
+
+frp10 %>% 
+  .[1:12,] %>% 
+  ggplot() +
+  aes(x = id, y = word_count, fill = new) + 
+  geom_col() +
+  coord_flip() + 
+  labs(fill = "Changed in Final Rule", x = "",
+       y = "Number of words",
+       title = "(plot only covers the first 10% of preamble subsections)") + 
+  facet_wrap("id", scales = "free", ncol = 1)  +
+  theme_minimal() + 
+  theme(axis.text.y = element_blank(),
+        panel.grid.major.y = element_blank(),
+        strip.text = element_text(hjust = 0),
+        legend.position =  "top")
+
+# look at a section
+frp10 %>% 
+  ungroup() %>% 
+  select(-word_count) %>% 
+  spread(key = new, value = text) %>% 
+  rename(`Words from Proposed Rule Preamble` = `FALSE`, 
+         `Words not from Proposed Rule Preamble` = `TRUE`)  %>% 
+  kablebox()
+```
+
+-->
