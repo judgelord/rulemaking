@@ -9,7 +9,8 @@ source("setup.R")
 ## The advantage of this approach is that it does not require using the API to get file names
 ## However, after it is run, one should run regulation-gov-get-attachments.R on the fails to get non-pdfs 
 
-load("ascending2/allcomments.Rdata")
+load("comment_metadata.Rdata")
+all <- comments_all
 dim(all)
 names(all)
 
@@ -31,6 +32,7 @@ all %>%
          count(agencyAcronym, sort = T) %>% knitr::kable()
 
 d <- all
+
 
 # # MASS DOCKETS:
 # load(here("data/masscomments.Rdata"))
@@ -78,8 +80,8 @@ dim(download)
 download %>% head() %>% select(file, attach.url, downloaded)
 download %>%  count(agencyAcronym, sort = T) %>% knitr::kable()
 
-download %<>% filter(agencyAcronym == "DOT")
-
+download %<>% filter(agencyAcronym == "OCC")
+dim(download)
 # Load data on failed downloads 
 load("data/comment_fails.Rdata")
 
@@ -97,10 +99,15 @@ download %<>% filter(!file %in% list.files("comments/") )
 dim(download)
 head(download$attach.url)
 
+# remove large data files from  memory
+rm(list("all", "d", "comments_all"))
+
 # test
-i <- 1
+n <- 1
+for(i in 1:n){
 download.file(download$attach.url[i], 
               destfile = str_c("comments/", download$file[i]) ) 
+}
 Sys.sleep(400) # wait after downloading the first one so we don't hit the limit on the first loop
 
 
@@ -163,6 +170,8 @@ for(i in 1:round(nrow(download)/78)){
 } # end main loop
 
 # If you get blocked (SSL connect error), you need to wait longer than 10 min, 30 min seems about right
+
+
 
 
 
