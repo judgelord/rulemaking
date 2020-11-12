@@ -1,5 +1,7 @@
 
 source("setup.R")
+
+#FIXME to pull from SQL and include urls for NPRM and FR
 load("data/comment_metadata_CFPB.Rdata")
 d <- comments_cfpb
 
@@ -23,10 +25,12 @@ d %<>% group_by(docket_id) %>%
   filter(!organization %in% c("NA", "na", "Organization Unknown 1"),
          !is.na(organization),
          #FIXME
-         org_total < 3) %>% 
+         org_total < 5) %>% 
   add_count(docket_id)
 
-d %>% filter(n > 10, n < 20) %>% count(docket_id)
+d %>% 
+  #filter(n > 10, n < 20) %>% 
+  count(docket_id, sort = T)
 d$attachment_count
 
 # add blanks
@@ -35,7 +39,7 @@ d %<>% mutate(position = "",
               comment_type = "",
               coalition_comment = "",
               coalition_type = "",
-              org_name = "",
+              org_name = organization,
               org_name_short = "",
               org_type = "",
               ask = "",
@@ -49,9 +53,9 @@ d %<>% mutate(position = "",
               success3 = "",
               response = "",
               pressure_phrases = "",
-              agree_phrases = "",
+              accept_phrases = "",
               compromise_phrases = "",
-              disagree_phrases = "",
+              reject_phrases = "",
               notes = "")
 
 d %<>% select(-number_of_comments_received, -org_total)
