@@ -1,3 +1,7 @@
 allcomments.Rdata
 AllRegsGovRules.Rdata
 comment_metadata.Rdata
+datasheets
+comment_metadata_CFPB.Rdata
+comment_metadata_CFPB_df.Rdata
+regs_dot_gov_actions.Rdata
