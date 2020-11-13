@@ -1,8 +1,9 @@
 ---
 title: "Rule Summarizing CFPB"
-author: "Maggie Nead"
-date: "11/12/2020"
-output: html_document
+
+output:
+  html_document:
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
