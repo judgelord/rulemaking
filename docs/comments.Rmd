@@ -1,0 +1,492 @@
+---
+title: "Public comments on proposed rules"
+output: 
+   html_document:
+    toc: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+# R -e "rmarkdown::render('summary.Rmd')"
+# git add summary.html
+# git add figs
+# git commit -m "update figs"
+
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = FALSE, 
+                      fig.width=8.5, fig.align = 'center', fig.path='Figs/',
+                      warning=FALSE, message=FALSE)
+```
+
+# Data
+```{r rules-data}
+# load required packages
+source("setup.R")
+
+# load all regulations.gov rules as "d"
+load(here("data/AllRegsGovRules.Rdata"))
+regs.gov <- d
+regs.gov %<>% unique()
+regs.gov %<>% filter(!is.na(documentType), documentType != "NA")
+
+# format as regs.govate
+regs.gov$commentDueDate %<>% as.Date()
+regs.gov$postedDate %<>% as.Date()
+regs.gov$commentStartDate %<>% as.Date()
+regs.gov$openForComment %<>% as.logical()
+regs.gov$year <- as.numeric(substr(regs.gov$postedDate, 1, 4))
+unique(regs.gov$year)
+# to merge 
+regs.gov  %<>% mutate(RIN = rin)
+
+# loads as "regs"
+load(here("data/OIRAandUA.Rdata"))
+d <- full_join(regs.gov, regs)
+```
+
+Summary stats:
+```{r summary-table}
+count <- d %>% 
+  filter(year > 1993) %>% 
+  filter(!is.na(commentStartDate)) %>%
+  filter(documentType == "Proposed Rule") %>%
+  group_by(documentType, agencyAcronym) %>%
+  mutate(mean = round(mean(numberOfCommentsReceived))) %>%
+  mutate(median = median(numberOfCommentsReceived)) %>%
+  mutate(max = max(numberOfCommentsReceived)) %>%
+  mutate(z = ifelse(numberOfCommentsReceived == 0, T, F)) %>%
+  mutate(zero = sum(numberOfCommentsReceived == 0)) %>%
+  mutate(total = n()) %>%
+  group_by(z, agencyAcronym, documentType) %>%
+  mutate(medianW.O.zero = median(numberOfCommentsReceived)) %>%
+  ungroup() %>% group_by(documentType, agencyAcronym) %>%
+  mutate(medianW.O.zero = max(medianW.O.zero)) %>%
+  group_by(agencyAcronym, documentType, mean, median, max, zero, medianW.O.zero) %>% 
+  tally() %>% arrange(-n)
+
+# knitr::kable(count)
+```
+
+Comments per rule (log):
+```{r rules-comments-per-year, fig.height = 3.5, fig.width=3.5}
+d %>% filter(year > 2004, year < 2020, !is.na(postedDate),
+             numberOfCommentsReceived>10,
+             !is.na(numberOfCommentsReceived)) %>% 
+  filter(documentType == "Proposed Rule") %>%
+  ggplot() +
+  geom_point(aes(y = numberOfCommentsReceived, 
+                 x = factor(year), 
+                 color = numberOfCommentsReceived), shape = 2, size =3) +
+  scale_color_gradient(low="blue", high="red")+
+  #scale_x_continuous(labels = scales::int) +
+  scale_y_log10(breaks = c(0, 1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7), labels = c("0", "1", "10", "100", "1k", "10k", "100k", "1m","10m") ) +
+  labs(x = "",
+       y = "Comments per rule (log scale)", 
+       color = "", 
+       fill = "") + 
+  theme_minimal() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_text(angle = 45))
+```
+
+
+```{r rules-ranked-comments-per-year, fig.height = 4}
+d %>% filter(year > 2005, !is.na(commentStartDate)) %>% 
+  filter(documentType == "Proposed Rule") %>%
+  group_by(year) %>% 
+  mutate(rank = row_number(numberOfCommentsReceived)) %>% 
+  ggplot() +
+  geom_col(aes(y = numberOfCommentsReceived, 
+               x = rank, 
+               color = numberOfCommentsReceived), alpha = .2) +
+  geom_point(aes(y = numberOfCommentsReceived, 
+                 x = rank, 
+                 color = numberOfCommentsReceived), 
+             shape = 18) +
+  scale_color_gradient(low="blue", high="red")+
+  scale_y_log10(breaks = c(0, 1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
+                labels = c("0", "1", "10", "100", "1k", "10k", "100k", "1m","10m") ) + 
+  labs(x = "Proposed Rules on Regulations.gov Ranked by Number of Comments",
+       y = "Comments per rule (log scale)", 
+       color = "", 
+       fill = "") + 
+  facet_wrap(~ year, ncol = 6)+
+  theme_bw() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 30))
+```
+
+```{r type-comment-density, fig.height = 6.5}
+# TYPEpoint log log 
+count <- d %>% 
+  filter(year > 1993, !is.na(commentStartDate)) %>% # filter(documentType == "Proposed Rule")
+  group_by(documentType) %>%
+  mutate(mean = round(mean(numberOfCommentsReceived))) %>% 
+  mutate(median = median(numberOfCommentsReceived)) %>% 
+  mutate(zero = sum(numberOfCommentsReceived == 0)) %>%
+  mutate(total = n()) %>%
+  group_by(numberOfCommentsReceived, documentType, mean, median, zero, total) %>% tally() %>% 
+  arrange(numberOfCommentsReceived) %>% 
+  filter(numberOfCommentsReceived > 0) %>%
+  # plot
+  ggplot() +
+  geom_point(aes(x = numberOfCommentsReceived, 
+                 y = n,
+                 color = documentType,
+                 fill = documentType),
+             alpha = .2) +
+  geom_vline(aes(xintercept = mean, color = documentType), linetype="dashed") +
+  geom_label(aes(x = mean, 
+                 y = zero, 
+                 label = paste(documentType, "mean =", mean, "comments"), 
+                 color = documentType), check_overlap = TRUE, vjust = -.1) +
+  geom_text(aes(x = mean, 
+                y = zero, 
+                label = paste0(zero,"/", total, " = ", round(zero/total*100),"%", " have no comments"), 
+                color = documentType), check_overlap = TRUE, vjust = 1) +
+  scale_x_log10(limits = c(1,10^7),
+                breaks = c(0,1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
+                labels = c("0", "1", "10", "100", "1k", "10k", "100k", "1m","10m") ) + 
+  scale_y_log10(breaks = c(0, 1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
+                labels = c("0", "1", "10", "100", "1k", "10k", "100k", "1m","10m") ) + 
+  labs(#title = paste("All regulations.gov documents open for public comment 1994-2017"),#, sum(d$documentType == "Proposed Rule"),"proposed rules"),
+       x = "Number of Comments", 
+       y = "Number of Documents", 
+       color = "", fill = "") + 
+  theme_minimal() +
+  theme(legend.position="none")
+
+
+  
+# TYPE DENSITY LOG LOG 
+density <- d %>% 
+  filter(year > 1993, !is.na(commentStartDate)) %>% # filter(documentType == "Proposed Rule") %>% #filter(numberOfCommentsReceived > 0) %>% 
+    group_by(documentType) %>%
+    mutate(mean = round(mean(numberOfCommentsReceived))) %>% 
+    mutate(median = median(numberOfCommentsReceived)) %>% 
+    mutate(zero = sum(numberOfCommentsReceived == 0)) %>%
+    mutate(total = n()) %>% filter(numberOfCommentsReceived > 0) %>% 
+    ggplot() +
+    geom_histogram(aes(x = numberOfCommentsReceived,
+                       color = documentType, 
+                       fill = documentType),
+                   alpha = .2, 
+                   position = "dodge", binwidth = 1, stat = "bin") +
+    geom_vline(aes(xintercept = mean, 
+                   color = documentType), linetype="dashed") +
+#    geom_label(aes(x = mean, y = zero, label = paste(documentType, "mean =", mean, "comments"), color = documentType), check_overlap = TRUE, vjust = -.1) +
+#    geom_text(aes(x = mean, y = zero, label = paste0(zero,"/", total, " = ", round(zero/total*100),"%", " have no comments"), color = documentType), check_overlap = TRUE, vjust = 1) +
+    # scale_x_log10() +
+  scale_x_log10(limits = c(1,10^7),
+                breaks = c(0,1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
+                labels = c("0", "1", "10", "100", "1k", "10k", "100k", "1m","10m") ) + 
+  scale_y_continuous(breaks = c(0, 1, 10, 10^2,10^3,10^4,10^5,10^6, 10^7),
+                     labels = c("0", "", "", "", "1k", "10k", "100k", "1m","10m") ) +
+  labs(x = "Number of Comments", 
+       y = "Density", 
+       color = "", fill = "") + 
+  theme_minimal() +
+  theme(legend.position="none",
+        panel.grid.major.x = element_blank(), 
+        axis.title.x = element_blank() )#,
+        #axis.text.x = element_blank())
+
+grid.arrange(density, count, ncol = 1, heights=c(1, 4))
+```
+   
+   
+
+
+```{r major-comments-density, fig.height = 6.5}
+d$MAJOR %<>% gsub("Yes", "Major Rule", .)
+d$MAJOR %<>% gsub("No", "Non-major Rule", .)
+d$MAJOR[which(d$MAJOR == "Undetermined")] <- NA
+
+# MAJOR point log log 
+count <- d %>% filter(year > 1993, !is.na(commentStartDate), !is.na(MAJOR)) %>% filter(documentType == "Proposed Rule") %>% #filter(numberOfCommentsReceived > 0) %>% 
+  group_by(MAJOR) %>%
+  mutate(mean = round(mean(numberOfCommentsReceived))) %>% 
+  mutate(median = median(numberOfCommentsReceived)) %>% 
+  mutate(zero = sum(numberOfCommentsReceived == 0)) %>%
+  mutate(total = n()) %>%
+  group_by(numberOfCommentsReceived, MAJOR, mean, median, zero, total) %>%
+  tally() %>% 
+  arrange(numberOfCommentsReceived) %>%
+  # plot
+  ggplot() +
+  geom_point(aes(
+    x = numberOfCommentsReceived, 
+    y = n,
+    color = MAJOR, fill = MAJOR),
+    alpha = .2) +
+  geom_vline(aes(xintercept = mean, color = MAJOR), linetype="dashed") +
+  geom_label(aes(x = mean, y = zero, label = paste(MAJOR, "mean =", mean, "comments"), color = MAJOR), check_overlap = TRUE, vjust = -.1) +
+  geom_text(aes(x = mean, y = zero, label = paste0(zero,"/", total, " = ", round(zero/total*100),"%", " have no comments"), color = MAJOR), check_overlap = TRUE, vjust = 1) +
+  scale_x_continuous(trans = "log10",
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x) ) ) +
+  scale_y_continuous(trans = "log10",
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x) ) ) +
+  labs(#title = paste("Regulations.gov Proposed Rules in Unified Agenda open for public comment 1994-2017"),#, sum(d$PRIORITY_CATEGORY == "Proposed Rule"),"proposed rules"),
+       x = "Number of Comments", 
+       y = "Number of Documents", 
+       color = "", fill = "") + 
+  theme_minimal() +
+  theme(legend.position="none")
+
+
+
+# MAJOR DENSITY LOG 
+density <-  d %>% filter(year > 1993, !is.na(commentStartDate)) %>%
+  filter(documentType == "Proposed Rule") %>%
+  #filter(numberOfCommentsReceived > 0) %>% 
+  group_by(MAJOR) %>%
+  mutate(mean = round(mean(numberOfCommentsReceived))) %>% 
+  mutate(median = median(numberOfCommentsReceived)) %>% 
+  mutate(zero = sum(numberOfCommentsReceived == 0)) %>%
+  mutate(total = n()) %>%
+  # plot
+  ggplot() +
+  geom_density(aes(
+    x = numberOfCommentsReceived, 
+    color = MAJOR, fill = MAJOR),
+    alpha = .2, position = "identity") +
+  geom_vline(aes(xintercept = mean, color = MAJOR), linetype="dashed") +
+  scale_x_continuous(trans = "log10",
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x) ) ) +
+  labs(#title = paste("All regulations.gov documents accepting public comments, 1994-2017"),#, sum(d$MAJOR == "Proposed Rule"),"proposed rules"),
+    x = "Number of Comments", 
+    y = "Density", 
+    color = "", fill = "") + 
+  theme_minimal() +
+  theme(legend.position="none", 
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        panel.grid = element_blank() )
+
+grid.arrange(density, count, ncol = 1, heights=c(1, 4))
+```
+
+
+
+
+
+
+
+
+
+
+
+   
+
+   
+   
+  
+```{r priority-comment-density, fig.height = 6.5}
+# PRIORITY_CATEGORY point log log 
+count <- d %>% filter(year > 1993, !is.na(commentStartDate), !is.na(PRIORITY_CATEGORY), PRIORITY_CATEGORY != "Info./Admin./Other") %>% 
+  filter(documentType == "Proposed Rule") %>% #filter(numberOfCommentsReceived > 0) %>% 
+  group_by(PRIORITY_CATEGORY) %>%
+  mutate(mean = round(mean(numberOfCommentsReceived))) %>% 
+  mutate(median = median(numberOfCommentsReceived)) %>% 
+  mutate(zero = sum(numberOfCommentsReceived == 0)) %>%
+  mutate(total = n()) %>%
+  group_by(numberOfCommentsReceived, PRIORITY_CATEGORY, mean, median, zero, total) %>% tally() %>% arrange(numberOfCommentsReceived) %>%
+  ggplot() +
+  geom_point(aes(
+    x = numberOfCommentsReceived, 
+    y = n,
+    color = PRIORITY_CATEGORY, fill = PRIORITY_CATEGORY),
+    alpha = .2) +
+  geom_vline(aes(xintercept = mean, color = PRIORITY_CATEGORY), linetype="dashed") +
+  geom_label(aes(x = mean, y = zero, label = paste0(PRIORITY_CATEGORY, ": mean = ", mean, " comments"), color = PRIORITY_CATEGORY), check_overlap = TRUE, vjust = -.1) +
+  geom_text(aes(x = mean, y = zero, label = paste0(zero,"/", total, " = ", round(zero/total*100),"%", " have no comments"), color = PRIORITY_CATEGORY), check_overlap = TRUE, vjust = 1) +
+  scale_x_continuous(trans = "log10",
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x) ) ) + 
+  scale_y_continuous(trans = "log10",
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x) ) ) + 
+  labs(#title = paste("Regulations.gov Proposed Rules in Unified Agenda open for public comment 1994-2017"),#, sum(d$PRIORITY_CATEGORY == "Proposed Rule"),"proposed rules"),
+       x = "Number of Comments", 
+       y = "Number of Documents", 
+       color = "", fill = "") + 
+  theme_minimal() +
+  theme(legend.position="none")
+
+
+
+# PRIORITY_CATEGORY DENSITY LOG 
+density <-  d %>% 
+  filter(year > 1993, 
+         !is.na(commentStartDate), 
+         !is.na(PRIORITY_CATEGORY), 
+         PRIORITY_CATEGORY != "Info./Admin./Other") %>%
+  filter(documentType == "Proposed Rule") %>%
+  #filter(numberOfCommentsReceived > 0) %>% 
+  group_by(PRIORITY_CATEGORY) %>%
+  mutate(mean = round(mean(numberOfCommentsReceived))) %>% 
+  mutate(median = median(numberOfCommentsReceived)) %>% 
+  mutate(zero = sum(numberOfCommentsReceived == 0)) %>%
+  mutate(total = n()) %>%
+  # plot
+  ggplot() +
+  geom_density(aes(
+    x = numberOfCommentsReceived, 
+    #y = ..count..,
+    color = PRIORITY_CATEGORY, fill = PRIORITY_CATEGORY),
+    alpha = .2, position = "identity") +
+  geom_vline(aes(xintercept = mean, color = PRIORITY_CATEGORY), linetype="dashed") +
+  scale_x_continuous(trans = "log10",
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x) ) ) +
+  labs(#title = paste("All regulations.gov documents accepting public comments, 1994-2017"),#, sum(d$PRIORITY_CATEGORY == "Proposed Rule"),"proposed rules"),
+    x = "Number of Comments", 
+    y = "Density", 
+    color = "", fill = "") + 
+  theme_minimal() +
+  theme(legend.position="none", 
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        panel.grid = element_blank() )
+
+grid.arrange(density, count, ncol = 1, heights=c(1, 4))
+```
+
+
+
+
+---
+
+# Top mobilizing organizations
+```{r toporgs, fig.height=2.5}
+load(here("data/toporgs.Rdata"))
+
+
+toporgs %>%
+  mutate(topdockets = ifelse(docketTotal %in% sort(unique(toporgs$docketTotal), decreasing = T)[1:10],
+        docketId, NA) ) %>%
+  filter(orgTotal %in% sort(
+    unique(toporgs$orgTotal), 
+    decreasing = T)[1:10] 
+  ) %>% 
+  filter(!is.na(mass)) %>% 
+    filter(mass != "Yet to be classified") %>% 
+  ggplot() +
+  geom_col(aes(x = organization, y = numberOfCommentsReceived/1000)) +
+  coord_flip()+
+  facet_grid(. ~ mass, scales = "free_x") + 
+  labs(x = "", y = "Number of Comments (thousands)", fill = "") + theme_bw() 
+```
+
+---
+
+# Top dockets 
+```{r topdockets, fig.width=11}
+load(here("data/topdockets.Rdata"))
+
+unique(topdockets$docketTitle)
+# short docket titles
+topdockets$docketTitle %<>%
+  str_replace(
+    "Repeal of Carbon Dioxide Emission Guidelines for Existing Stationary Sources: Electric Utility Generating Units; Emission Guidelines for Greenhouse Gas Emissions from Existing Electric Utility Generating Units; Revisions to Emission Guideline Implementing Regulations; Revisions to New Source Review Program",
+    "2017 Clean Power Plan Repeal"
+  ) %>%
+  str_replace(
+    "Payday, Vehicle, Title and Certain High-Cost Installment Loans",
+    "2016 Payday Loans"
+  ) %>%
+  str_replace(
+    "Standards of Performance for Greenhouse Gas Emissions from Existing Sources: Electric Utility Generating Units",
+    "2013 Clean Power Plan"
+  ) %>%
+  str_replace(
+    "Greenhouse Gas New Source Performance Standard for Electric Generating Units",
+    "2011 Greenhouse Gas NSPS"
+  ) %>%
+  str_replace(
+    "Oil and Natural Gas Sector -- New Source Performance Standards, National Emission Standards for Hazardous Air Pollutants, and Control Techniques Guidelines",
+    "2010 Oil and Gas NSPS"
+  ) %>%
+  str_replace(
+    "Removing the Gray Wolf from the List of Endangered and Threatened Wildlife and Maintaining Protections for the Mexican Wolf by Listing It as Endangered",
+    "2013 Gray Wolf removal"
+  ) %>%
+  str_replace(
+    ".*of the 2019-2024 Draft Proposed Outer Continental Shelf .OCS. Oil and Gas Leasing Program and Notice of Intent .NOI. to Prepare a Programmatic Environmental Impact Statement .EIS.",
+    "2017 Outer Continental Shelf Oil and Gas Leasing"
+  ) %>%
+  str_replace(
+    "Review of Certain National Monuments Established Since 1996; Notice of Opportunity for Public Comment",
+    "2017 National Monuments Review"
+  ) %>%
+  str_replace(
+    "Standards of Performance for Greenhouse Gas Emissions for New Stationary Sources: Electric Utility Generating Units",
+    "2013 Greenhouse Gas Emissions for New Stationary Sources"
+  ) %>%
+  str_replace(
+    "Request for Comments on the Proposed 2017-2022 OCS Oil and Gas Leasing Program.*",
+    "2016 Outer Continental Shelf Oil and Gas Leasing")  
+
+topdockets$mass %<>% 
+  str_replace("Not unique", "Small batch")
+  
+
+topdockets %<>% 
+  group_by(organization) %>%
+  mutate(orgTotal = sum(numberOfCommentsReceived)) %>% 
+  ungroup()
+
+topdockets %>% 
+  filter(!is.na(mass)) %>% 
+  mutate(toporgs = ifelse(orgTotal %in% sort(unique(topdockets$orgTotal), decreasing = T)[1:20],
+                             organization, NA) ) %>%
+  ggplot() +
+  geom_col(aes(x = docketTitle, y = numberOfCommentsReceived/1000, fill = toporgs)) +
+  coord_flip() +
+  facet_grid(. ~ mass, scales = "free_x") + 
+  labs(x = "", y = "Number of Comments (thousands)", fill = "") + 
+  theme_bw()
+
+topdockets %>% group_by(docketId, organization) %>% summarise(n = sum(numberOfCommentsReceived)) %>% arrange(-n)
+``` 
+
+```{r include=FALSE, eval = FALSE}
+### Comments with the word "support": 
+
+`r head(d$commentText[which(grepl(" support ", d$commentText))])`
+
+### Comments with the word "oppose": 
+
+`r head(d$commentText[which(grepl(" oppose ", d$commentText))])`
+
+### Comments with the both "support" and "oppose": 
+
+r head(filter(d, position == "support and oppose"))
+
+### Example mass comments:
+
+`r head(d$commentText)`
+
+### Top mobilizers
+
+`r unique(d$organization[which(d$numberOfCommentsReceived > 99 & !is.na(d$organization))])`
+
+### American Petroleum Institute, breaking a perceived consensus
+`r d[which(d$numberOfCommentsReceived > 99 & d$organization=="American Petroleum Institute"), 6:13]`
+
+
+
+
+
+
+# To do:
+
+- Shiny app to make datasets with search terms via regulations.gov API
+  
+  
+```
