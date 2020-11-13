@@ -495,21 +495,25 @@ library(xml2)
 library(tidytext)
 library(magrittr)</code></pre>
 <p>Then, download the rule. This could equivalently be used by loading a comment from file, but with slightly different processing.</p>
-<pre class="r"><code>link &lt;- 'https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020-14935.xml'
+<pre class="r"><code>#XML link to rule
+link &lt;- 'https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020-14935.xml'
 
 xml_path &lt;- download_xml(url = link)
 xml_parse &lt;- read_xml(xml_path) %&gt;% xml_children() %&gt;% xml_children() %&gt;% xml_text()
 text &lt;- str_split(xml_parse, pattern = '\n') %&gt;% unlist() %&gt;% str_squish()</code></pre>
 <p>Next, we need to process the text of the rule. Steps include: 1. Remove blank strings. 2. Identify if the first character is a number to avoid including footnotes. 3. Identify headings to avoid useless information (such as “I. Background”) for computational purposes. 4. Identify the text before the actual rule to avoid the summary and people’s names. 5. Remove all numbers, as they trick the algorithm too much.</p>
 <pre class="r"><code>suppressWarnings(
-text_df &lt;- tibble(text = text) %&gt;% filter(text != &quot;&quot;) %&gt;% mutate(id = row_number()) %&gt;% 
+text_df &lt;- tibble(text = text) %&gt;% 
+  filter(text != &quot;&quot;) %&gt;% #filter blank strings
+  mutate(text = str_remove_all(text, &quot;§&quot;)) %&gt;% #might not want to remove this if we want to keep important numbers in
+  mutate(id = row_number()) %&gt;% 
                    mutate(first_char = str_sub(text, 1, 1), part = 'text') %&gt;%  rowwise() %&gt;% 
                    mutate(earlydot = str_detect(str_sub(text, 1, 5) ,'\\.')) %&gt;% 
                    mutate(part = ifelse(earlydot, 'head', part)) %&gt;% 
                    mutate(first_char = as.numeric(first_char)) %&gt;%
                    mutate(part = ifelse(is.na(first_char), part, 'footnote')) %&gt;% 
                    mutate(part = ifelse(id &lt; 26, 'pre', part)) %&gt;% 
-                   ungroup() %&gt;% mutate(text = gsub('[[:digit:]]+', '', text))
+                   ungroup() %&gt;% mutate(text = str_replace_all(text, '[[:digit:]]+', '')) #removes all digits from text
 )</code></pre>
 <p>Once we’ve cleaned the text, we need to extract the sentences and words, using tidytext.</p>
 <pre class="r"><code>text_clean &lt;- text_df %&gt;% filter(part == 'text') %&gt;% select(text)
@@ -518,7 +522,8 @@ text_sentences &lt;- text_sentences %&gt;% unique() %&gt;% mutate(textrank_id = 
 text_sentences &lt;- text_sentences[,c(2,1)]
 
 text_sentences %&lt;&gt;%
-  filter(textrank_id&lt;200)
+  filter(textrank_id &gt;= 200) %&gt;%
+  filter(textrank_id &lt; 400)
 
 data(&quot;stop_words&quot;)
 word &lt;- unnest_tokens(text_sentences, output = word, input = 'sentences') %&gt;% 
@@ -529,30 +534,30 @@ word &lt;- unnest_tokens(text_sentences, output = word, input = 'sentences') %&g
 <pre><code>## # A tibble: 6 x 2
 ##   textrank_id sentences                                                         
 ##         &lt;int&gt; &lt;chr&gt;                                                             
-## 1           1 a legal challenge to the rule was filed on april , , and is pendi…
-## 2           2 on october , , the bureau issued a statement announcing it expect…
-## 3           3 on february , , the bureau published a notice of proposed rulemak…
-## 4           4 the  nprm did not propose to amend the “payment provisions” of th…
-## 5           5 the bureau is finalizing the amendments to the regulations as pro…
-## 6           6 specifically, the bureau is revoking: () the “identification” pro…</code></pre>
+## 1         200 because it found that consumers do not understand or perceive the…
+## 2         201 the bureau in the  nprm expressed concern about the standard that…
+## 3         202 the  nprm stated that, in assessing whether consumers could reaso…
+## 4         203 in reconsidering this interpretation of reasonable avoidability, …
+## 5         204 the bureau reasoned that requiring consumers to know their indivi…
+## 6         205 this burden shifting would deter lenders from offering products o…</code></pre>
 <pre class="r"><code>head(word)</code></pre>
 <pre><code>## # A tibble: 6 x 2
-##   textrank_id word     
-##         &lt;int&gt; &lt;chr&gt;    
-## 1           1 legal    
-## 2           1 challenge
-## 3           1 rule     
-## 4           1 filed    
-## 5           1 april    
-## 6           1 pending</code></pre>
+##   textrank_id word       
+##         &lt;int&gt; &lt;chr&gt;      
+## 1         200 found      
+## 2         200 consumers  
+## 3         200 understand 
+## 4         200 perceive   
+## 5         200 probability
+## 6         200 harms</code></pre>
 <p>Now we can run the algorithm, which is fairly quick at this point.</p>
 <pre class="r"><code>out &lt;- textrank::textrank_sentences(data = text_sentences, terminology = word)</code></pre>
 <p>We can finally extract a summary:</p>
-<pre><code>## [1] &quot;the bureau revokes the  final rule's determination that it is an unfair practice for a lender to make covered short-term loans or covered longer-term balloon-payment loans without reasonably determining that consumers will have the ability to repay the loans according to their terms.&quot;               
-## [2] &quot;however, in the preamble to the  final rule, the bureau expressed the concern that the market for these longer-term balloon-payment loans, with structures similar to payday loans that pose similar risks to consumers, might grow if only covered short-term loans were regulated under the  final rule.&quot; 
-## [3] &quot;in the  nprm, the bureau did not propose to reconsider the payment provisions of the  final rule.&quot;                                                                                                                                                                                                          
-## [4] &quot;in the  final rule, the bureau found that the practice of making covered short-term or longer-term balloon-payment loans to consumers without reasonably determining if the consumers have the ability to repay them according to their terms causes or is likely to cause substantial injury to consumers.&quot;
-## [5] &quot;the bureau's proposal the bureau determined in the  final rule that making covered short-term or longer-term balloon-payment loans without reasonably assessing a borrower's ability to repay the loan according to its terms is an unfair act or practice.&quot;</code></pre>
+<pre><code>## [1] &quot;the  nprm stated that the bureau in the  final rule did not offer evidence that would support the conclusion that consumers cannot reasonably avoid substantial injury from taking out payday loans applying a standard that focuses on understanding that is sufficient to alert consumers of the need to take steps to protect themselves from the harm from taking out such loans.&quot;                                                                                                                                                                                              
+## [2] &quot;the bureau also found in the  final rule that consumers who would not be offered a payday loan under either  . or  . would have alternatives to payday loans.&quot;                                                                                                                                                                                                                                                                                                                                                                                                                      
+## [3] &quot;final rule—reasonable avoidability standard pursuant to section (c)()(a) of the dodd-frank act, the bureau determines that injury from making covered short-term or longer-term balloon-payment loans without reasonably assessing a borrower's ability to repay the loan according to its terms is reasonably avoidable if payday borrowers have an understanding of the likelihood and magnitude of risks of harm associated with payday loans sufficient for them to anticipate those harms and understand the necessity of taking reasonable steps to prevent resulting injury.&quot;
+## [4] &quot;final rule—consumer understanding of risk of harm applying the revised standard for reasonable avoidability pursuant to section (c)()(a) of the dodd-frank act, the bureau concludes that there is not a sufficient evidentiary basis for the bureau to conclude that consumers cannot reasonably avoid substantial injury from lenders making covered short-term and longer-term balloon-payment loans without assessing borrowers' ability to repay the loan according to its terms.&quot;                                                                                             
+## [5] &quot;final rule—means to avoid harm as explained above, the revised reasonable avoidability standard adopted by the bureau in this final rule requires that covered loan borrowers have an understanding of the likelihood and magnitude of risks of harm associated with payday loans sufficient for them to anticipate those harms and understand the necessity of taking reasonable steps to prevent resulting injury.&quot;</code></pre>
 <p>[1] “the bureau revokes the final rule’s determination that it is an unfair practice for a lender to make covered short-term loans or covered longer-term balloon-payment loans without reasonably determining that consumers will have the ability to repay the loans according to their terms.”</p>
 <p>[2] “however, in the preamble to the final rule, the bureau expressed the concern that the market for these longer-term balloon-payment loans, with structures similar to payday loans that pose similar risks to consumers, might grow if only covered short-term loans were regulated under the final rule.”</p>
 <p>[3] “in the nprm, the bureau did not propose to reconsider the payment provisions of the final rule.”</p>
