@@ -68,8 +68,8 @@ text_sentences <- text_sentences %>% unique() %>% mutate(textrank_id = row_numbe
 text_sentences <- text_sentences[,c(2,1)]
 
 text_sentences %<>%
-  filter(textrank_id >= 200) %>%
-  filter(textrank_id < 400)
+  filter(textrank_id <= 400) #%>%
+  #filter(textrank_id < 400)
 
 data("stop_words")
 word <- unnest_tokens(text_sentences, output = word, input = 'sentences') %>% 
@@ -90,7 +90,7 @@ out <- textrank::textrank_sentences(data = text_sentences, terminology = word)
 
 We can finally extract a summary:
 ```{r,echo=FALSE}
-summary(out, n = 5, keep.sentence.order =T)
+summary(out, n = 6, keep.sentence.order =T)
 
 ```
 
