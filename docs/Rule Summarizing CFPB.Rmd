@@ -72,8 +72,8 @@ Next, we need to process the text of the rule. Steps include:
 #                    ungroup() %>% mutate(text = str_remove_all(text, '[[:digit:]]+')) #removes all digits from text
 # )
 
-suppressWarnings(
-  ruleText %<>%
+
+  cleanText <- . %>%
     filter(text != "") %>% #filter blank strings
     mutate(text = str_remove_all(text, "§")) %>%
     mutate(first_char = str_sub(text, 1, 1), part = 'text') %>%  
@@ -84,8 +84,12 @@ suppressWarnings(
     mutate(part = ifelse(is.na(first_char), part, 'footnote')) %>% 
     #mutate(part = ifelse(id < 26, 'pre', part)) %>% 
     ungroup() %>% mutate(text = str_remove_all(text, '[[:digit:]]+')) #removes all digits from text
-)
+
   
+suppressWarnings(
+ruleText %<>%
+    cleanText
+)
 
 ```
               
