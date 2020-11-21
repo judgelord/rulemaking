@@ -35,10 +35,10 @@ link <- 'https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020
   xml_rule_text <- . %>% 
     read_xml() %>% 
     xml_children() %>% 
-    xml_children() %>% 
+    xml_children() %>%
     xml_text() %>% 
     str_squish() %>% 
-    tibble::enframe(value = "text",  name = "id") 
+   tibble::enframe(value = "text",  name = "id") 
  
   ruleText <- xml_rule_text(link)
 
@@ -72,33 +72,98 @@ Next, we need to process the text of the rule. Steps include:
 #                    ungroup() %>% mutate(text = str_remove_all(text, '[[:digit:]]+')) #removes all digits from text
 # )
 
-
-  cleanText <- . %>%
-    filter(text != "") %>% #filter blank strings
+clean <- . %>%  
+  #filter(nchar(text) > 60) %>% 
+  mutate(id = str_pad(id, 4, pad = "0") %>% 
+           #paste(text) %>% 
+           str_sub(1,80)) %>%
+           #str_c("...")) %>% 
+  mutate(text = str_remove_all(text, "\\(.\\)|[0-9]|_")) %>%
+  filter(text != "") %>% #filter blank strings
     mutate(text = str_remove_all(text, "§")) %>%
     mutate(first_char = str_sub(text, 1, 1), part = 'text') %>%  
     #rowwise() %>% 
     mutate(earlydot = str_detect(str_sub(text, 1, 5) ,'\\.')) %>% 
     mutate(part = ifelse(earlydot, 'head', part)) %>% 
     mutate(first_char = as.numeric(first_char)) %>%
-    mutate(part = ifelse(is.na(first_char), part, 'footnote')) %>% 
+    mutate(part = ifelse(is.na(first_char), part, 'footnote'))
     #mutate(part = ifelse(id < 26, 'pre', part)) %>% 
-    ungroup() %>% mutate(text = str_remove_all(text, '[[:digit:]]+')) #removes all digits from text
+# 
+#   cleanText <- . %>%
+#     filter(text != "") %>% #filter blank strings
+#     mutate(text = str_remove_all(text, "§")) %>%
+#     mutate(first_char = str_sub(text, 1, 1), part = 'text') %>%  
+#     #rowwise() %>% 
+#     mutate(earlydot = str_detect(str_sub(text, 1, 5) ,'\\.')) %>% 
+#     mutate(part = ifelse(earlydot, 'head', part)) %>% 
+#     mutate(first_char = as.numeric(first_char)) %>%
+#     mutate(part = ifelse(is.na(first_char), part, 'footnote')) %>% 
+#     #mutate(part = ifelse(id < 26, 'pre', part)) %>% 
+#     ungroup() %>% mutate(text = str_remove_all(text, '[[:digit:]]+')) #removes all digits from text
 
   
 suppressWarnings(
 ruleText %<>%
-    cleanText
+    clean
 )
+
+
+ruleText %<>%
+  mutate(section = ifelse(str_detect(part, "head"), "section", NA))
+
 
 ```
               
 Once we've cleaned the text, we need to extract the sentences and words, using tidytext.    
 ```{r tokenize}
- text_clean <- ruleText %>% filter(part == 'text') %>% select(text)
- text_sentences <- unnest_sentences(text_clean, output = sentences, input = text)
- text_sentences <- text_sentences %>% unique() %>% mutate(textrank_id = row_number()) 
- text_sentences <- text_sentences[,c(2,1)]
+
+#for ()
+# while (ruleText %>% ! str_detect(part, "head")) {
+#  
+#   ruleText %>% 
+#     select(text, part)
+#  text_sentences <- unnest_sentences(text_clean, output = sentences, input = text)
+#  text_sentences <- text_sentences %>% unique() %>% mutate(textrank_id = row_number()) 
+#  text_sentences <- text_sentences[,c(2,1)]
+#  
+# }
+
+summarizeText <- function(ruleText) {
+text_sentences <- ruleText %>%
+  filter(part == 'text') %>%
+  select(text) %>%
+  unnest_sentences(output = sentences, input = text) %>%
+  unique() %>%
+  mutate(textrank_id = row_number())
+
+text_sentences <- text_sentences[,c(2,1)]
+
+text_sentences %<>%
+  filter(textrank_id <= 400) #%>%
+  #filter(textrank_id < 400)
+
+data("stop_words")
+word <- unnest_tokens(text_sentences, output = word, input = 'sentences') %>% 
+  unique() %>% 
+  filter(!word %in% stop_words$word)
+
+head(text_sentences)
+head(word)
+
+out <- textrank::textrank_sentences(data = text_sentences, terminology = word)
+
+return(out)
+
+}
+
+summarizeText(ruleText)
+
+#summary(out, n = 5, keep.sentence.order =T)
+ # text_clean <- ruleText %>% filter(part == 'text') %>% select(text)
+ # text_sentences <- unnest_sentences(text_clean, output = sentences, input = text)
+ # text_sentences <- text_sentences %>% unique() %>% mutate(textrank_id = row_number()) 
+ # text_sentences <- text_sentences[,c(2,1)]
+  
 
 # ruleText %>% filter(part == 'text') %>% select(text)
 # 
@@ -107,40 +172,39 @@ Once we've cleaned the text, we need to extract the sentences and words, using t
 # 
 # text_sentences <- text_sentences[,c(2,1)]
 
-text_sentences %<>%
-  filter(textrank_id <= 200) #%>%
-  #filter(textrank_id < 400)
-
-data("stop_words")
-word <- unnest_tokens(text_sentences, output = word, input = 'sentences') %>% 
-  unique() %>% 
-  filter(!word %in% stop_words$word)
+# text_sentences %<>%
+#   filter(textrank_id <= 400) #%>%
+#   #filter(textrank_id < 400)
+# 
+# data("stop_words")
+# word <- unnest_tokens(text_sentences, output = word, input = 'sentences') %>% 
+#   unique() %>% 
+#   filter(!word %in% stop_words$word)
 ```
 
 This gives two tibbles.
 ```{r glance}
-head(text_sentences)
-head(word)
+# head(text_sentences)
+# head(word)
 ```
 
 Now we can run the algorithm, which is fairly quick at this point.
 ```{r Run textrank}
-out <- textrank::textrank_sentences(data = text_sentences, terminology = word)
+# out <- textrank::textrank_sentences(data = text_sentences, terminology = word)
 ```
 
 We can finally extract a summary:
 ```{r,echo=FALSE}
-summary(out, n = 5, keep.sentence.order =T)
+# summary(out, n = 5, keep.sentence.order =T)
 
 ```
 
 #New code summary
-[1] "in the  final rule, the bureau found that the practice of making covered short-term or longer-term balloon-payment loans to consumers without reasonably determining if the consumers have the ability to repay them according to their terms causes or is likely to cause substantial injury to consumers."                                                                                                                                                                           
-[2] "the bureau also found in the  final rule that consumers who would not be offered a payday loan under either  . or  . would have alternatives to payday loans."                                                                                                                                                                                                                                                                                                                         
-[3] "final rule—consumer understanding of risk of harm applying the revised standard for reasonable avoidability pursuant to section (c)()(a) of the dodd-frank act, the bureau concludes that there is not a sufficient evidentiary basis for the bureau to conclude that consumers cannot reasonably avoid substantial injury from lenders making covered short-term and longer-term balloon-payment loans without assessing borrowers' ability to repay the loan according to its terms."
-[4] "in conducting its countervailing benefits analysis, the  nprm stated that the bureau in the  final rule did not address the benefits to consumers or competition from lenders making covered short-term and longer-term balloon-payment loans without an ability-to-repay determination."                                                                                                                                                                                              
-[5] "the  nprm proposed to find that the bureau in the  final rule did not consider in the countervailing benefits analysis the full benefits to consumers and competition from the identified practice of lenders making covered loans without making an ability-to-repay determination." 
-
+[1] "summary:the bureau of consumer financial protection (bureau) is issuing this final rule to amend its regulations governing payday, vehicle title, and certain high-cost installment loans."                                                                                                                 
+[2] "the bureau revokes the  final rule's determination that it is an unfair practice for a lender to make covered short-term loans or covered longer-term balloon-payment loans without reasonably determining that consumers will have the ability to repay the loans according to their terms."               
+[3] "however, in the preamble to the  final rule, the bureau expressed the concern that the market for these longer-term balloon-payment loans, with structures similar to payday loans that pose similar risks to consumers, might grow if only covered short-term loans were regulated under the  final rule." 
+[4] "in the  nprm, the bureau did not propose to reconsider the payment provisions of the  final rule."                                                                                                                                                                                                          
+[5] "in the  final rule, the bureau found that the practice of making covered short-term or longer-term balloon-payment loans to consumers without reasonably determining if the consumers have the ability to repay them according to their terms causes or is likely to cause substantial injury to consumers."
 
 #Old Code Summary
 [1] "the bureau revokes the  final rule's determination that it is an unfair practice for a lender to make covered short-term loans or covered longer-term balloon-payment loans without reasonably determining that consumers will have the ability to repay the loans according to their terms." 
