@@ -43,9 +43,6 @@ link <- 'https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020
   ruleText <- xml_rule_text(link)
 
 
-#  xml_path <- download_xml(url = link)
-#  xml_parse <- read_xml(xml_path) %>% xml_children() %>% xml_children() %>% xml_text()
-# text <- str_split(xml_parse, pattern = '\n') %>% unlist() %>% str_squish()
 ```
 
 Next, we need to process the text of the rule. Steps include:
@@ -56,21 +53,6 @@ Next, we need to process the text of the rule. Steps include:
 5. Remove all numbers, as they trick the algorithm too much.
 
 ```{r Prep Data}
-
-
-# suppressWarnings(
-# text_df <- tibble(text = text) %>% 
-#   filter(text != "") %>% #filter blank strings
-#   mutate(text = str_remove_all(text, "§")) %>% #might not want to remove this if we want to keep important numbers in
-#  mutate(id = row_number()) %>% 
-#                    mutate(first_char = str_sub(text, 1, 1), part = 'text') %>%  rowwise() %>% 
-#                    mutate(earlydot = str_detect(str_sub(text, 1, 5) ,'\\.')) %>% 
-#                    mutate(part = ifelse(earlydot, 'head', part)) %>% 
-#                    mutate(first_char = as.numeric(first_char)) %>%
-#                    mutate(part = ifelse(is.na(first_char), part, 'footnote')) %>% 
-#                    #mutate(part = ifelse(id < 26, 'pre', part)) %>% 
-#                    ungroup() %>% mutate(text = str_remove_all(text, '[[:digit:]]+')) #removes all digits from text
-# )
 
 clean <- . %>%  
   #filter(nchar(text) > 60) %>% 
@@ -88,18 +70,7 @@ clean <- . %>%
     mutate(first_char = as.numeric(first_char)) %>%
     mutate(part = ifelse(is.na(first_char), part, 'footnote'))
     #mutate(part = ifelse(id < 26, 'pre', part)) %>% 
-# 
-#   cleanText <- . %>%
-#     filter(text != "") %>% #filter blank strings
-#     mutate(text = str_remove_all(text, "§")) %>%
-#     mutate(first_char = str_sub(text, 1, 1), part = 'text') %>%  
-#     #rowwise() %>% 
-#     mutate(earlydot = str_detect(str_sub(text, 1, 5) ,'\\.')) %>% 
-#     mutate(part = ifelse(earlydot, 'head', part)) %>% 
-#     mutate(first_char = as.numeric(first_char)) %>%
-#     mutate(part = ifelse(is.na(first_char), part, 'footnote')) %>% 
-#     #mutate(part = ifelse(id < 26, 'pre', part)) %>% 
-#     ungroup() %>% mutate(text = str_remove_all(text, '[[:digit:]]+')) #removes all digits from text
+
 
   
 suppressWarnings(
@@ -108,25 +79,11 @@ ruleText %<>%
 )
 
 
-ruleText %<>%
-  mutate(section = ifelse(str_detect(part, "head"), "section", NA))
-
 
 ```
               
 Once we've cleaned the text, we need to extract the sentences and words, using tidytext.    
 ```{r tokenize}
-
-#for ()
-# while (ruleText %>% ! str_detect(part, "head")) {
-#  
-#   ruleText %>% 
-#     select(text, part)
-#  text_sentences <- unnest_sentences(text_clean, output = sentences, input = text)
-#  text_sentences <- text_sentences %>% unique() %>% mutate(textrank_id = row_number()) 
-#  text_sentences <- text_sentences[,c(2,1)]
-#  
-# }
 
 summarizeText <- function(ruleText) {
 text_sentences <- ruleText %>%
@@ -156,48 +113,15 @@ return(out)
 
 }
 
+
+
 summarizeText(ruleText)
 
-#summary(out, n = 5, keep.sentence.order =T)
- # text_clean <- ruleText %>% filter(part == 'text') %>% select(text)
- # text_sentences <- unnest_sentences(text_clean, output = sentences, input = text)
- # text_sentences <- text_sentences %>% unique() %>% mutate(textrank_id = row_number()) 
- # text_sentences <- text_sentences[,c(2,1)]
-  
-
-# ruleText %>% filter(part == 'text') %>% select(text)
-# 
-# text_sentences <- unnest_sentences(ruleText, output = sentences, input = text) %>% 
-#   unique() %>% mutate(textrank_id = row_number()) 
-# 
-# text_sentences <- text_sentences[,c(2,1)]
-
-# text_sentences %<>%
-#   filter(textrank_id <= 400) #%>%
-#   #filter(textrank_id < 400)
-# 
-# data("stop_words")
-# word <- unnest_tokens(text_sentences, output = word, input = 'sentences') %>% 
-#   unique() %>% 
-#   filter(!word %in% stop_words$word)
-```
-
-This gives two tibbles.
-```{r glance}
-# head(text_sentences)
-# head(word)
-```
-
-Now we can run the algorithm, which is fairly quick at this point.
-```{r Run textrank}
-# out <- textrank::textrank_sentences(data = text_sentences, terminology = word)
-```
-
-We can finally extract a summary:
-```{r,echo=FALSE}
-# summary(out, n = 5, keep.sentence.order =T)
 
 ```
+
+
+
 
 #New code summary
 [1] "summary:the bureau of consumer financial protection (bureau) is issuing this final rule to amend its regulations governing payday, vehicle title, and certain high-cost installment loans."                                                                                                                 
