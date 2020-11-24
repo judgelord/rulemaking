@@ -1,2 +1,1 @@
-
 reticulate::source_python("code/pdfscraper.py")
