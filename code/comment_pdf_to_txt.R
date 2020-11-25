@@ -1,5 +1,9 @@
+# could save a bit of unlisting: https://rdrr.io/github/enricoschumann/esutils/man/pdf2txt.html
 
+# pdftotext
 files <- list.files(here("comments")) %>% head()
+
+
 
 #FIXME move to functions 
 library(pdftools)
@@ -40,5 +44,3 @@ write_file(pdf_to_text(file),
 }
 
 walk(files, possibly(pdf_to_txt, otherwise = print("nope")))
-
-

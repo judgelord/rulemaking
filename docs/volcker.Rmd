@@ -30,6 +30,7 @@ knitr::opts_chunk$set(echo = TRUE,
 library(tidyverse)
 library(magrittr)
 library(tidytext)
+library(xml2)
 library(knitr)
 library(kableExtra)
 
@@ -39,9 +40,9 @@ library(ggplot2); theme_set(theme_bw())
     ggplot2.continuous.fill = "viridis"
   )
   scale_color_discrete <- function(...)
-    scale_color_viridis_d(...)
+    scale_color_viridis_d(..., direction = -1)
   scale_fill_discrete <- function(...)
-    scale_fill_viridis_d(...)
+    scale_fill_viridis_d(..., direction = -1)
   
   
 kablebox <- . %>%  knitr::kable() %>% 
@@ -58,7 +59,7 @@ fr <- "https://www.federalregister.gov/documents/full_text/xml/2014/01/31/2013-3
 # text marking the end of the preamble
 rule_text_starts <- . %>% {which(str_detect(., "The text of the proposed common rules|^Text of Common Rule"))}
 
-# a function ot extract text
+# a function to extract text
 xml_rule_text <- . %>% 
   read_xml() %>% 
   xml_children() %>% 
@@ -118,8 +119,8 @@ fr10 <- fr %>% unnest_tokens(tengram, text, token = "ngrams", n = 10) %>% filter
 A straightforward method is a 10-gram moving window; detecting 10-word (or longer) phrases from a Proposed Rule are left unchanged in the Final Rule. 10-word phrases from the Proposed Rule that do not appear Final Rule may have been cut or merely changed slightly. Likewise, 10-word phrases from the Final Rule that do not appear in the Proposed Rule may reflect minor edits or entirely new text.
 
 Pros:  
-- straightforward and easy to explain 
-- can be extremely sensitive to moderately sensitive depending on how texts are cleaned 
+- straightforward and easy to explain  
+- can be extremely sensitive to moderately sensitive depending on how texts are cleaned  
 - computationally cheap
 
 Cons:  
@@ -142,6 +143,7 @@ prr10 %<>%
   # if old, the next 9 are also old 
   mutate(fix =  reduce(map(1:9, ~ lag(trans, ., 0)), `+`)) %>%
   mutate(new = ifelse(fix>0 & new == T, F, new)) %>% 
+  # add elipses after transition words 
   mutate(word1 = ifelse(trans, str_c(word1, "..."), word1)) 
 
 prr10 %<>% 
@@ -154,8 +156,8 @@ prr10 %<>%
 prr10 %>% 
   select(-text) %>% 
   spread(key = new, value = word_count) %>% 
-  rename(`Words in Final Rule` = `FALSE`, 
-         `Words not in Final Rule` = `TRUE`)  %>% 
+  rename(`Words from phrases that were also in the Final Rule` = `FALSE`, 
+         `Words not from phrases that were also in the Final Rule` = `TRUE`)  %>% 
   kablebox()
 
 prr10 %>% 
@@ -179,8 +181,8 @@ prr10 %>%
   ungroup() %>% 
   select(-word_count) %>% 
   spread(key = new, value = text) %>% 
-  rename(`Words in Final Rule` = `FALSE`, 
-         `Words not in Final Rule` = `TRUE`)  %>%
+  rename(`Words from phrases that were also in the Final Rule` = `FALSE`, 
+         `Words not from phrases that were also in the Final Rule` = `TRUE`)  %>%
   kablebox()
 ```
 
@@ -231,8 +233,8 @@ frr10 %>%
   ungroup() %>% 
   select(-word_count) %>% 
   spread(key = new, value = text) %>% 
-  rename(`Words from Proposed Rule` = `FALSE`, 
-         `Words not from Proposed Rule` = `TRUE`)  %>%
+  rename(`Words from phrases that were also in the Proposed Rule` = `FALSE`, 
+         `Words not from phrases that were also in the Proposed Rule` = `TRUE`)  %>%
   kablebox()
 ```
 
