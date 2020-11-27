@@ -1,7 +1,9 @@
 # could save a bit of unlisting: https://rdrr.io/github/enricoschumann/esutils/man/pdf2txt.html
 
 # pdftotext
-files <- list.files(here("comments"))
+files <- list.files(here("comments")) %>% head()
+
+
 
 #FIXME move to functions 
 library(pdftools)
@@ -32,8 +34,8 @@ docket <- str_extract(file, "[A-Z]*-[0-9]*-[0-9]*")
 
 # create new directories if needed
 if (!dir.exists(here("comments", agency, docket) ) ){
-dir.create(here("comments", agency), showWarnings = FALSE)
-dir.create(here("comments", agency, docket))
+  dir.create(here("comments", agency), showWarnings = FALSE)
+  dir.create(here("comments", agency, docket))
 }
 
 # save txt file
@@ -42,9 +44,3 @@ write_file(pdf_to_text(file),
 }
 
 walk(files, possibly(pdf_to_txt, otherwise = print("nope")))
-
-
-
-# pdf2txt (pdfminer) with system commands
-
-system("pdf2txt.py -o comments/NPS-2018-0007-0293-1.txt comments/NPS-2018-0007-0293-1.pdf")
