@@ -1,0 +1,77 @@
+---
+title: "The Payday Loan Rule"
+subtitle: "Comment text copied from the proposed rule or other comments" 
+author: ""
+output:
+    # pdf_document:
+    #   toc: true
+    #   keep_tex: true
+    html_document:
+      highlight: zenburn
+      toc: true
+      toc_float: true
+      code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = FALSE, 
+                      fig.width=8.5, 
+                      split = T,
+                      fig.align = 'center', 
+                      fig.path='figs/',
+                      warning=FALSE, 
+                      message=FALSE)
+
+
+library(tidyverse)
+library(magrittr)
+library(tidytext)
+library(xml2)
+library(knitr)
+library(kableExtra)
+
+library(ggplot2); theme_set(theme_bw())
+  options(
+    ggplot2.continuous.color = "viridis",
+    ggplot2.continuous.fill = "viridis"
+  )
+  scale_color_discrete <- function(...)
+    scale_color_viridis_d(..., direction = -1)
+  scale_fill_discrete <- function(...)
+    scale_fill_viridis_d(..., direction = -1)
+  
+  
+kablebox <- . %>%  knitr::kable() %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
+```
+
+
+This document covers how to collect, store, and summarize word-level (token-level) information about the relationship among text. The general approach applies to any word or phrase-level(token-level) attributes (topic, relative frequency, citations, plagarism), here I focus on matching 10-word phrases.
+
+Just as we can use repeated 10-word phrases to identify change between draft and final rules (see the Volker Rule example), we can use a 10-word (10-gram) moving window to identify which words in a comment are part of a 10-word phrase that also appears in the  other comments or the proposed rule.
+
+Building on Wilkerson et al 2017, I first used this method to detect similarity and change in agency buget justifications and congressional approprations texts (see my 2017 polmeth poster) and then adapted it to identify coalitions and form letters with repeated text in public comments.
+
+Below, I walk through R functions and apply them to CFPB's Payday Loan rule.
+
+The result is information about each word in each comment. Was this word part of a 10-word phrase that also appeared in the NPRM? Was this word part of a 10-word phrase that appeared in other comments? If so, which ones? Computation and data storage is trivial for a few comments, but expands exponentially, aproximarly the square of the number of words in all comments. I use CFPB's Payday Loan Rule to illustrate methods to triage input data for the rule by far the most public comments.
+
+### Data
+
+I filter out mass comments and focus on comments that came as attachments from identified organizations.
+
+The `comment_tengrams` function requires:
+1. file paths to a set of comments 
+2. a link to the NPRM text (in order to identify NPRM text repeated in comments)
+
+This function also relies of a few custom helper functions to parse rule text (here), clean text (here), and parse and match ngrams (here). 
+
+
+
+
+
