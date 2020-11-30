@@ -18,7 +18,7 @@ editor_options:
 
 ```{r global.options, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, 
-                      cache = FALSE, 
+                      cache = TRUE, 
                       fig.width=8.5, 
                       split = T,
                       fig.align = 'center', 
@@ -55,15 +55,15 @@ This document covers how to collect, store, and summarize word-level (token-leve
 
 Just as we can use repeated 10-word phrases to identify change between draft and final rules (see the [Volker Rule example](https://judgelord.github.io/rulemaking/volcker.html)), we can use a 10-word (10-gram) moving window to identify which words in a comment is part of a 10-word phrase that also appears in the other comments or the proposed rule.
 
-Building on Wilkerson et al. 2017, I first used this method to detect similarity and change in agency budget justifications and congressional appropriations texts (see my 2017 [polmeth poster](https://judgelord.github.io/research/budgets/) and [APSA paper](https://judgelord.github.io/research/budgets/JudgeLordAPSA2017.pdf)). I then adapted it to identify coalitions and form letters with repeated text in public comments ([SPSA paper](https://judgelord.github.io/research/whymail/)).
+Building on [Casas et al. 2019](https://onlinelibrary.wiley.com/doi/abs/10.1111/ajps.12472), I first used this method to detect similarity and change in agency budget justifications and congressional appropriations texts (see my 2017 [polmeth poster](https://judgelord.github.io/research/budgets/) and [APSA paper](https://judgelord.github.io/research/budgets/JudgeLordAPSA2017.pdf)). I then adapted it to identify coalitions and form letters with repeated text in public comments ([SPSA 2019 paper](https://judgelord.github.io/research/whymail/)).
 
 Below, I walk through R functions to parse and summarize repeated text, applying them to CFPB's Payday Loan rule.
 
-The result is information about each word in each comment. Was this word part of a 10-word phrase that also appeared in the NPRM? Was this word part of a 10-word phrase that also appeared in other comments? If so, which ones? What percent of the text of each comment matches each other comment? Computation and data storage are trivial for a few comments but expands exponentially, approximately the square of the number of words in all comments. I use CFPB's Payday Loan Rule to illustrate methods to triage input data for the rule by far the most public comments.
+The result is information about each word in each comment. Was this word part of a 10-word phrase that also appeared in the NPRM? Was this word part of a 10-word phrase that also appeared in other comments? If so, which ones? What percent of the text of each comment matches each other comment? Computation and data storage are trivial for a few comments but expands exponentially, approximately the square of the number of words in all comments. I use CFPB's Payday Loan Rule to illustrate how these methods help us examine a rule with a great deal of comments.
 
 ## Method
 
-I filter out most mass comments (continually improving my methods for detecting mass comments) and focus on comments that came as attachments from identified organizations. I extract the text from these attachments and eliminate files less than 10 KB (the size of a short paragraph, often a failed OCR). Raw text files for CFPB's Payday Loan Rule are available [here](https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/).
+I filter out most mass comments (continually improving my methods for detecting mass comments) and focus on text from attachments submitted by identified organizations. I extract the text from these attachments and eliminate files less than 10 KB (the size of a short paragraph, often a failed OCR). Raw text files for CFPB's Payday Loan Rule are available [here](https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/).
 
 The `comment_tengrams` function that I define below requires two inputs:  
 
@@ -259,7 +259,7 @@ Partial matches are not always exactly symmetrical; the percent of comment x in 
 > B. "While I commend the Bureau’s efforts to protect consumers, the proposed protections could be stronger. As part of its mandate, the Bureau has authority to prevent unfair, deceptive, and abusive acts or practices."
 
 
-## Minimize the size of stored output
+### Minimize the size of stored output
 
 Since Steve is doing similar work with SEC data, we are trying to identify standard data formats to allow for plug-and-play analysis. 
 

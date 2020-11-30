@@ -1667,12 +1667,12 @@ div.tocify {
 
 <p>This document covers how to collect, store, and summarize word-level (token-level) information about the relationship among texts. The general approach applies to any word or phrase-level (token-level) attribute (topic, relative frequency, citations, plagiarism), but here, I focus on a simple form of plagiarism detection using matching 10-word phrases.</p>
 <p>Just as we can use repeated 10-word phrases to identify change between draft and final rules (see the <a href="https://judgelord.github.io/rulemaking/volcker.html">Volker Rule example</a>), we can use a 10-word (10-gram) moving window to identify which words in a comment is part of a 10-word phrase that also appears in the other comments or the proposed rule.</p>
-<p>Building on Wilkerson et al. 2017, I first used this method to detect similarity and change in agency budget justifications and congressional appropriations texts (see my 2017 <a href="https://judgelord.github.io/research/budgets/">polmeth poster</a> and <a href="https://judgelord.github.io/research/budgets/JudgeLordAPSA2017.pdf">APSA paper</a>). I then adapted it to identify coalitions and form letters with repeated text in public comments (<a href="https://judgelord.github.io/research/whymail/">SPSA paper</a>).</p>
+<p>Building on <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/ajps.12472">Casas et al. 2019</a>, I first used this method to detect similarity and change in agency budget justifications and congressional appropriations texts (see my 2017 <a href="https://judgelord.github.io/research/budgets/">polmeth poster</a> and <a href="https://judgelord.github.io/research/budgets/JudgeLordAPSA2017.pdf">APSA paper</a>). I then adapted it to identify coalitions and form letters with repeated text in public comments (<a href="https://judgelord.github.io/research/whymail/">SPSA 2019 paper</a>).</p>
 <p>Below, I walk through R functions to parse and summarize repeated text, applying them to CFPB’s Payday Loan rule.</p>
-<p>The result is information about each word in each comment. Was this word part of a 10-word phrase that also appeared in the NPRM? Was this word part of a 10-word phrase that also appeared in other comments? If so, which ones? What percent of the text of each comment matches each other comment? Computation and data storage are trivial for a few comments but expands exponentially, approximately the square of the number of words in all comments. I use CFPB’s Payday Loan Rule to illustrate methods to triage input data for the rule by far the most public comments.</p>
+<p>The result is information about each word in each comment. Was this word part of a 10-word phrase that also appeared in the NPRM? Was this word part of a 10-word phrase that also appeared in other comments? If so, which ones? What percent of the text of each comment matches each other comment? Computation and data storage are trivial for a few comments but expands exponentially, approximately the square of the number of words in all comments. I use CFPB’s Payday Loan Rule to illustrate how these methods help us examine a rule with a great deal of comments.</p>
 <div id="method" class="section level2">
 <h2>Method</h2>
-<p>I filter out most mass comments (continually improving my methods for detecting mass comments) and focus on comments that came as attachments from identified organizations. I extract the text from these attachments and eliminate files less than 10 KB (the size of a short paragraph, often a failed OCR). Raw text files for CFPB’s Payday Loan Rule are available <a href="https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/">here</a>.</p>
+<p>I filter out most mass comments (continually improving my methods for detecting mass comments) and focus on text from attachments submitted by identified organizations. I extract the text from these attachments and eliminate files less than 10 KB (the size of a short paragraph, often a failed OCR). Raw text files for CFPB’s Payday Loan Rule are available <a href="https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/">here</a>.</p>
 <p>The <code>comment_tengrams</code> function that I define below requires two inputs:</p>
 <ol style="list-style-type: decimal">
 <li>file paths comment txt files</li>
@@ -1932,9 +1932,8 @@ matching_text
 <p>B. “While I commend the Bureau’s efforts to protect consumers, the proposed protections could be stronger. As part of its mandate, the Bureau has authority to prevent unfair, deceptive, and abusive acts or practices.”</p>
 </blockquote>
 </div>
-</div>
-<div id="minimize-the-size-of-stored-output" class="section level2">
-<h2>Minimize the size of stored output</h2>
+<div id="minimize-the-size-of-stored-output" class="section level3">
+<h3>Minimize the size of stored output</h3>
 <p>Since Steve is doing similar work with SEC data, we are trying to identify standard data formats to allow for plug-and-play analysis.</p>
 <p>Token matches stored as Run Length Encoding take up about half the space as a logical vector of token matches and can easily be converted back. Download the RLE version of these data <a href="https://github.com/judgelord/rulemaking/blob/master/data/payday_comments_rle.Rdata">here</a>.</p>
 <p>Here is an example of what matches look like when stored as RLE, how to convert them back to a logical vector, and ultimately, the matching text:</p>
@@ -1974,6 +1973,7 @@ matching_text
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true"></a>example_rle<span class="op">$</span>text<span class="op">$</span>word[example_rle<span class="op">$</span>match <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">inverse.rle</span>()] <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">head</span>(<span class="dv">10</span>) </span></code></pre></div>
 <pre><code>##  [1] &quot;i&quot;          &quot;docket&quot;     &quot;no&quot;         &quot;cfp&quot;        &quot;consumer&quot;  
 ##  [6] &quot;financial&quot;  &quot;protection&quot; &quot;bureau&quot;     &quot;g&quot;          &quot;street&quot;</code></pre>
+</div>
 </div>
 
 
