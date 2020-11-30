@@ -1936,7 +1936,7 @@ matching_text
 <div id="minimize-the-size-of-stored-output" class="section level2">
 <h2>Minimize the size of stored output</h2>
 <p>Since Steve is doing similar work with SEC data, we are trying to identify standard data formats to allow for plug-and-play analysis.</p>
-<p>Token matches stored as Run Length Encoding take up about half the space as a logical vector of token matches and can easily be converted back.</p>
+<p>Token matches stored as Run Length Encoding take up about half the space as a logical vector of token matches and can easily be converted back. Download the RLE version of these data <a href="https://github.com/judgelord/rulemaking/blob/master/data/payday_comments_rle.Rdata">here</a>.</p>
 <p>Here is an example of what matches look like when stored as RLE, how to convert them back to a logical vector, and ultimately, the matching text:</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="co"># functions to convert between logical and run-length encoding</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>lgl_to_rle &lt;-<span class="st"> </span>. <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">match =</span> <span class="kw">map</span>(match, rle)) </span>
