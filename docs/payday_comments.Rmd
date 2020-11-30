@@ -65,7 +65,7 @@ The result is information about each word in each comment. Was this word part of
 
 I filter out most mass comments (continually improving my methods for detecting mass comments) and focus on comments that came as attachments from identified organizations. I extract the text from these attachments and eliminate files less than 10 KB (the size of a short paragraph, often a failed OCR). Raw text files for CFPB's Payday Loan Rule are available [here](https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/).
 
-The `comment_tengrams` function requires two inputs:  
+The `comment_tengrams` function that I define below requires two inputs:  
 
 1. file paths comment txt files 
 2. a link to the NPRM text (to identify NPRM text repeated in comments)
@@ -105,25 +105,26 @@ comment_tengrams <- function(nprm, comments){
                                    ) 
            )
   
-  # map each document to all others, including the nprm
+  # map each document to all others, including the NPRM
   d %<>% 
     mutate(
       text = tengrams %>% 
-        # diff with the nprm
+        # diff with the NPRM
         map2( list(pr_text$tengram), match_tibble) %>% 
-        map(~rename(., nprm_phrase = match) ) %>% 
+        map(tengram_match_dfr) %>% 
+        map(~rename(., nprm_match = match) ) %>% 
         # reassemble text from the first word of each ngram
         map(~mutate(., word = str_extract(ngram, "\\w+") ) ) %>% 
         # drop ngrams to save space 
         map(~select(., -ngram) ),
       # diff with all other comments 
-      reuse = tibble(document_id2 = list(document_id),
-                     reuse = tengrams %>% map(~map2(., d$tengrams, match))
-                     ) 
+      other_docs = tibble(document_id2 = list(document_id),
+                          match = tengrams %>% map(~map2(., d$tengrams, match) %>% map(tengram_match))
+                          )
       ) %>% 
     # turn the tibble of lists into a list of tibbles
     group_by(document_id) %>% 
-    mutate(reuse = reuse %>% purrr::flatten() %>%  as_tibble() %>% list() ) %>% 
+    mutate(other_docs = other_docs %>% purrr::flatten() %>%  as_tibble() %>% list() ) %>% 
     ungroup()
   
   # drop variables that we no longer need
@@ -158,10 +159,10 @@ Each `document_id` now has two associated data frames:
 
 1. `text` contains two columns:  
     + `word` is the document's first 10,000 words  
-    + `nprm_phrase` is whether the that word is part of a ten-word phrase that is in the NPRM  
-2. `reuse` contains a data frame for each other comment:
+    + `nprm_match` is whether the that word is part of a ten-word phrase that is in the NPRM  
+2. `other_docs` contains a data frame for each other comment:
     + `document_id2`  
-    + `reuse` indicates whether each word in the document,`document_id`, is part of a ten-word phrase that appears in the second document, `document_id2`.   
+    + `match` indicates whether each word in the document,`document_id`, is part of a ten-word phrase that appears in the second document, `document_id2`.   
 
 ### 1. Comparing comment text to the NPRM
 ```{r class.source = 'fold-show'}
@@ -170,17 +171,17 @@ d$text[1:2]
 
 ```{r nprm_percent_match, class.source = 'fold-hide'}
 nprm_percent_match <- d %>% 
-  select(-reuse) %>% # select just the doc name and text table (otherwise unnest duplicates the reuse table for every observation)
+  select(-other_docs) %>% # select just the doc name and text table (otherwise unnest duplicates the other_docs table for every observation)
   unnest(text) %>%
   group_by(document_id) %>% 
-  summarise(percent_match = sum(nprm_phrase)/n() ) 
+  summarise(percent_match_with_NPRM = sum(nprm_match)/n() ) 
 ```
 
 ```{r nprm_percent_match_plot}
 nprm_percent_match %>% 
   mutate(document_id = document_id %>% str_remove(".*0025-") ) %>% 
   ggplot() + 
-  aes(x = document_id, y = percent_match) + 
+  aes(x = document_id, y = percent_match_with_NPRM) + 
   geom_col() + 
   theme(panel.border = element_blank(),
         axis.text.x = element_text(angle = 90, vjust = 1))
@@ -196,9 +197,11 @@ Comment [90980](https://www.regulations.gov/document?D=CFPB-2016-0025-90980) was
 d %>% 
   filter(document_id == "CFPB-2016-0025-90980-1") %>% 
   select(text) %>% 
-  unnest(text) %>% 
-  rename(match = nprm_phrase) %>% 
-  tengram_match_to_text() %>% kable()
+  unnest() %>% 
+  mutate(word = ifelse(nprm_match == T & lead(nprm_match) == F, str_c(word, "..."), word) ) %>%
+  filter(nprm_match) %>%
+  summarise(matching_text = word %>% paste(collapse = " ") %>% {str_c("\"...", ., "\"")} ) %>% 
+  kable()
 ```
 
 These 24 words come from two citations, each at least 10-words long, that were also cited in the NPRM:
@@ -213,20 +216,20 @@ The ability to quickly recall shared text is a key advantage of storing the outp
 
 ### 2. Text reuse across comments
 
-Just as `nprm_phrase` indicates whether each word in a comment was part of a tengram that appeared in the NPRM, there is a column `reuse` indicating whether each word was part of a tengram that also appeared in each other comment in the data.
+Just as `nprm_match` indicates whether each word in a comment was part of a tengram that also appeared in the NPRM, the column `match` indicates whether each word was part of a tengram that also appeared in each other comment in the data.
 
 ```{r class.source = 'fold-show'}
-d$reuse[1:2]
+d$other_docs[1:2]
 ```
 
 ```{r comment_percent_match, class.source = 'fold-hide'}
 comment_percent_match <- d %>% 
   top_n(50, document_id) %>% 
-  select(-text) %>% # select just the doc name and reuse table (otherwise unnest duplicates the text table for every observation)
-  unnest(reuse) %>%             # unnest reuse tibble
-  unnest(document_id2, reuse) %>% # unnest document_id and reuse lists 
+  select(-text) %>% # select just the doc name and other_docs table (otherwise unnest duplicates the text table for every observation)
+  unnest(other_docs) %>%             # unnest other_docs tibble
+  unnest(document_id2, match) %>% # unnest document_id and match lists 
   group_by(document_id, document_id2) %>% 
-  summarise(percent_match = sum(reuse)/n() )
+  summarise(percent_match = sum(match)/n() )
 ```
 
 ```{r comment_percent_match_plot, fig.width=9.5, fig.height=7.5}
@@ -245,20 +248,71 @@ comment_percent_match %>%
 ```
 
 Notice that 100% of the words from CFPB-2016-0025-95976 ([pdf](https://www.regulations.gov/document?D=CFPB-2016-0025-95976), [txt](https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/CFPB-2016-0025-95976-1.txt)
-) are part of a tengram that is also in CFPB-2016-0025-95977 ([pdf](https://www.regulations.gov/document?D=CFPB-2016-0025-95977), [txt](https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/CFPB-2016-0025-95977-1.txt)) because the exact same comment was uploaded twice. 
+) are part of some tengram that also appears in CFPB-2016-0025-95977 ([pdf](https://www.regulations.gov/document?D=CFPB-2016-0025-95977), [txt](https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/CFPB-2016-0025-95977-1.txt)) because the exact same comment was uploaded twice. 
 
 Comments [91130](https://www.regulations.gov/document?D=CFPB-2016-0025-91130) through [91156](https://www.regulations.gov/document?D=CFPB-2016-0025-91154) are all partial or exact matches. Most are part of a mass comment campaign by Access Financial. The percent of the identical text is lower than many mass-comment campaigns because these are hand-written comments, but the n-gram method still picks up overlap in the OCRed text in the header and footer. 
 
-Partial matches are often but not always exactly symmetrical; the percent of comment x in comment y may not be the same as the percent of y in x. For example, 100% of A  is in B, but only 50% of B is in A.
+Partial matches are not always exactly symmetrical; the percent of comment x in comment y may not be the same as the percent of y in x. For example, 100% of A  is in B, but only 50% of B is in A.
 
 > A. "While I commend the Bureau’s efforts to protect consumers, the proposed protections could be stronger."
 
 > B. "While I commend the Bureau’s efforts to protect consumers, the proposed protections could be stronger. As part of its mandate, the Bureau has authority to prevent unfair, deceptive, and abusive acts or practices."
 
 
+## Minimize the size of stored output
+
+Since Steve is doing similar work with SEC data, we are trying to identify standard data formats to allow for plug-and-play analysis. 
+
+Token matches stored as Run Length Encoding take up about half the space as a logical vector of token matches and can easily be converted back.
+
+Here is an example of what matches look like when stored as RLE, how to convert them back to a logical vector, and ultimately, the matching text:
+
+```{r}
+# functions to convert between logical and run-length encoding
+lgl_to_rle <- . %>% mutate(match = map(match, rle)) 
+
+rle_to_lgl <- . %>% mutate(match = map(match, inverse.rle)) 
+
+# put the data above into RLE 
+d_rle <- d %>% 
+  mutate(other_docs = map(other_docs, lgl_to_rle)) 
+
+# back out logical format
+d_lgl <- d_rle %>% 
+  mutate(other_docs = map(other_docs, rle_to_lgl)) 
+
+# compare file size on disk
+save(d_rle, file =  here::here("data", "payday_comments_rle.Rdata"))
+save(d_lgl, file = here::here("data", "payday_comments_lgl.Rdata"))
+
+# inspect comment 91153 matched with 91154
+example_rle <- d_rle %>% 
+  filter(document_id == "CFPB-2016-0025-91153-1") %>% 
+  unnest(other_docs) %>% 
+  filter(document_id2 == "CFPB-2016-0025-91154-1") %>% 
+  flatten()
+
+# matching sequences as rle
+example_rle$match
+
+# matching sequences as logical 
+example_rle$match %>% inverse.rle() %>% head()
+
+# words in CFPB-2016-0025-91153 where match is TRUE 
+example_rle$text$word[example_rle$match %>% inverse.rle()] %>% head(10) 
+```
+
 
 ```{r extra, include=FALSE, eval = FALSE}
+# 
+tengram_match_fix <- . %>% unnest(match) %>% tengram_match()  %>% nest(match = c(match))
 
+# works
+d %>% 
+  mutate(other_docs = map(other_docs, tengram_match_fix))
 
+d$other_docs[[1]] %>% unnest()  %>% tengram_match()  %>% list()
+
+d$other_docs
 ```
 

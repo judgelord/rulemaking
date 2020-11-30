@@ -44,6 +44,31 @@ match_tibble <- function(text1, text2){
 # a function to extract the first word of a text string
 word1 <- . %>% mutate(word = str_extract(text, "\\w+") )
 
+# a function to convert a vector of tengram matches to word matches
+tengram_match <- function(match){
+  temp <- tibble(match = match) %>% 
+  # mark transitions from new to new or new to new text
+  mutate(trans = ifelse(match & !lead(match) | !match & lead(match), T, F)) %>% 
+  # if a match, the next 9 are also a match 
+  mutate(fix =  reduce( map(1:9, ~ lag(trans, ., 0)), `+`)) %>%
+  mutate(match = ifelse(fix > 0 & match == F, T, match) ) 
+  
+  return(temp$match)
+}
+
+# a function to reassemble text from first word of each tengram
+tengram_match_dfr <- . %>% 
+  # mark transitions from new to new or new to new text
+  mutate(trans = ifelse(match & !lead(match) | !match & lead(match), T, F)) %>% 
+  # if a match, the next 9 are also a match 
+  mutate(fix =  reduce( map(1:9, ~ lag(trans, ., 0)), `+`)) %>%
+  mutate(match = ifelse(fix > 0 & match == F, T, match) ) %>% 
+  # remove vars we no longer need
+  select(-trans, -fix) 
+
+# for applying to nested data 
+tengram_match_to_word <- . %>% unnest(match) %>% tengram_match()  %>% nest(match = c(match))
+
 # a function to reassemble text from first word of each tengram
 tengram_match_to_text <- . %>% 
   # mark transitions from new to new or new to new text
@@ -53,7 +78,8 @@ tengram_match_to_text <- . %>%
   mutate(match = ifelse(fix > 0 & match == F, T, match)) %>% 
   # add elipses after transition words 
   mutate(word = ifelse(fix > 0 & lead(fix) == 0, str_c(word, "..."), word) ) %>%
-  select(-trans, -fix) %>% 
-  filter(match) %>% 
-  summarise(matching_text = str_c(word, collapse = " ") %>% {str_c("\"...", ., "\"")} )
+  # remove vars we no longer need
+  select(-trans, -fix) 
+
+
 
