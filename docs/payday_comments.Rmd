@@ -47,38 +47,39 @@ library(ggplot2); theme_set(theme_bw())
   
 kablebox <- . %>%  knitr::kable() %>% 
   kable_styling() %>% 
-  scroll_box(height = "400px")
+  scroll_box(height = "100px")
 ```
 
 
-This document covers how to collect, store, and summarize word-level (token-level) information about the relationship among text. The general approach applies to any word or phrase-level(token-level) attributes (topic, relative frequency, citations, plagarism), here I focus on a simple form of plagarism dection using a matching 10-word phrases.
+This document covers how to collect, store, and summarize word-level (token-level) information about the relationship among texts. The general approach applies to any word or phrase-level (token-level) attribute (topic, relative frequency, citations, plagiarism), but here, I focus on a simple form of plagiarism detection using matching 10-word phrases.
 
-Just as we can use repeated 10-word phrases to identify change between draft and final rules (see the Volker Rule example), we can use a 10-word (10-gram) moving window to identify which words in a comment are part of a 10-word phrase that also appears in the  other comments or the proposed rule.
+Just as we can use repeated 10-word phrases to identify change between draft and final rules (see the [Volker Rule example](https://judgelord.github.io/rulemaking/volcker.html)), we can use a 10-word (10-gram) moving window to identify which words in a comment is part of a 10-word phrase that also appears in the other comments or the proposed rule.
 
-Building on Wilkerson et al 2017, I first used this method to detect similarity and change in agency buget justifications and congressional approprations texts (see my 2017 polmeth poster and APSA paper) and then adapted it to identify coalitions and form letters with repeated text in public comments (SPSA paper here).
+Building on Wilkerson et al. 2017, I first used this method to detect similarity and change in agency budget justifications and congressional appropriations texts (see my 2017 [polmeth poster](https://judgelord.github.io/research/budgets/) and [APSA paper](https://judgelord.github.io/research/budgets/JudgeLordAPSA2017.pdf)). I then adapted it to identify coalitions and form letters with repeated text in public comments ([SPSA paper](https://judgelord.github.io/research/whymail/)).
 
 Below, I walk through R functions to parse and summarize repeated text, applying them to CFPB's Payday Loan rule.
 
-The result is information about each word in each comment. Was this word part of a 10-word phrase that also appeared in the NPRM? Was this word part of a 10-word phrase that also appeared in other comments? If so, which ones? What percent of the text of each comment matches each other comment? Computation and data storage are trivial for a few comments, but expands exponentially, aproximarly the square of the number of words in all comments. I use CFPB's Payday Loan Rule to illustrate methods to triage input data for the rule by far the most public comments.
+The result is information about each word in each comment. Was this word part of a 10-word phrase that also appeared in the NPRM? Was this word part of a 10-word phrase that also appeared in other comments? If so, which ones? What percent of the text of each comment matches each other comment? Computation and data storage are trivial for a few comments but expands exponentially, approximately the square of the number of words in all comments. I use CFPB's Payday Loan Rule to illustrate methods to triage input data for the rule by far the most public comments.
 
-### Methods
+## Method
 
-I filter out most mass comments (I've every improving my methods for detecting mass comments) and focus on comments that came as attachments from identified organizations. I extract the text from these attachments and elimate files less than 10 KB (the size of a short paragraph, often a failed OCR). These raw text files are available [here](https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/).
+I filter out most mass comments (continually improving my methods for detecting mass comments) and focus on comments that came as attachments from identified organizations. I extract the text from these attachments and eliminate files less than 10 KB (the size of a short paragraph, often a failed OCR). Raw text files for CFPB's Payday Loan Rule are available [here](https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/).
 
-The `comment_tengrams` function requires two inputs:
-1. file paths to a set of comments 
-2. a link to the NPRM text (in order to identify NPRM text repeated in comments)
+The `comment_tengrams` function requires two inputs:  
 
-This function also relies of a few custom helper functions to [parse rule text](https://github.com/judgelord/rulemaking/blob/master/functions/xml_rule_text.R), [clean text](https://github.com/judgelord/rulemaking/blob/master/functions/clean_string.R), and [parse and match ngrams](https://github.com/judgelord/rulemaking/blob/master/functions/tengram.R). 
+1. file paths comment txt files 
+2. a link to the NPRM text (to identify NPRM text repeated in comments)
+
+This function also relies on a few custom helper functions to [parse rule text](https://github.com/judgelord/rulemaking/blob/master/functions/xml_rule_text.R), [clean text](https://github.com/judgelord/rulemaking/blob/master/functions/clean_string.R), and [parse and match ngrams](https://github.com/judgelord/rulemaking/blob/master/functions/tengram.R). 
 
 
-```{r}
+```{r, cache = FALSE}
 # load required functions from https://github.com/judgelord/rulemaking/blob/master/functions
 source(here::here("functions", "xml_rule_text.R"))
 source(here::here("functions", "clean_string.R"))
 source(here::here("functions", "tengram.R"))
 
-# a function to parse comments into 10-word phrases and identify matching phrases in other comments of the NPRM
+# a function to parse comments into 10-word phrases and identify matching phrases in other comments or the NPRM
 comment_tengrams <- function(nprm, comments){
   
   # read in rule text from federal register
@@ -94,7 +95,7 @@ comment_tengrams <- function(nprm, comments){
     mutate( document_id = path %>% 
               str_remove(".*/")  %>% 
               str_remove("\\..*") 
-    )
+            )
   
   # parse each document with the read_grams function 
   d %<>% 
@@ -104,7 +105,7 @@ comment_tengrams <- function(nprm, comments){
                                    ) 
            )
   
-  # map each document to all others
+  # map each document to all others, including the nprm
   d %<>% 
     mutate(
       text = tengrams %>% 
@@ -132,62 +133,103 @@ comment_tengrams <- function(nprm, comments){
 } # end function
 ```
 
-### Data
+## Data
 
-```{r}
+```{r class.source = 'fold-show'}
 agency <- "CFPB"
 docket <- "CFPB-2016-0025"
 nprm <- "https://www.federalregister.gov/documents/full_text/xml/2016/07/22/2016-13490.xml"
 
-# get txt files from a directory with here() 
-comments <- tibble( path = list.files(here::here("comment_text", 
-                                                 agency, 
-                                                 docket),
-                                      full.names = T )) 
+# get txt file names from a directory, here called "comment_text"
+comments <- tibble( path = list.files( here::here("comment_text", agency, docket), full.names = T) ) 
 
-# apply function
+# apply comment_tengrams function
 d <- comment_tengrams(nprm, 
-                      comments %>% top_n(50) #FIXME just a few comments for now 
+                      comments %>% top_n(50) # just a few comments for now 
                       )
 ```
 
-### Output
-```{r}
+## Output
+```{r class.source = 'fold-show'}
 d
 ```
 
-Each `document_id` now has two associated data frames:
-- `text` contains two columns:
-  - `word` is the document's first 10,000 words
-  - `nprm_phrase` is whether the that word is part of a ten-word phrase that is in the NPRM
-- `reuse` contains a data frame for each other comment 
-  - `document_id2`
-  - `reuse` indicates whether each word in the document,`document_id`, is part of a ten-word phrase that appears in the second document, `document_id2`.
+Each `document_id` now has two associated data frames:  
 
-```{r nprm_percent_match}
+1. `text` contains two columns:  
+    + `word` is the document's first 10,000 words  
+    + `nprm_phrase` is whether the that word is part of a ten-word phrase that is in the NPRM  
+2. `reuse` contains a data frame for each other comment:
+    + `document_id2`  
+    + `reuse` indicates whether each word in the document,`document_id`, is part of a ten-word phrase that appears in the second document, `document_id2`.   
+
+### 1. Comparing comment text to the NPRM
+```{r class.source = 'fold-show'}
 d$text[1:2]
-
-
 ```
 
+```{r nprm_percent_match, class.source = 'fold-hide'}
+nprm_percent_match <- d %>% 
+  select(-reuse) %>% # select just the doc name and text table (otherwise unnest duplicates the reuse table for every observation)
+  unnest(text) %>%
+  group_by(document_id) %>% 
+  summarise(percent_match = sum(nprm_phrase)/n() ) 
+```
+
+```{r nprm_percent_match_plot}
+nprm_percent_match %>% 
+  mutate(document_id = document_id %>% str_remove(".*0025-") ) %>% 
+  ggplot() + 
+  aes(x = document_id, y = percent_match) + 
+  geom_col() + 
+  theme(panel.border = element_blank(),
+        axis.text.x = element_text(angle = 90, vjust = 1))
+```
+
+The attachment [9521-1](https://www.regulations.gov/document?D=CFPB-2016-0025-9512) is several pages of the NPRM. Because it was read in from the PDF attachment, only 80% of these tengrams appeared in the text of the NPRM read directly from the federal register's XML.
+
+Comments [95976 and 95977](https://www.regulations.gov/document?D=CFPB-2016-0025-95976) were duplicate uploads of an email containing the text of a different NPRM, which had ~2% overlap with this NPRM.
+
+Comment [90980](https://www.regulations.gov/document?D=CFPB-2016-0025-90980) was a policy brief from the LBJ School of Public Affairs, which contained text that also appeared in the NPRM: 
+
+```{r}
+d %>% 
+  filter(document_id == "CFPB-2016-0025-90980-1") %>% 
+  select(text) %>% 
+  unnest(text) %>% 
+  rename(match = nprm_phrase) %>% 
+  tengram_match_to_text() %>% kable()
+```
+
+These 24 words come from two citations, each at least 10-words long, that were also cited in the NPRM:
+
+1. Pew Charitable Trusts. Payday Lending in America: Who Borrows, Where They Borrow, and
+Why. Washington, DC, 2012. 6.  
+2. Levy, Rob, and Joshua Sledge. A Complex Portrait: An Examination of Small-Dollar Credit
+Consumers. Chicago: Center for Financial Services Innovation, 2012. 11.
 
 
-```{r comment_percent_match}
+The ability to quickly recall shared text is a key advantage of storing the output in this format.
+
+### 2. Text reuse across comments
+
+Just as `nprm_phrase` indicates whether each word in a comment was part of a tengram that appeared in the NPRM, there is a column `reuse` indicating whether each word was part of a tengram that also appeared in each other comment in the data.
+
+```{r class.source = 'fold-show'}
 d$reuse[1:2]
+```
 
+```{r comment_percent_match, class.source = 'fold-hide'}
 comment_percent_match <- d %>% 
-  top_n(20, document_id) %>% 
-  select(-text) %>% # select just the doc name and reuse table (otherwise unnest duplicates the text table for every reuse observation)
+  top_n(50, document_id) %>% 
+  select(-text) %>% # select just the doc name and reuse table (otherwise unnest duplicates the text table for every observation)
   unnest(reuse) %>%             # unnest reuse tibble
   unnest(document_id2, reuse) %>% # unnest document_id and reuse lists 
-  unnest(reuse) %>% # unnest reuse logical
   group_by(document_id, document_id2) %>% 
-  summarise(percent_match = sum(reuse)/n() ) 
-
-comment_percent_match %>% filter(document_id = "CFPB-2016-0025-95976") # select a file
+  summarise(percent_match = sum(reuse)/n() )
 ```
 
-```{r comment_percent_match_plot}
+```{r comment_percent_match_plot, fig.width=9.5, fig.height=7.5}
 comment_percent_match %>% 
   mutate(document_id = document_id %>% str_remove(".*0025-"), 
          document_id2 = document_id2 %>% str_remove(".*0025-") ) %>% 
@@ -199,33 +241,23 @@ comment_percent_match %>%
   scale_fill_gradient(low = "white", high = "black") + 
   theme(panel.grid = element_blank(),
         panel.border = element_blank(),
-        axis.text.x = element_text(angle = 45))
-  
+        axis.text.x = element_text(angle = 90, vjust = 1))
 ```
 
 Notice that 100% of the words from CFPB-2016-0025-95976 ([pdf](https://www.regulations.gov/document?D=CFPB-2016-0025-95976), [txt](https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/CFPB-2016-0025-95976-1.txt)
 ) are part of a tengram that is also in CFPB-2016-0025-95977 ([pdf](https://www.regulations.gov/document?D=CFPB-2016-0025-95977), [txt](https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/CFPB-2016-0025-95977-1.txt)) because the exact same comment was uploaded twice. 
 
+Comments [91130](https://www.regulations.gov/document?D=CFPB-2016-0025-91130) through [91156](https://www.regulations.gov/document?D=CFPB-2016-0025-91154) are all partial or exact matches. Most are part of a mass comment campaign by Access Financial. The percent of the identical text is lower than many mass-comment campaigns because these are hand-written comments, but the n-gram method still picks up overlap in the OCRed text in the header and footer. 
+
+Partial matches are often but not always exactly symmetrical; the percent of comment x in comment y may not be the same as the percent of y in x. For example, 100% of A  is in B, but only 50% of B is in A.
+
+> A. "While I commend the Bureau’s efforts to protect consumers, the proposed protections could be stronger."
+
+> B. "While I commend the Bureau’s efforts to protect consumers, the proposed protections could be stronger. As part of its mandate, the Bureau has authority to prevent unfair, deceptive, and abusive acts or practices."
+
+
 
 ```{r extra, include=FALSE, eval = FALSE}
-
-################################################################################
-# tests 
-
-# copied from the NPRM
-unlist(d$text[[3]]$word)[unlist(d$text[[3]]$match)] %>% paste(collapse =" ")
-#FIXME with purrr
-
-
-d$reuse
-# reuse with itself should be all TRUE
-# reuse for document 3
-d$reuse[[3]]$reuse[[1]][[3]]
-
-
-
-d$text
-d %>% filter(nrow(text) > 1)
 
 
 ```
