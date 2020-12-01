@@ -124,7 +124,7 @@ Pros:
 - computationally cheap
 
 Cons:  
-- less precise than more computationally-intense methods like Smith-Waterman
+- less precise than more computationally-intense methods
 
 ## Proposed rule text that was cut or changed in the Final Rule
 ```{r pr_tengrams, fig.height=9}

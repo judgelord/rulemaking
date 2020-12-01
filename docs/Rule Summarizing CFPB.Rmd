@@ -37,11 +37,12 @@ link <- 'https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020
     xml_children() %>% 
     xml_children() %>%
     xml_text() %>% 
-    str_squish() %>% 
-   tibble::enframe(value = "text",  name = "id") 
- 
-  ruleText <- xml_rule_text(link)
+    str_squish() 
 
+# xml <- xml_rule_text(link)
+
+  ruleText <- tibble(text = xml_rule_text(link) ) %>%
+    rownames_to_column(var = "id")
 
 ```
 
@@ -63,11 +64,9 @@ clean <- . %>%
   mutate(text = str_remove_all(text, "\\(.\\)|[0-9]|_")) %>%
   filter(text != "") %>% #filter blank strings
     mutate(text = str_remove_all(text, "§")) %>%
-    mutate(first_char = str_sub(text, 1, 1), part = 'text') %>%  
-    #rowwise() %>% 
-    mutate(earlydot = str_detect(str_sub(text, 1, 5) ,'\\.')) %>% 
-    mutate(part = ifelse(earlydot, 'head', part)) %>% 
-    mutate(first_char = as.numeric(first_char)) %>%
+    mutate(first_char = str_sub(text, 1, 1) %>% as.numeric() ) %>%  
+  # identify headings as lines with a period in the beginning
+    mutate(part = ifelse(str_detect(str_sub(text, 1, 5) ,'\\.'), 'head', 'text')) %>% 
     mutate(part = ifelse(is.na(first_char), part, 'footnote'))
     #mutate(part = ifelse(id < 26, 'pre', part)) %>% 
 
@@ -75,7 +74,7 @@ clean <- . %>%
   
 suppressWarnings(
 ruleText %<>%
-    clean
+    clean()
 )
 
 
@@ -86,14 +85,15 @@ Once we've cleaned the text, we need to extract the sentences and words, using t
 ```{r tokenize}
 
 summarizeText <- function(ruleText) {
-text_sentences <- ruleText %>%
-  filter(part == 'text') %>%
-  select(text) %>%
-  unnest_sentences(output = sentences, input = text) %>%
-  unique() %>%
-  mutate(textrank_id = row_number())
 
-text_sentences <- text_sentences[,c(2,1)]
+  text_sentences <- ruleText %>%
+    filter(part == 'text') %>%
+    select(text) %>%
+    unnest_sentences(output = sentences, input = text) %>%
+    unique() %>%
+    rownames_to_column(var = "textrank_id")
+
+text_sentences %<>% select(textrank_id, sentence)
 
 text_sentences %<>%
   filter(textrank_id <= 400) #%>%
@@ -101,13 +101,14 @@ text_sentences %<>%
 
 data("stop_words")
 word <- unnest_tokens(text_sentences, output = word, input = 'sentences') %>% 
-  unique() %>% 
-  filter(!word %in% stop_words$word)
+  distinct() %>% 
+  anti_join(stop_words)
 
 head(text_sentences)
 head(word)
 
-out <- textrank::textrank_sentences(data = text_sentences, terminology = word)
+out <- textrank::textrank_sentences(data = text_sentences, 
+                                    terminology = word)
 
 return(out)
 
@@ -115,8 +116,9 @@ return(out)
 
 
 
-summarizeText(ruleText)
+summary <- summarizeText(ruleText)
 
+summary %>% kable()
 
 ```
 
