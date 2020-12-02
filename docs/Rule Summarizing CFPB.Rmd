@@ -57,25 +57,22 @@ Next, we need to process the text of the rule. Steps include:
 
 clean <- . %>%  
   #filter(nchar(text) > 60) %>% 
-  mutate(id = str_pad(id, 4, pad = "0") %>% 
-           #paste(text) %>% 
-           str_sub(1,80)) %>%
-           #str_c("...")) %>% 
+  mutate(id = str_pad(id, 4, pad = "0") ) %>% 
+    # identify headings as lines with a period in the beginning (also captures some footnotes)
+  mutate(part = ifelse(str_detect(str_sub(text, 1, 5) ,'\\.'), 'head', 'text')) %>% 
+  # idetify footnotes with a number (this also captures numbered headings)
+  mutate(first_char = text %>% str_sub(1, 1) %>% as.numeric() ) %>% 
+  mutate(part = ifelse(is.na(first_char), part, 'footnote'))
   mutate(text = str_remove_all(text, "\\(.\\)|[0-9]|_")) %>%
-  filter(text != "") %>% #filter blank strings
-    mutate(text = str_remove_all(text, "§")) %>%
-    mutate(first_char = str_sub(text, 1, 1) %>% as.numeric() ) %>%  
-  # identify headings as lines with a period in the beginning
-    mutate(part = ifelse(str_detect(str_sub(text, 1, 5) ,'\\.'), 'head', 'text')) %>% 
-    mutate(part = ifelse(is.na(first_char), part, 'footnote'))
-    #mutate(part = ifelse(id < 26, 'pre', part)) %>% 
+  filter(text != "") %>% #filter out blank strings
+  mutate(text = str_remove_all(text, "§")) %>% 
 
 
-  
-suppressWarnings(
-ruleText %<>%
-    clean()
-)
+
+
+ruleText %>%
+    clean() %>% 
+  top_n(10)
 
 
 
@@ -93,7 +90,7 @@ summarizeText <- function(ruleText) {
     unique() %>%
     rownames_to_column(var = "textrank_id")
 
-text_sentences %<>% select(textrank_id, sentence)
+text_sentences %<>% select(textrank_id, sentences)
 
 text_sentences %<>%
   filter(textrank_id <= 400) #%>%
@@ -116,7 +113,7 @@ return(out)
 
 
 
-summary <- summarizeText(ruleText)
+summary <- summarizeText(ruleText %>% top_n(10))
 
 summary %>% kable()
 
