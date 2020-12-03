@@ -100,7 +100,7 @@ fr %<>% xml_rule_text()
 
 fr %<>%
   mutate(preamble = id < rule_text_starts(fr$text)) %>% 
-  clean
+  clean()
 
 # fr preamble text 
 # fr %>% kablebox()

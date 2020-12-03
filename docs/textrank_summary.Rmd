@@ -1,0 +1,134 @@
+---
+title: "Rules summarized with `textrank`"
+subtitle: 
+author: ""
+output:
+    # pdf_document:
+    #   toc: true
+    #   keep_tex: true
+    html_document:
+      highlight: zenburn
+      toc: true
+      toc_float: true
+      code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = FALSE, 
+                      fig.width=8.5, 
+                      split = T,
+                      fig.align = 'center', 
+                      fig.path='figs/',
+                      warning=FALSE, 
+                      message=FALSE)
+
+
+library(tidyverse)
+library(magrittr)
+library(tidytext)
+library(xml2)
+library(knitr)
+library(kableExtra)
+
+library(ggplot2); theme_set(theme_bw())
+  options(
+    ggplot2.continuous.color = "viridis",
+    ggplot2.continuous.fill = "viridis"
+  )
+  scale_color_discrete <- function(...)
+    scale_color_viridis_d(..., direction = -1)
+  scale_fill_discrete <- function(...)
+    scale_fill_viridis_d(..., direction = -1)
+  
+  
+kablebox <- . %>%  knitr::kable() %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
+```
+
+I apply a generalized application of textrank. For more on textrank and the steps involved in applying it to a rule, see the PDF that Chris shared. 
+
+```{r}
+# load this function 
+source("functions/textrank.R")
+```
+
+# The Volker Rule 
+
+## Proposed Rule
+```{r}
+pr <- "https://www.federalregister.gov/documents/full_text/xml/2011/11/07/2011-27184.xml"
+
+
+# apply function to text 
+rule_summary <- summarize_sections(xml_rule_text(pr), 
+                                   n_sentences = 2,
+                                   max_sentences = 5)
+
+rule_summary %>%  kablebox()
+```
+
+## Final Rule
+```{r}
+fr <- "https://www.federalregister.gov/documents/full_text/xml/2014/01/31/2013-31511.xml"
+
+rule_summary <- summarize_sections(xml_rule_text(fr), 
+                                   n_sentences = 2,
+                                   max_sentences = 5)
+
+rule_summary %>%  kablebox()
+```
+
+# CFPB's Payday Loan Rule
+
+# 2016 Proposed Rule
+```{r}
+pr <- "https://www.federalregister.gov/documents/full_text/xml/2016/07/22/2016-13490.xml"
+
+
+# apply function to text 
+rule_summary <- summarize_sections(xml_rule_text(pr), 
+                                   n_sentences = 2,
+                                   max_sentences = 5)
+
+rule_summary %>%  kablebox()
+```
+
+## 2017 Final Rule
+```{r}
+fr <- "https://www.federalregister.gov/documents/full_text/xml/2017/11/17/2017-21808.xml"
+
+rule_summary <- summarize_sections(xml_rule_text(fr), 
+                                   n_sentences = 2,
+                                   max_sentences = 5)
+
+rule_summary %>%  kablebox()
+```
+
+# 2019 Proposed Rule
+```{r}
+pr <- "https://www.federalregister.gov/documents/full_text/xml/2019/02/14/2019-01906.xml"
+
+
+# apply function to text 
+rule_summary <- summarize_sections(xml_rule_text(pr), 
+                                   n_sentences = 2,
+                                   max_sentences = 5)
+
+rule_summary %>%  kablebox()
+```
+
+## 2020 Final Rule
+```{r}
+fr <- "https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020-14935.xml"
+
+rule_summary <- summarize_sections(xml_rule_text(fr), 
+                                   n_sentences = 2,
+                                   max_sentences = 5)
+
+rule_summary %>%  kablebox()
+```

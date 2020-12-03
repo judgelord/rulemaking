@@ -59,7 +59,7 @@ Below is an overview of the process:
 First, download the rule. This could equivalently be used by loading a comment from a file, but with slightly different processing.
 ```{r Gather Data}
 #XML link to rule
-link <- 'https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020-14935.xml'
+link <- 'https://www.federalregister.gov/documents/full_text/xml/2016/07/22/2016-13490.xml'
 
   xml_rule_text <- . %>% 
     read_xml() %>% 
@@ -71,6 +71,8 @@ link <- 'https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020
     mutate(id = str_pad(id, 4, pad = "0") )
   
 text <- xml_rule_text(link)
+
+text
 ```
 
 Next, we need to process the text of the rule. Steps include:
@@ -93,7 +95,12 @@ section <- . %>%
                            str_c(section, "..."), 
                            section) )
 
+text %>% section()
+
 # clean up (must be done after sectioning because it removes section numbers)
+# clean_string function here  https://github.com/judgelord/rulemaking/blob/master/functions/clean_string.R
+#source(here::here("functions", "clean_string.R"))
+
 clean <- . %>%  
   # drop short texts
   filter(nchar(text) > 60) %>% 
@@ -101,13 +108,12 @@ clean <- . %>%
   mutate(part = ifelse(str_detect(str_sub(text, 1, 5) ,'\\.'), 'head', 'text')) %>% 
   # idetify footnotes with a number and no period
   mutate(part = ifelse(text %>% str_detect("^[0-9](?!\\.)"), 'footnote', part) ) %>% 
-  mutate(text = str_remove_all(text, "\\(.\\)|[0-9]|_")) %>%
+  mutate(text = str_remove_all(text, "\\(.\\)|[0-9]|_") # %>% clean_string() # optional
+         ) %>%
   filter(text != "") %>% #filter out blank strings
   mutate(text = str_remove_all(text, "§"))
 
-# consider using this clean function instead of the last three lines. https://github.com/judgelord/rulemaking/blob/master/functions/clean_string.R
-
-text  %<>% section() %>% clean() 
+text %>% section() %>% clean() 
 ```
               
 Once we've cleaned the text, we need to extract the sentences and words, using tidytext.    
@@ -184,38 +190,16 @@ summarize_sections <- function(text, n_sentences, max_sentences) {
 }
 
 # apply function to text 
-rule_summary <- summarize_sections(text, 
+rule_summary <- summarize_sections(xml_rule_text(link), 
                                    n_sentences = 2,
                                    max_sentences = 50)
-
-rule_summary %>%  kablebox()
-
-
-#Volker 
-# proposed rule 
-pr <- "https://www.federalregister.gov/documents/full_text/xml/2011/11/07/2011-27184.xml"
-
-
-# apply function to text 
-rule_summary <- summarize_sections(xml_rule_text(pr), 
-                                   n_sentences = 2,
-                                   max_sentences = 5)
-
-rule_summary %>%  kablebox()
-
-# final rule
-fr <- "https://www.federalregister.gov/documents/full_text/xml/2014/01/31/2013-31511.xml"
-
-rule_summary <- summarize_sections(xml_rule_text(fr), 
-                                   n_sentences = 2,
-                                   max_sentences = 5)
 
 rule_summary %>%  kablebox()
 ```
 
 <!--
 
-
+# NOTES 
 #New code summary
 [1] "summary:the bureau of consumer financial protection (bureau) is issuing this final rule to amend its regulations governing payday, vehicle title, and certain high-cost installment loans."                                                                                                                 
 [2] "the bureau revokes the  final rule's determination that it is an unfair practice for a lender to make covered short-term loans or covered longer-term balloon-payment loans without reasonably determining that consumers will have the ability to repay the loans according to their terms."               
