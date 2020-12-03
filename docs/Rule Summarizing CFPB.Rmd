@@ -1,13 +1,53 @@
 ---
 title: "Rule Summarizing CFPB"
-
+subtitle: 
+author: ""
 output:
-  html_document:
-    code_folding: hide
+    # pdf_document:
+    #   toc: true
+    #   keep_tex: true
+    html_document:
+      highlight: zenburn
+      toc: true
+      toc_float: true
+      code_folding: hide
+editor_options: 
+  chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = FALSE, 
+                      fig.width=8.5, 
+                      split = T,
+                      fig.align = 'center', 
+                      fig.path='figs/',
+                      warning=FALSE, 
+                      message=FALSE)
+
+
+library(tidyverse)
+library(magrittr)
+library(tidytext)
+library(xml2)
+library(knitr)
+library(kableExtra)
+
+library(ggplot2); theme_set(theme_bw())
+  options(
+    ggplot2.continuous.color = "viridis",
+    ggplot2.continuous.fill = "viridis"
+  )
+  scale_color_discrete <- function(...)
+    scale_color_viridis_d(..., direction = -1)
+  scale_fill_discrete <- function(...)
+    scale_fill_viridis_d(..., direction = -1)
+  
+  
+kablebox <- . %>%  knitr::kable() %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
 ```
 
 This overviews summarizing rules using the TextRank R package, which is an application of the Google PageRank algorithm to sentences. The paper behind the package is available [here](https://web.eecs.umich.edu/~mihalcea/papers/mihalcea.emnlp04.pdf). Keywords are extracted from each sentence and a weighted graph is built estimating connected sentences. As a proof of concept, I've applied it to a (relatively) straightforward case. The rule is "Payday, Vehicle Title, and Certain High-Cost Installment Loans," a CFPB final rule from 2020, available (here)[https://www.federalregister.gov/documents/2020/07/22/2020-14935/payday-vehicle-title-and-certain-high-cost-installment-loans#p-123]. 
