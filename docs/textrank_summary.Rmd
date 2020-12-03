@@ -18,7 +18,7 @@ editor_options:
 
 ```{r global.options, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, 
-                      cache = FALSE, 
+                      cache = TRUE, 
                       fig.width=8.5, 
                       split = T,
                       fig.align = 'center', 
@@ -53,8 +53,8 @@ kablebox <- . %>%  knitr::kable() %>%
 I apply a generalized wrapper for `textrank` that first splits rules into sections and then returns a summary for each. The function has three inputs:
 
 1. A rule `text` extracted from the Federal Register's xml file with the `xml_rule_text()` function (or any other data frame with a collumn called "text").
-1. The number of sentences to return, `n_sentences`--this controls the length of the summary. Do you want a one-sentence summary per rule section or a 5-sentence summary per section? The default is 2 sentences per rule section.  
-1. The maximum number of sentences per section to summarize `max_sentences`--fewer sentences make textrank go faster, but we will often want to use all sentences. The default is 100 sentences per rule section.
+1. The number of sentences to return, `n_sentences`--this controls the length of the summary. Do you want a one-sentence summary per rule section or a 5-sentence summary per section? The default is 2 sentences per rule section, but I plan to make this vary by the length of the section (longer sections may deserve a longer summary).  
+1. The maximum number of sentences per section to summarize `max_sentences`--fewer sentences makes textrank go faster, but we will often want to use all sentences. The default is 100 sentences per rule section.
 
 For more on textrank and the steps involved in applying it to a rule, see the PDF that Chris shared. 
 

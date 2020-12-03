@@ -22,9 +22,6 @@ section <- . %>%
                            section) )
 
 # clean up (must be done after sectioning because it removes section numbers)
-# clean_string function here  https://github.com/judgelord/rulemaking/blob/master/functions/clean_string.R
-#source("functions/clean_string.R")
-
 clean <- . %>%  
   # drop short texts
   filter(nchar(text) > 60) %>% 
@@ -72,7 +69,7 @@ summarizeText <- function(sections, text, max_sentences) {
     # textrank requires columns in order
     select(textrank_id, sentences)
   
-  # select max sentences per section
+  # select max sentences to summarize per section
   sentences %<>% filter(textrank_id <= max_sentences)
   
   # textrank needs a dictionary of words
