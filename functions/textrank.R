@@ -35,16 +35,16 @@ clean <- . %>%
   mutate(text = text %>% 
            # CAUTION: removes all text in parentheses
            str_remove_all("\\(.*\\)|[0-9]|_") %>% 
-           str_remove_all(text, "§") %>%
+           str_remove_all("§") %>%
            str_squish() %>% 
            str_replace_all("\\.([A-Z][a-z])", ". \\1") %>%
            # remvove numbers and specials (keep only text and basic punctuation)
            str_replace_all("[^([A-z]& &'&\\.&\\,&\\?&\\!&\\;&\\;)]", " ") %>% 
            str_replace_all(" \\.", ". ") %>%
            # double commas  
-           str_replace_all("(\\, \\,) ", ", ") %>% 
+           str_replace_all("(\\, \\,|\\,\\,|\\,\\.) ", ", ") %>% 
            # double periods 
-           str_replace_all("(\\. \\.|\\.\\.) ", ". ") %>% 
+           str_replace_all("(\\. \\.|\\.\\.|\\.\\,) ", ". ") %>% 
            str_squish() %>%
            # one character after a period 
            str_replace_all("\\. .\\. ", ". ") %>% 
@@ -93,7 +93,7 @@ summarizeText <- function(sections, text, max_sentences) {
   
 }
 
-summarize_sections <- function(text, n_sentences, max_sentences) {
+summarize_sections <- function(text, n_sentences = 2, max_sentences = 100) {
   
   # section and clean text 
   text %<>% section() %>% clean() %>% 
