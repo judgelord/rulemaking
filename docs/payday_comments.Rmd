@@ -321,6 +321,7 @@ d$other_docs
 
 
 ```{r summarize}
+
 # text %>%
 #   filter(document_id == "CFPB-2016-0025-1748-1") %>%
 #   select(text)
@@ -337,7 +338,7 @@ summarizeText <- function(text) {
     select(textrank_id, sentences)
 
   # select max sentences per section
-  #sentences %<>% filter(textrank_id <= max_sentences)
+  sentences %<>% filter(textrank_id <= 400)
 
   words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
     distinct() %>% 
@@ -354,8 +355,8 @@ return(out)
 
 }
 
-summary <- summarizeText(commentText)
-summary %>%   knitr::kable()
+summarizeText(commentText)
+#summary %>%   knitr::kable()
 ```
 
 
