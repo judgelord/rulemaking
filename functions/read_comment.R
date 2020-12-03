@@ -24,5 +24,6 @@ read_comment(d$path[1])
 
 d %>% 
   head() %>% 
+  #group_by(document_id, path) %>%
   mutate(text = path %>% map_chr(read_comment))
-
+  
