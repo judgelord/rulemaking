@@ -108,10 +108,30 @@ clean <- . %>%
   mutate(part = ifelse(str_detect(str_sub(text, 1, 5) ,'\\.'), 'head', 'text')) %>% 
   # idetify footnotes with a number and no period
   mutate(part = ifelse(text %>% str_detect("^[0-9](?!\\.)"), 'footnote', part) ) %>% 
-  mutate(text = str_remove_all(text, "\\(.\\)|[0-9]|_") # %>% clean_string() # optional
+  mutate(text = text %>% 
+           # CAUTION: removes all text in parentheses
+           str_remove_all("\\(.*\\)|[0-9]|_") %>%
+           str_remove_all(text, "§") %>% 
+           str_squish() %>% 
+           # add space after periods
+           str_replace_all("\\.([A-Z][a-z])", ". \\1") %>%
+          # remvove numbers and specials (keep only text and basic punctuation)
+          str_replace_all("[^([A-z]& &'&\\.&\\,&\\?&\\!&\\;&\\;)]", " ") %>% 
+          # remove space before periods
+          str_replace_all(" \\.", ". ") %>%
+          # double commas  
+          str_replace_all("(\\, \\,) ", ", ") %>% 
+          # double periods 
+          str_replace_all("(\\. \\.|\\.\\.) ", ". ") %>% 
+           str_squish() %>%
+          # one character after a period 
+          str_replace_all("\\. .\\. ", ". ") %>% 
+          # remove white space
+          str_replace_all(" \\,", ", ") %>%
+          str_replace_all(" \\.", ". ") %>%
+          str_squish() # %>% clean_string() # optional
          ) %>%
-  filter(text != "") %>% #filter out blank strings
-  mutate(text = str_remove_all(text, "§"))
+  filter(text != "")  #filter out blank strings
 
 text %>% section() %>% clean() 
 ```
