@@ -8,7 +8,7 @@ clean_string <- . %>%
   str_replace_all("[^[A-z]&^ &\\.&\\,&\\?&\\!&\\;&\\;]", " ") %>% 
   str_replace_all(" \\.", ". ") %>%
   # double commas  
-  str_replace_all("(\\, \\,) ", ". ") %>% 
+  str_replace_all("(\\, \\,) ", ", ") %>% 
   # double periods 
   str_replace_all("(\\. \\.) ", ". ") %>% 
   # one character after a period 
