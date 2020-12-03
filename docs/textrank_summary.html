@@ -1859,15 +1859,16 @@ div.tocify {
 </div>
 
 
-<p><code>summarize_sections</code> is a generalized wrapper for <code>textrank</code> that first splits a rule into sections and then returns a summary for each. You can download it <a href="https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R">here</a>. The function has three inputs:</p>
+<p><code>summarize_sections</code> is a wrapper for <code>textrank_sentences</code> that first splits a rule into sections and then returns a summary for each. It takes three inputs:</p>
 <ol style="list-style-type: decimal">
-<li>A rule <code>text</code> extracted from a Federal Register xml file with the <code>xml_rule_text()</code> function (or any other data frame with a column called “text”).</li>
-<li>The number of sentences to return, <code>n_sentences</code>–this controls the length of the summary. Do you want a one-sentence summary per rule section or a 5-sentence summary per section? The default is 2 sentences per rule section, but I plan to make this vary by the length of the section (longer sections may deserve a longer summary).<br />
+<li>Rule <code>text</code> extracted from a Federal Register xml file with the <code>xml_rule_text()</code> function (or any other data frame with a column called “text”).</li>
+<li>The number of sentences to return, <code>n_sentences</code> (optional)–this controls the length of the summary. Do you want each section summarized in one sentence summary or five? The current default is two sentences per rule section, but I plan to make this vary by a section’s length (longer sections may deserve a longer summary).<br />
 </li>
-<li>The maximum number of sentences per section to summarize <code>max_sentences</code>–fewer sentences makes textrank go faster, but we will often want to use all sentences. The default is 100 sentences per rule section.</li>
+<li>The maximum number of sentences per section to summarize <code>max_sentences</code> (optional). Fewer sentences makes textrank go faster, but we will often want to use all sentences. The default is 100 sentences per rule section.</li>
 </ol>
+<p>You can download it <a href="https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R">here</a> or load it in R with <code>source(&quot;https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R&quot;)</code></p>
 <p>For more on textrank and the steps involved in applying it to a rule, see the PDF that Chris shared.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co"># load this function https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R</span></span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co"># load summarize_sections() function</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">source</span>(<span class="st">&quot;https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R&quot;</span>)</span></code></pre></div>
 <div id="the-volcker-rule" class="section level1">
 <h1>The Volcker Rule</h1>

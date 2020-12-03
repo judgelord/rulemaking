@@ -50,11 +50,13 @@ kablebox <- . %>%  knitr::kable() %>%
   scroll_box(height = "400px")
 ```
 
-`summarize_sections` is a generalized wrapper for `textrank` that first splits a rule into sections and then returns a summary for each. You can download it [here](https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R). The function has three inputs:
+`summarize_sections` is a wrapper for `textrank_sentences` that first splits a rule into sections and then returns a summary for each. It takes three inputs:
 
-1. A rule `text` extracted from a Federal Register xml file with the `xml_rule_text()` function (or any other data frame with a column called "text").
-1. The number of sentences to return, `n_sentences`--this controls the length of the summary. Do you want a one-sentence summary per rule section or a 5-sentence summary per section? The default is 2 sentences per rule section, but I plan to make this vary by the length of the section (longer sections may deserve a longer summary).  
-1. The maximum number of sentences per section to summarize `max_sentences`--fewer sentences makes textrank go faster, but we will often want to use all sentences. The default is 100 sentences per rule section.
+1. Rule `text` extracted from a Federal Register xml file with the `xml_rule_text()` function (or any other data frame with a column called "text").
+1. The number of sentences to return, `n_sentences` (optional)--this controls the length of the summary. Do you want each section summarized in one sentence summary or five? The current default is two sentences per rule section, but I plan to make this vary by a section's length (longer sections may deserve a longer summary).  
+1. The maximum number of sentences per section to summarize `max_sentences` (optional). Fewer sentences makes textrank go faster, but we will often want to use all sentences. The default is 100 sentences per rule section.
+
+You can download it [here](https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R) or load it in R with `source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R")`
 
 For more on textrank and the steps involved in applying it to a rule, see the PDF that Chris shared. 
 
