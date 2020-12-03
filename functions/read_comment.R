@@ -17,13 +17,15 @@ d <- comments %>%
 source(here::here("functions", "clean_string.R"))
 
 read_comment <- . %>%
-  read_table(col_names = "text") %>%
+  read_lines() %>%
   clean_string() 
 
 read_comment(d$path[1]) 
 
-d %>% 
+d %<>% 
   head() %>% 
-  #group_by(document_id, path) %>%
+  group_by(document_id, path) %>%
   mutate(text = path %>% map_chr(read_comment))
   
+d$text[1]
+
