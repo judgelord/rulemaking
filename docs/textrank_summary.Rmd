@@ -50,91 +50,62 @@ kablebox <- . %>%  knitr::kable() %>%
   scroll_box(height = "400px")
 ```
 
-I apply a generalized wrapper for `textrank` that first splits rules into sections and then returns a summary for each. The function has three inputs:
+`summarize_sections` is a generalized wrapper for `textrank` that first splits a rule into sections and then returns a summary for each. You can download it [here](https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R). The function has three inputs:
 
-1. A rule `text` extracted from the Federal Register's xml file with the `xml_rule_text()` function (or any other data frame with a collumn called "text").
+1. A rule `text` extracted from a Federal Register xml file with the `xml_rule_text()` function (or any other data frame with a column called "text").
 1. The number of sentences to return, `n_sentences`--this controls the length of the summary. Do you want a one-sentence summary per rule section or a 5-sentence summary per section? The default is 2 sentences per rule section, but I plan to make this vary by the length of the section (longer sections may deserve a longer summary).  
 1. The maximum number of sentences per section to summarize `max_sentences`--fewer sentences makes textrank go faster, but we will often want to use all sentences. The default is 100 sentences per rule section.
 
 For more on textrank and the steps involved in applying it to a rule, see the PDF that Chris shared. 
 
 ```{r}
-# load this function https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R
-source(here::here("functions/textrank.R"))
-
-n = 2 # n sentences to return per section
-
-max = 100 # max number of sentences per section to summarize (for speed and robustness)
+# load summarize_sections() function
+source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R")
 ```
 
 # The Volcker Rule 
 
 ### Proposed Rule
 ```{r}
-pr <- "https://www.federalregister.gov/documents/full_text/xml/2011/11/07/2011-27184.xml"
-
-rule_summary <- summarize_sections(xml_rule_text(pr), 
-                                   n_sentences = n,
-                                   max_sentences = max)
-
-rule_summary %>%kablebox()
+xml_rule_text("https://www.federalregister.gov/documents/full_text/xml/2011/11/07/2011-27184.xml") %>% 
+  summarize_sections(n_sentences = 2,
+                     max_sentences = 100) %>% 
+  kablebox()
 ```
 
 ### Final Rule
 ```{r}
-fr <- "https://www.federalregister.gov/documents/full_text/xml/2014/01/31/2013-31511.xml"
-
-rule_summary <- summarize_sections(xml_rule_text(fr), 
-                                   n_sentences = n,
-                                   max_sentences = max)
-
-rule_summary %>%  kablebox()
+xml_rule_text("https://www.federalregister.gov/documents/full_text/xml/2014/01/31/2013-31511.xml") %>% 
+  summarize_sections() %>% 
+  kablebox()
 ```
 
 # CFPB's Payday Loan Rule
 
 ### 2016 Proposed Rule
 ```{r}
-pr <- "https://www.federalregister.gov/documents/full_text/xml/2016/07/22/2016-13490.xml"
-
-rule_summary <- summarize_sections(xml_rule_text(pr), # rule text 
-                                   n_sentences = n,
-                                   max_sentences = max)
-
-rule_summary %>% kablebox()
+xml_rule_text("https://www.federalregister.gov/documents/full_text/xml/2016/07/22/2016-13490.xml") %>% 
+  summarize_sections() %>% 
+  kablebox()
 ```
 
 ### 2017 Final Rule
 ```{r}
-fr <- "https://www.federalregister.gov/documents/full_text/xml/2017/11/17/2017-21808.xml"
-
-rule_summary <- summarize_sections(xml_rule_text(fr), 
-                                   n_sentences = n,
-                                   max_sentences = max)
-
-rule_summary %>% kablebox()
+xml_rule_text("https://www.federalregister.gov/documents/full_text/xml/2017/11/17/2017-21808.xml") %>% 
+  summarize_sections() %>% 
+  kablebox()
 ```
 
 ### 2019 Proposed Rule
 ```{r}
-pr <- "https://www.federalregister.gov/documents/full_text/xml/2019/02/14/2019-01906.xml"
-
-
-# apply function to text 
-rule_summary <- summarize_sections(xml_rule_text(pr), 
-                                   n_sentences = n,
-                                   max_sentences = max)
-
-rule_summary %>%  kablebox()
+xml_rule_text("https://www.federalregister.gov/documents/full_text/xml/2019/02/14/2019-01906.xml") %>% 
+  summarize_sections() %>% 
+  kablebox()
 ```
 
 ### 2020 Final Rule
 ```{r}
-fr <- "https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020-14935.xml"
-
-rule_summary <- summarize_sections(xml_rule_text(fr), 
-                                   n_sentences = n,
-                                   max_sentences = max)
-
-rule_summary %>% kablebox()
+xml_rule_text("https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020-14935.xml") %>% 
+  summarize_sections() %>% 
+  kablebox()
 ```

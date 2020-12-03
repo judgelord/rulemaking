@@ -1859,31 +1859,24 @@ div.tocify {
 </div>
 
 
-<p>I apply a generalized wrapper for <code>textrank</code> that first splits rules into sections and then returns a summary for each. The function has three inputs:</p>
+<p><code>summarize_sections</code> is a generalized wrapper for <code>textrank</code> that first splits a rule into sections and then returns a summary for each. You can download it <a href="https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R">here</a>. The function has three inputs:</p>
 <ol style="list-style-type: decimal">
-<li>A rule <code>text</code> extracted from the Federal Register’s xml file with the <code>xml_rule_text()</code> function (or any other data frame with a collumn called “text”).</li>
-<li>The number of sentences to return, <code>n_sentences</code>–this controls the length of the summary. Do you want a one-sentence summary per rule section or a 5-sentence summary per section? The default is 2 sentences per rule section.<br />
+<li>A rule <code>text</code> extracted from a Federal Register xml file with the <code>xml_rule_text()</code> function (or any other data frame with a column called “text”).</li>
+<li>The number of sentences to return, <code>n_sentences</code>–this controls the length of the summary. Do you want a one-sentence summary per rule section or a 5-sentence summary per section? The default is 2 sentences per rule section, but I plan to make this vary by the length of the section (longer sections may deserve a longer summary).<br />
 </li>
 <li>The maximum number of sentences per section to summarize <code>max_sentences</code>–fewer sentences makes textrank go faster, but we will often want to use all sentences. The default is 100 sentences per rule section.</li>
 </ol>
 <p>For more on textrank and the steps involved in applying it to a rule, see the PDF that Chris shared.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co"># load this function https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">source</span>(here<span class="op">::</span><span class="kw">here</span>(<span class="st">&quot;functions/textrank.R&quot;</span>))</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>n =<span class="st"> </span><span class="dv">2</span> <span class="co"># n sentences to return per section</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>max =<span class="st"> </span><span class="dv">100</span> <span class="co"># max number of sentences per section to summarize (for speed and robustness)</span></span></code></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">source</span>(<span class="st">&quot;https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R&quot;</span>)</span></code></pre></div>
 <div id="the-volcker-rule" class="section level1">
 <h1>The Volcker Rule</h1>
 <div id="proposed-rule" class="section level3">
 <h3>Proposed Rule</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>pr &lt;-<span class="st"> &quot;https://www.federalregister.gov/documents/full_text/xml/2011/11/07/2011-27184.xml&quot;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>rule_summary &lt;-<span class="st"> </span><span class="kw">summarize_sections</span>(<span class="kw">xml_rule_text</span>(pr), </span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>                                   <span class="dt">n_sentences =</span> n,</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>                                   <span class="dt">max_sentences =</span> max)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>rule_summary <span class="op">%&gt;%</span><span class="kw">kablebox</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">xml_rule_text</span>(<span class="st">&quot;https://www.federalregister.gov/documents/full_text/xml/2011/11/07/2011-27184.xml&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">summarize_sections</span>(<span class="dt">n_sentences =</span> <span class="dv">2</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>                     <span class="dt">max_sentences =</span> <span class="dv">100</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a><span class="st">  </span><span class="kw">kablebox</span>()</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; ">
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
@@ -2459,13 +2452,9 @@ As discussed above, under the proposed rule, a covered banking entity as defined
 </div>
 <div id="final-rule" class="section level3">
 <h3>Final Rule</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>fr &lt;-<span class="st"> &quot;https://www.federalregister.gov/documents/full_text/xml/2014/01/31/2013-31511.xml&quot;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>rule_summary &lt;-<span class="st"> </span><span class="kw">summarize_sections</span>(<span class="kw">xml_rule_text</span>(fr), </span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>                                   <span class="dt">n_sentences =</span> n,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>                                   <span class="dt">max_sentences =</span> max)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>rule_summary <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">kablebox</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="kw">xml_rule_text</span>(<span class="st">&quot;https://www.federalregister.gov/documents/full_text/xml/2014/01/31/2013-31511.xml&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">summarize_sections</span>() <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a><span class="st">  </span><span class="kw">kablebox</span>()</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; ">
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
@@ -3510,13 +3499,9 @@ For the reasons set forth in the supplementary information, the federal deposit 
 <h1>CFPB’s Payday Loan Rule</h1>
 <div id="proposed-rule-1" class="section level3">
 <h3>2016 Proposed Rule</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>pr &lt;-<span class="st"> &quot;https://www.federalregister.gov/documents/full_text/xml/2016/07/22/2016-13490.xml&quot;</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>rule_summary &lt;-<span class="st"> </span><span class="kw">summarize_sections</span>(<span class="kw">xml_rule_text</span>(pr), <span class="co"># rule text </span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>                                   <span class="dt">n_sentences =</span> n,</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a>                                   <span class="dt">max_sentences =</span> max)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a>rule_summary <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">kablebox</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">xml_rule_text</span>(<span class="st">&quot;https://www.federalregister.gov/documents/full_text/xml/2016/07/22/2016-13490.xml&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">summarize_sections</span>() <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="st">  </span><span class="kw">kablebox</span>()</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; ">
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
@@ -4347,13 +4332,9 @@ Under the paperwork reduction act of, u.s.c. et seq. Federal agencies are genera
 </div>
 <div id="final-rule-1" class="section level3">
 <h3>2017 Final Rule</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>fr &lt;-<span class="st"> &quot;https://www.federalregister.gov/documents/full_text/xml/2017/11/17/2017-21808.xml&quot;</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>rule_summary &lt;-<span class="st"> </span><span class="kw">summarize_sections</span>(<span class="kw">xml_rule_text</span>(fr), </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>                                   <span class="dt">n_sentences =</span> n,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>                                   <span class="dt">max_sentences =</span> max)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>rule_summary <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">kablebox</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">xml_rule_text</span>(<span class="st">&quot;https://www.federalregister.gov/documents/full_text/xml/2017/11/17/2017-21808.xml&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">summarize_sections</span>() <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="st">  </span><span class="kw">kablebox</span>()</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; ">
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
@@ -5059,15 +5040,9 @@ Under the paperwork reduction act of for information collection requirements pri
 </div>
 <div id="proposed-rule-2" class="section level3">
 <h3>2019 Proposed Rule</h3>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>pr &lt;-<span class="st"> &quot;https://www.federalregister.gov/documents/full_text/xml/2019/02/14/2019-01906.xml&quot;</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a><span class="co"># apply function to text </span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>rule_summary &lt;-<span class="st"> </span><span class="kw">summarize_sections</span>(<span class="kw">xml_rule_text</span>(pr), </span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>                                   <span class="dt">n_sentences =</span> n,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>                                   <span class="dt">max_sentences =</span> max)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>rule_summary <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">kablebox</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">xml_rule_text</span>(<span class="st">&quot;https://www.federalregister.gov/documents/full_text/xml/2019/02/14/2019-01906.xml&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">summarize_sections</span>() <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a><span class="st">  </span><span class="kw">kablebox</span>()</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; ">
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
@@ -5548,13 +5523,9 @@ Section. Definitions requires a lender to retain records regarding payment pract
 </div>
 <div id="final-rule-2" class="section level3">
 <h3>2020 Final Rule</h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>fr &lt;-<span class="st"> &quot;https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020-14935.xml&quot;</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>rule_summary &lt;-<span class="st"> </span><span class="kw">summarize_sections</span>(<span class="kw">xml_rule_text</span>(fr), </span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>                                   <span class="dt">n_sentences =</span> n,</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>                                   <span class="dt">max_sentences =</span> max)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a>rule_summary <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">kablebox</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">xml_rule_text</span>(<span class="st">&quot;https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020-14935.xml&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">summarize_sections</span>() <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a><span class="st">  </span><span class="kw">kablebox</span>()</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; ">
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
