@@ -1,0 +1,109 @@
+---
+title: "Rules summarized with `textrank`"
+subtitle: 
+author: ""
+output:
+    # pdf_document:
+    #   toc: true
+    #   keep_tex: true
+    html_document:
+      highlight: zenburn
+      toc: true
+      toc_float: true
+      code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = TRUE, 
+                      fig.width=8.5, 
+                      split = T,
+                      fig.align = 'center', 
+                      fig.path='figs/',
+                      warning=FALSE, 
+                      message=FALSE)
+
+
+library(tidyverse)
+library(magrittr)
+library(tidytext)
+library(xml2)
+library(knitr)
+library(kableExtra)
+
+library(ggplot2); theme_set(theme_bw())
+  options(
+    ggplot2.continuous.color = "viridis",
+    ggplot2.continuous.fill = "viridis"
+  )
+  scale_color_discrete <- function(...)
+    scale_color_viridis_d(..., direction = -1)
+  scale_fill_discrete <- function(...)
+    scale_fill_viridis_d(..., direction = -1)
+  
+  
+kablebox <- . %>%  knitr::kable() %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
+```
+
+`summarize_comments` is a wrapper for `textrank_sentences` that returns a summary for each comment. It takes three inputs:
+
+1. Comment `text` 
+1. The number of sentences to return, `n_sentences` (optional)--this controls the length of the summary. Do you want each comment summarized in one sentence summary or five? The current default is two sentences per comment, but I plan to make this vary by a comment's length (longer sections may deserve a longer summary).  
+1. The maximum number of sentences per comment to summarize `max_sentences` (optional). Fewer sentences makes textrank go faster, but we will often want to use all sentences. The default is 100 sentences per comment.
+
+When the function is done, I'll add it to the textrank.R file.
+
+You can download it [here](https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R) or load it in R with `source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R")`
+
+
+```{r}
+# load summarize_sections() function
+source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R")
+```
+
+# CFPB Payday Loan Rule
+
+```{r summarize}
+
+# text %>%
+#   filter(document_id == "CFPB-2016-0025-1748-1") %>%
+#   select(text)
+
+
+summarizeText <- function(text) {
+  
+  sentences <- commentText %>%
+    select(text) %>%
+    unnest_sentences(output = sentences, input = text) %>%
+    distinct() %>%
+    mutate(textrank_id = row_number()) %>% 
+    # textrank requires columns in order
+    select(textrank_id, sentences)
+
+  # select max sentences per section
+  sentences %<>% filter(textrank_id <= 400)
+
+  words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
+    distinct() %>% 
+    anti_join(tidytext::stop_words)
+  
+  if(nrow(sentences) > 1){
+out <- textrank::textrank_sentences(data = sentences, 
+                                    terminology = words)
+  } else {
+    out <- list(sentences = as.data.frame(sentences))
+  }
+
+return(out)
+
+}
+
+summarizeText(commentText)
+#summary %>%   knitr::kable()
+```
+

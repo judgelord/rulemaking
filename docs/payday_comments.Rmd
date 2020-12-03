@@ -284,7 +284,11 @@ d_rle <- d %>%
 d_lgl <- d_rle %>% 
   mutate(other_docs = map(other_docs, rle_to_lgl)) 
 
-# compare file size on disk
+# compare object_size()
+object_size(d_rle)
+object_size(d_lgl)
+
+# compare file size on disk 
 save(d_rle, file =  here::here("data", "payday_comments_rle.Rdata"))
 save(d_lgl, file = here::here("data", "payday_comments_lgl.Rdata"))
 
@@ -320,43 +324,5 @@ d$other_docs
 ```
 
 
-```{r summarize}
-
-# text %>%
-#   filter(document_id == "CFPB-2016-0025-1748-1") %>%
-#   select(text)
-
-
-summarizeText <- function(text) {
-  
-  sentences <- commentText %>%
-    select(text) %>%
-    unnest_sentences(output = sentences, input = text) %>%
-    distinct() %>%
-    mutate(textrank_id = row_number()) %>% 
-    # textrank requires columns in order
-    select(textrank_id, sentences)
-
-  # select max sentences per section
-  sentences %<>% filter(textrank_id <= 400)
-
-  words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
-    distinct() %>% 
-    anti_join(tidytext::stop_words)
-  
-  if(nrow(sentences) > 1){
-out <- textrank::textrank_sentences(data = sentences, 
-                                    terminology = words)
-  } else {
-    out <- list(sentences = as.data.frame(sentences))
-  }
-
-return(out)
-
-}
-
-summarizeText(commentText)
-#summary %>%   knitr::kable()
-```
 
 
