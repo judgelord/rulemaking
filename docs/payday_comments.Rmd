@@ -78,6 +78,7 @@ This function also relies on a few custom helper functions to [parse rule text](
 source(here::here("functions", "xml_rule_text.R"))
 source(here::here("functions", "clean_string.R"))
 source(here::here("functions", "tengram.R"))
+source(here::here("functions", "read_comment.R"))
 
 # a function to parse comments into 10-word phrases and identify matching phrases in other comments or the NPRM
 comment_tengrams <- function(nprm, comments){
@@ -148,6 +149,8 @@ comments <- tibble( path = list.files( here::here("comment_text", agency, docket
 d <- comment_tengrams(nprm, 
                       comments %>% top_n(50) # just a few comments for now 
                       )
+
+
 ```
 
 ## Output
@@ -315,4 +318,44 @@ d$other_docs[[1]] %>% unnest()  %>% tengram_match()  %>% list()
 
 d$other_docs
 ```
+
+
+```{r summarize}
+# text %>%
+#   filter(document_id == "CFPB-2016-0025-1748-1") %>%
+#   select(text)
+
+
+summarizeText <- function(text) {
+  
+  sentences <- commentText %>%
+    select(text) %>%
+    unnest_sentences(output = sentences, input = text) %>%
+    distinct() %>%
+    mutate(textrank_id = row_number()) %>% 
+    # textrank requires columns in order
+    select(textrank_id, sentences)
+
+  # select max sentences per section
+  #sentences %<>% filter(textrank_id <= max_sentences)
+
+  words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
+    distinct() %>% 
+    anti_join(tidytext::stop_words)
+  
+  if(nrow(sentences) > 1){
+out <- textrank::textrank_sentences(data = sentences, 
+                                    terminology = words)
+  } else {
+    out <- list(sentences = as.data.frame(sentences))
+  }
+
+return(out)
+
+}
+
+summary <- summarizeText(commentText)
+summary %>%   knitr::kable()
+```
+
 
