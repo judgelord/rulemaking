@@ -40,6 +40,8 @@ link <- 'https://www.federalregister.gov/documents/full_text/xml/2020/07/22/2020
     str_squish() %>% 
     tibble::enframe(value = "text",  name = "id") %>% 
     mutate(id = str_pad(id, 4, pad = "0") )
+  
+text <- xml_rule_text(link)
 ```
 
 Next, we need to process the text of the rule. Steps include:
@@ -51,6 +53,16 @@ Next, we need to process the text of the rule. Steps include:
 
 ```{r Prep Data}
 
+# split out sections
+section <- . %>% 
+  mutate(section = text %>% str_extract("^SUMMARY:|^([A-Z]*\\.|[1-9]\\.).*") %>% 
+           str_sub(1,80) ) %>% 
+  tidyr::fill(section, .direction = "down") %>%
+  mutate( section = ifelse( nchar(section) == 80, 
+                           str_c(section, "..."), 
+                           section) )
+
+# clean up (must be done after sectioning because it removes section numbers)
 clean <- . %>%  
   filter(nchar(text) > 60) %>% 
   # identify headings as lines with a period in the beginning (also captures some footnotes)
@@ -60,23 +72,14 @@ clean <- . %>%
   mutate(text = str_remove_all(text, "\\(.\\)|[0-9]|_")) %>%
   filter(text != "") %>% #filter out blank strings
   mutate(text = str_remove_all(text, "§"))
+
+# consider using this clean function instead of the last three lines. https://github.com/judgelord/rulemaking/blob/master/functions/clean_string.R
+
+text  %<>% section() %>% clean() 
 ```
               
 Once we've cleaned the text, we need to extract the sentences and words, using tidytext.    
 ```{r tokenize}
-text <- xml_rule_text(link)  
-
-# split out sections
-section <- . %>% 
-  mutate(section = text %>% str_extract("^(SUMMARY:|[A-Z]*\\.|[1-9]\\.).*") %>% 
-           str_sub(1,80) ) %>% 
-  tidyr::fill(section, .direction = "down") %>%
-  mutate( section = ifelse( nchar(section) == 80, 
-                           str_c(section, "..."), 
-                           section) )
-
-
-
 summarizeText <- function(sections, text, max_sentences) {
   
   sentences <- text %>%
@@ -106,7 +109,7 @@ return(out)
 
 }
 
-summarize_sections <- function(text, max_sentences) {
+summarize_sections <- function(text, n_sentences, max_sentences) {
 
   # section and clean text 
   text %<>% section() %>% clean() %>% 
@@ -125,7 +128,7 @@ summarize_sections <- function(text, max_sentences) {
   pull_sentences <- . %>% 
     .$sentences %>% 
     pull(sentence) %>% 
-    .[1:3] %>% 
+    .[1:n_sentences] %>% 
     str_to_sentence() %>%  
     str_c(collapse = " ")
   
@@ -136,13 +139,16 @@ summarize_sections <- function(text, max_sentences) {
   return(section_summary)
 }
 
-summary <- summarize_sections(text, max_sentences = 50)
+# apply function to text 
+summary <- summarize_sections(text, 
+                              n_sentences = 2,
+                              max_sentences = 50)
 
 summary %>%   knitr::kable()
 
 ```
 
-
+<!--
 
 
 #New code summary
