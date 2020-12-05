@@ -1,0 +1,243 @@
+---
+title: "Rule Summarizing CFPB"
+subtitle: 
+author: ""
+output:
+    # pdf_document:
+    #   toc: true
+    #   keep_tex: true
+    html_document:
+      highlight: zenburn
+      toc: true
+      toc_float: true
+      code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = FALSE, 
+                      fig.width=8.5, 
+                      split = T,
+                      fig.align = 'center', 
+                      fig.path='figs/',
+                      warning=FALSE, 
+                      message=FALSE)
+
+
+library(tidyverse)
+library(magrittr)
+library(tidytext)
+library(xml2)
+library(knitr)
+library(kableExtra)
+
+library(ggplot2); theme_set(theme_bw())
+  options(
+    ggplot2.continuous.color = "viridis",
+    ggplot2.continuous.fill = "viridis"
+  )
+  scale_color_discrete <- function(...)
+    scale_color_viridis_d(..., direction = -1)
+  scale_fill_discrete <- function(...)
+    scale_fill_viridis_d(..., direction = -1)
+  
+  
+kablebox <- . %>%  knitr::kable() %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
+```
+
+This overviews summarizing rules using the TextRank R package, which is an application of the Google PageRank algorithm to sentences. The paper behind the package is available [here](https://web.eecs.umich.edu/~mihalcea/papers/mihalcea.emnlp04.pdf). Keywords are extracted from each sentence, and a weighted graph is built estimating connected sentences. As a proof of concept, I've applied it to a (relatively) straightforward case. The rule is "Payday, Vehicle Title, and Certain High-Cost Installment Loans," a CFPB final rule from 2020, available (here)[https://www.federalregister.gov/documents/2020/07/22/2020-14935/payday-vehicle-title-and-certain-high-cost-installment-loans#p-123]. 
+
+After tweaking the inputs iteratively, it looks like this may be a useful tool to summarize rules. A suggestion would be to apply it over single documents (such as comments) to get quick results and over sections of very long rules. Running this on a rule like the Volker Rule without reasoned subsetting would be difficult, as it constructs a Jaccard index in approximately $O(n^2)$ time where n is the number of sentences. For this example, it takes approximately 30 seconds to run from download to summary on 179 sentences.
+
+Below is an overview of the process:
+
+First, download the rule. This could equivalently be used by loading a comment from a file, but with slightly different processing.
+```{r Gather Data}
+#XML link to rule
+link <- 'https://www.federalregister.gov/documents/full_text/xml/2016/07/22/2016-13490.xml'
+
+  xml_rule_text <- . %>% 
+    read_xml() %>% 
+    xml_children() %>% 
+    xml_children() %>%
+    xml_text() %>% 
+    str_squish() %>% 
+    tibble::enframe(value = "text",  name = "id") %>% 
+    mutate(id = str_pad(id, 4, pad = "0") )
+  
+text <- xml_rule_text(link)
+
+text
+```
+
+Next, we need to process the text of the rule. Steps include:
+1. Remove blank strings.
+2. Identify if the first character is a number to avoid, including footnotes.
+3. Identify headings to avoid useless information (such as "I. Background") for computational purposes.
+4. Identify the text before the actual rule to avoid the summary and people's names.
+5. Remove all numbers, as they trick the algorithm too much.
+
+```{r Prep Data}
+
+# split out sections
+section <- . %>% 
+  mutate(section = text %>%
+           str_extract("^SUMMARY:|^([A-Z]*\\.|[1-9]\\.).*") %>% 
+           str_sub(1,80) ) %>% 
+  tidyr::fill(section, .direction = "down") %>%
+  # add ... to headers that were cut off--this could be done later
+  mutate( section = ifelse( nchar(section) == 80, 
+                           str_c(section, "..."), 
+                           section) )
+
+text %>% section()
+
+# clean up (must be done after sectioning because it removes section numbers)
+# clean_string function here  https://github.com/judgelord/rulemaking/blob/master/functions/clean_string.R
+#source(here::here("functions", "clean_string.R"))
+
+clean <- . %>%  
+  # drop short texts
+  filter(nchar(text) > 60) %>% 
+  # identify headings as lines with a period in the beginning (also captures some footnotes)
+  mutate(part = ifelse(str_detect(str_sub(text, 1, 5) ,'\\.'), 'head', 'text')) %>% 
+  # idetify footnotes with a number and no period
+  mutate(part = ifelse(text %>% str_detect("^[0-9](?!\\.)"), 'footnote', part) ) %>% 
+  mutate(text = text %>% 
+           # CAUTION: removes all text in parentheses
+           str_remove_all("\\(.*\\)|[0-9]|_") %>%
+           str_remove_all(text, "§") %>% 
+           str_squish() %>% 
+           # add space after periods
+           str_replace_all("\\.([A-Z][a-z])", ". \\1") %>%
+          # remvove numbers and specials (keep only text and basic punctuation)
+          str_replace_all("[^([A-z]& &'&\\.&\\,&\\?&\\!&\\;&\\;)]", " ") %>% 
+          # remove space before periods
+          str_replace_all(" \\.", ". ") %>%
+          # double commas  
+          str_replace_all("(\\, \\,) ", ", ") %>% 
+          # double periods 
+          str_replace_all("(\\. \\.|\\.\\.) ", ". ") %>% 
+           str_squish() %>%
+          # one character after a period 
+          str_replace_all("\\. .\\. ", ". ") %>% 
+          # remove white space
+          str_replace_all(" \\,", ", ") %>%
+          str_replace_all(" \\.", ". ") %>%
+          str_squish() # %>% clean_string() # optional
+         ) %>%
+  filter(text != "")  #filter out blank strings
+
+text %>% section() %>% clean() 
+```
+              
+Once we've cleaned the text, we need to extract the sentences and words, using tidytext.    
+```{r tokenize}
+## For testing, let the section be the second section and max sentences = 2
+# sections = text$section[2]
+# max_sentences = 2
+
+summarizeText <- function(sections, text, max_sentences) {
+  
+  sentences <- text %>%
+    # slect section provided in function input
+    filter(section == sections) %>%
+    select(text) %>%
+    unnest_sentences(output = sentences, input = text) %>%
+    distinct() %>%
+    mutate(textrank_id = row_number()) %>% 
+    # textrank requires columns in order
+    select(textrank_id, sentences)
+
+  # select max sentences per section
+  sentences %<>% filter(textrank_id <= max_sentences)
+
+  # textrank needs a dictionary of words
+  words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
+    distinct() %>% 
+    anti_join(tidytext::stop_words)
+  
+  # textRank fails if you feed it only one sentence
+  if(nrow(sentences) > 1){
+    out <- textrank::textrank_sentences(data = sentences,
+                                        terminology = words)
+    # so we format the unranked sentences data frame as an alternative
+  } else {
+    out <- list(sentences = as.data.frame(sentences))
+  }
+
+return(out)
+
+}
+
+summarize_sections <- function(text, n_sentences, max_sentences) {
+
+  # section and clean text 
+  text %<>% section() %>% clean() %>% 
+    # drop headers and footnotes
+    filter(!is.na(section), part == "text") %>%
+    #FIXME make max_sentences depend on section length
+    # group_by(section) %>% 
+    add_count(section, name = "section_length") 
+  
+  # summarize, map summary function to each unique section
+  text_summary <-  map(.x = text$section %>% unique() ,
+                       .f = summarizeText, 
+                       text = text, 
+                       max_sentences = max_sentences) 
+  
+  # extract top n_sentences
+  pull_sentences <- . %>% 
+    .$sentences %>% 
+    pull(sentence) %>% 
+    .[1:n_sentences] %>% 
+    str_to_sentence() %>%  
+    str_c(collapse = " ")
+  
+  # make a data frame of section headers and n_sentences pulled from textrank output
+  section_summary <- tibble(
+    section = pull(text, section) %>% unique(), 
+    summary = text_summary %>%
+      #FIXME when this fails, it should default to the first sentence of the section. 
+      map_chr(possibly(pull_sentences, otherwise = " ") ) ) 
+  
+  return(section_summary)
+}
+
+# apply function to text 
+rule_summary <- summarize_sections(xml_rule_text(link), 
+                                   n_sentences = 2,
+                                   max_sentences = 50)
+
+rule_summary %>%  kablebox()
+```
+
+<!--
+
+# NOTES 
+#New code summary
+[1] "summary:the bureau of consumer financial protection (bureau) is issuing this final rule to amend its regulations governing payday, vehicle title, and certain high-cost installment loans."                                                                                                                 
+[2] "the bureau revokes the  final rule's determination that it is an unfair practice for a lender to make covered short-term loans or covered longer-term balloon-payment loans without reasonably determining that consumers will have the ability to repay the loans according to their terms."               
+[3] "however, in the preamble to the  final rule, the bureau expressed the concern that the market for these longer-term balloon-payment loans, with structures similar to payday loans that pose similar risks to consumers, might grow if only covered short-term loans were regulated under the  final rule." 
+[4] "in the  nprm, the bureau did not propose to reconsider the payment provisions of the  final rule."                                                                                                                                                                                                          
+[5] "in the  final rule, the bureau found that the practice of making covered short-term or longer-term balloon-payment loans to consumers without reasonably determining if the consumers have the ability to repay them according to their terms causes or is likely to cause substantial injury to consumers."
+
+#Old Code Summary
+[1] "the bureau revokes the  final rule's determination that it is an unfair practice for a lender to make covered short-term loans or covered longer-term balloon-payment loans without reasonably determining that consumers will have the ability to repay the loans according to their terms." 
+
+[2] "however, in the preamble to the  final rule, the bureau expressed the concern that the market for these longer-term balloon-payment loans, with structures similar to payday loans that pose similar risks to consumers, might grow if only covered short-term loans were regulated under the  final rule." 
+
+[3] "in the  nprm, the bureau did not propose to reconsider the payment provisions of the  final rule."                           
+
+[4] "in the  final rule, the bureau found that the practice of making covered short-term or longer-term balloon-payment loans to consumers without reasonably determining if the consumers have the ability to repay them according to their terms causes or is likely to cause substantial injury to consumers."
+
+[5] "the bureau's proposal the bureau determined in the  final rule that making covered short-term or longer-term balloon-payment loans without reasonably assessing a borrower's ability to repay the loan according to its terms is an unfair act or practice."
+
+This can be compared to the official summary:
+
+<!-- ![summary](summary.PNG) -->

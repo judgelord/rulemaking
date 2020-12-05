@@ -100,7 +100,7 @@ fr %<>% xml_rule_text()
 
 fr %<>%
   mutate(preamble = id < rule_text_starts(fr$text)) %>% 
-  clean
+  clean()
 
 # fr preamble text 
 # fr %>% kablebox()
@@ -124,7 +124,7 @@ Pros:
 - computationally cheap
 
 Cons:  
-- less precise than more computationally-intense methods like Smith-Waterman
+- less precise than more computationally-intense methods
 
 ## Proposed rule text that was cut or changed in the Final Rule
 ```{r pr_tengrams, fig.height=9}

@@ -61,12 +61,23 @@ library(cleanNLP)
 library(pdftools)
 library(beepr)
 library(tidyverse)
+library(purrr)
 # library(textreadr)
 
 knitr::opts_chunk$set(echo = TRUE, 
                       cache = FALSE, 
                       fig.width=8.5, fig.align = 'center', fig.path='Figs/',
                       warning=FALSE, message=FALSE)
+
+
+library(tidyverse)
+library(magrittr)
+library(tidytext)
+
+# load required functions from functions directory 
+source(here::here("functions", "clean_string.R"))
+source(here::here("functions", "xml_rule_text.R"))
+source(here::here("functions", "tengram.R"))
 
 
 # function to fill NAs
