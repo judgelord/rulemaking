@@ -26,18 +26,18 @@ I have collected two datasets from regulations.gov, one for all rules, proposed 
 [17] "title" 
 ```
 
-- Metadata for all public comments on regulations.gov ([.SQLite](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing),[.Rdata](https://github.com/judgelord/rulemaking/blob/master/data/allcomments-sample.Rdata))
+- Metadata for all public comments on regulations.gov ([.SQLite](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing), [.Rdata](https://github.com/judgelord/rulemaking/blob/master/data/allcomments-sample.Rdata))
 
 **Using SQL**: For example, to get metadata for all CFPB comments (including those without attachments): 
 
-`SELECT * FROM comments_all WHERE agency_acronym = 'CFPB')`
+`SELECT * FROM comments WHERE agency_acronym = 'CFPB')`
 
 In R, you can querry SQL databases with the `DBI` and `RSQLite` packages: 
 
 ```
 library(DBI)
 library(RSQLite)
-con <- DBI::dbConnect(SQLite(), here::here("comment_metadata.sqlite"))
+con <- DBI::dbConnect(SQLite(), here::here("regs_dot_gov.sqlite"))
 
 # results for a comment, CFPB-2018-0023-0006
 res <- DBI::dbSendQuery(con, "SELECT * FROM comments WHERE document_id = 'CFPB-2018-0023-0006'")
