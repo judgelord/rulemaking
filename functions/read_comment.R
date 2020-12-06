@@ -11,21 +11,24 @@ d <- comments %>%
   # in SQL, CFPB file names are regs_dot_gov_document_id, shortened to document_id for now
   mutate( document_id = path %>%
             str_remove(".*/")  %>%
-            str_remove("\\..*")
-  )
+            str_remove("\\..*") 
+   ) #%>%
+  # group_by(document_id, path)
+
 
 source(here::here("functions", "clean_string.R"))
 
+
 read_comment <- . %>%
-  read_lines() %>%
-  clean_string() 
+  read_lines() #%>%
+  #clean_string() 
 
 read_comment(d$path[1]) 
 
 d %<>% 
   head() %>% 
-  group_by(document_id, path) %>%
-  mutate(text = path %>% map_chr(read_comment))
+  mutate(text = path %>% map(read_comment)) %>%
+  modify(as.character)
   
 d$text[1]
 
