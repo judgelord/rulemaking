@@ -1,4 +1,4 @@
-This is a project to pull and merge various data on US federal agency rulemaking.
+This is a project to collect and join various data on US federal agency rulemaking.
 
 ## Regulations.gov (rule metadata and public comments)
 
@@ -26,35 +26,47 @@ I have collected two datasets from regulations.gov, one for all rules, proposed 
 [17] "title" 
 ```
 
-- Metadata for all public comments on regulations.gov ([.SQLite](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing),[.Rdata](https://github.com/judgelord/rulemaking/blob/master/data/allcomments-sample.Rdata))
+- Metadata for all public comments on regulations.gov ([.SQLite](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing), [.Rdata](https://github.com/judgelord/rulemaking/blob/master/data/allcomments-sample.Rdata))
 
 **Using SQL**: For example, to get metadata for all CFPB comments (including those without attachments): 
 
-`SELECT * FROM comments_all WHERE agencyAcronym = 'CFPB')`
+`SELECT * FROM comments WHERE agency_acronym = 'CFPB')`
 
-| field                    | example content                                                                                                                                                                                                                       |
-|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| agencyAcronym            | CFPB                                                                                                                                                                                                                          |
-| allowLateComment         | FALSE                                                                                                                                                                                                                         |
-| attachmentCount          | 1                                                                                                                                                                                                                             |
-| commentDueDate           | NA                                                                                                                                                                                                                            |
-| commentStartDate         | NA                                                                                                                                                                                                                            |
-| commentText              | Please accept the attached comments on behalf of the Online Lenders Alliance regarding  BCFP Trial Disclosure Programs Docket No. CFPB-2018-0023  Thank You   Michael Day  Policy Director  Online Lenders Alliance   file(s) |
-| docketId                 | CFPB-2018-0023                                                                                                                                                                                                                |
-| docketTitle              | Policy to Encourage Trial Disclosure Programs                                                                                                                                                                                 |
-| docketType               | Nonrulemaking                                                                                                                                                                                                                 |
-| documentId               | CFPB-2018-0023-0006                                                                                                                                                                                                           |
-| documentStatus           | Posted                                                                                                                                                                                                                        |
-| documentType             | Public Submission                                                                                                                                                                                                             |
-| numberOfCommentsReceived | 1                                                                                                                                                                                                                             |
-| openForComment           | FALSE                                                                                                                                                                                                                         |
-| postedDate               | 2018-10-11T00:00:00-04:00                                                                                                                                                                                                     |
-| submitterName            | Michael Day                                                                                                                                                                                                                   |
-| title                    | Comment Submitted by Michael Day, OLA                                                                                                                                                                                         |
-| rin                      | NA                                                                                                                                                                                                                            |
-| organization             | OLA                                                                                                                                                                                                                           |
-| file1                    | CFPB-2018-0023-0006-1.doc                                                                                                                                                                                                     |
-| url1                     | https://www.regulations.gov/contentStreamer?documentId=CFPB-2018-0023-0006&attachmentNumber=1                                                                                                                                 |
+In R, you can querry SQL databases with the `DBI` and `RSQLite` packages: 
+
+```
+library(DBI)
+library(RSQLite)
+con <- DBI::dbConnect(SQLite(), here::here("regs_dot_gov.sqlite"))
+
+# results for a comment, CFPB-2018-0023-0006
+res <- DBI::dbSendQuery(con, "SELECT * FROM comments WHERE document_id = 'CFPB-2018-0023-0006'")
+dbFetch(res)  
+dbClearResult(res)
+```
+
+|name                        |value                                                                        |
+|:---------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|agency_acronym              |CFPB                                                                        |
+|allow_late_comment          |0                                                                        |
+|attachment_count            |1                                                                        |
+|comment_due_date            |NA                                                                        |
+|comment_start_date          |NA                                                                        |
+|comment_text                |Please accept the attached comments on behalf of the OnlineLenders Alliance regarding  BCFP Trial Disclosure Programs Docket No. CFPB-2018-0023 Thank You Michael Day Policy Director Online Lenders Alliance |
+|docket_id                   |CFPB-2018-0023                                                                        |
+|docket_title                |Policy to Encourage Trial Disclosure Programs                                                                        |
+|docket_type                 |Nonrulemaking                                                                        |
+|document_id                 |CFPB-2018-0023-0006                                                                        |
+|document_status             |Posted                                                                        |
+|document_type               |Public Submission                                                                        |
+|number_of_comments_received |1                                                                        |
+|posted_date                 |2018-10-11T00:00:00-04:00                                                                        |
+|submitter_name              |Michael Day                                                                        |
+|title                       |Comment Submitted by Michael Day, OLA                                                                        |
+|rin                         |NA                                                                        |
+|organization                |OLA                                                                        |
+| attachment_1                    | CFPB-2018-0023-0006-1.doc                                                                                                                                                                                                     |
+| comment_url                     | https://www.regulations.gov/contentStreamer?documentId=CFPB-2018-0023-0006                                                                                                                                 |
 
 ## Unified Agenda of Regulatory and Deregulatory Actions
 
