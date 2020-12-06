@@ -1,9 +1,38 @@
 
 source("setup.R")
 
+library(DBI)
+library(RSQLite)
+con <- DBI::dbConnect(SQLite(), here::here("db", "regs_dot_gov.sqlite"))
+
+# fetch results for a docket
+get_comments <- function(docket){
+  comments <- DBI::dbSendQuery(con, str_c("SELECT * FROM comments WHERE docket_id = '",
+                                   docket, 
+                                   "'") 
+                        ) %>%
+    dbFetch()
+  
+  dbClearResult(res)
+  
+  return(comments)
+}
+
+d<- get_comments("CFPB-2018-0023")
+
+
 #FIXME to pull from SQL and include urls for NPRM and FR
-load("data/comment_metadata_CFPB.Rdata")
-d <- comments_cfpb
+# load("data/comment_metadata_CFPB.Rdata")
+# d <- comments_cfpb
+
+
+# ad document name and link
+d %<>% 
+  mutate(file_1 = ifelse(attachmentCount > 0,  
+                         str_c(documentId, "-1.pdf"), 
+                         NA),
+         comment_url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
+                             documentId) )
 
 d %<>% select(agency_acronym, 
               docket_id, 
