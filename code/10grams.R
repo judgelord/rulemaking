@@ -17,59 +17,63 @@ agency <- "NPS"
 docket <- "NPS-2018-0007"
 nprm <- "https://www.federalregister.gov/documents/full_text/xml/2018/08/15/2018-17386.xml"
 
-comments <- tibble( path = list.files(here::here("comments", 
+# get txt files from a directory with here() 
+comments <- tibble( path = list.files(here::here("comment_text", 
                                                  agency, 
                                                  docket),
-                                      full.names = T ))
+                                      full.names = T )) 
 
+comments %<>% top_n(5)  #FIXME just a few comments for now
+
+# a function to parse comments into 10-word phrases and identify matching phrases in other comments of the NPRM
 comment_tengrams <- function(nprm, comments){
-
-pr_text <- xml_rule_text(nprm) %>% 
-  summarise(text = text %>% clean_string() ) %>%  # fr_document_id = 
-  tengram() %>% 
-  filter(!is.na(tengram))
-
-
-# get txt files from a directory with here() 
-d <-comments %>% 
-  filter( str_detect(path, "txt")) %>% 
-  #FIXME not all file paths are based on the same structure
-  mutate( document_id = path %>% 
-            str_remove(".*/")  %>% 
-            str_remove("\\..*") 
-          )
-            
-
-d %<>% 
-  head() %>% 
-  mutate(tengrams = path %>% map(possibly(read_grams, 
-                                          otherwise = list(tengram = "404error")
-                                          )
-                                 ) 
-         ) #%>% filter(tengrams != "404error")
-
-# map each document to all others
-d %<>% 
-  mutate(
-    # ngrams from NPRM 
-    text = tengrams %>% 
-      # diff with one other text (in this case, with the NPRM)
-      map2(list(pr_text$tengram), match_tibble) %>% 
-      # reassemble text from the first word of each tengram
-      map(word1),
-    # ngrams from other comments 
-    reuse = tibble(document_id2 = list(document_id),
-                   reuse = tengrams %>% map(match2)
-                   )
-         ) %>% 
-  # make tibble of lists into list of tibbles
-  group_by(document_id) %>% 
-  mutate(reuse = reuse %>% 
-           flatten() %>% as_tibble() %>% list() ) 
-
-d %<>%  select(-path, -tengrams) #FIXME?
-
-return(d)
+  
+  # read in rule text from federal register
+  # see https://github.com/judgelord/rulemaking/blob/master/functions/xml_rule_text.R
+  pr_text <- xml_rule_text(nprm) %>% 
+    summarise(text = text %>% clean_string() ) %>%  # fr_document_id = 
+    tengram() %>% 
+    filter(!is.na(tengram))
+  
+  # make a data frame out of file paths ending in txt
+  d <- comments %>% 
+    filter( str_detect(path, "txt")) %>% 
+    # in SQL, CFPB file names are regs_dot_gov_document_id, shortened to document_id for now
+    mutate( document_id = path %>% 
+              str_remove(".*/")  %>% 
+              str_remove("\\..*") 
+    )
+  
+  # parse each document with the read_grams function 
+  # see https://github.com/judgelord/rulemaking/blob/master/functions/tengram.R
+  d %<>% 
+    mutate(tengrams = path %>% map(possibly(read_grams, 
+                                            otherwise = list(tengram = "404error")
+                                            )
+                                   ) 
+           ) #%>% filter(tengrams != "404error") # if you want to drop comments that fail to read
+  
+  # map each document to all others
+  d %<>% 
+    mutate(
+      text = tengrams %>% 
+        # diff with the nprm
+        map2(list(pr_text$tengram), match_tibble) %>% 
+        # reassemble text from the first word of each tengram
+        map(word1),
+      # diff with all other comments 
+      reuse = tibble(document_id2 = list(document_id),
+                     reuse = tengrams %>% map(match2)
+                     )
+      ) %>% 
+    # turn the tibble of lists into list of tibbles
+    group_by(document_id) %>% 
+    mutate(reuse = reuse %>% flatten() %>% as_tibble() %>% list() ) 
+  
+  # drop variables we no longer need
+  d %<>%  select(-path, -tengrams)
+  
+  return(d)
 } # end function
 
 

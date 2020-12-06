@@ -1,10 +1,7 @@
 ssh -Y judgelord@linstat.ssc.wisc.edu
 cd /project/judgelord/rulemaking
+
+git pull
 ls
 R
-list.files( )
-list.files("data")
-list.files("ascending")
-head(list.files("comments"))
-length(list.files("comments"))
 source("setup.R")
