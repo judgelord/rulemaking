@@ -150,6 +150,7 @@ names(d)  <- names(d) %>%
   str_replace_all("([A-Z])", "_\\1") %>% 
   str_to_lower()
 
+# standardize fr_document_id
 regs_dot_gov_actions <- d %>% mutate_all(as.character) %>%
   mutate(fr_document_id = fr_number %>%
            str_replace_all(" - |- |- | -| FR, ISSUE |, ISSUE #|  NO\\. | FR, NO. |, NO\\. |\\. NO. |, NO\\.| NO\\. |\\. NO | NO | FR |FR|\\):|\\(|\\)", "-") %>% 

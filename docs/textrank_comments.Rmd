@@ -70,14 +70,48 @@ source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/
 
 ```{r summarize}
 
-# text %>%
-#   filter(document_id == "CFPB-2016-0025-1748-1") %>%
-#   select(text)
+clean <- . %>%  
+  # drop short texts
+  #filter(nchar(d) > 60) %>% 
+  # identify headings as lines with a period in the beginning (also captures some footnotes)
+  #mutate(part = ifelse(str_detect(str_sub(d, 1, 5) ,'\\.'), 'head', 'd')) %>% 
+  # idetify footnotes with a number and no period
+  #mutate(part = ifelse(d %>% str_detect("^[0-9](?!\\.)"), 'footnote', part) ) %>% 
+  mutate(text = text %>% 
+           # CAUTION: removes all text in parentheses
+           str_replace_all("\\s+"," ") %>%
+           #str_remove_all("\\(.*\\)|[0-9]|_") %>%
+           #str_remove_all(d, "§") %>% 
+           str_squish() %>% 
+           # add space after periods
+           str_replace_all("\\.([A-Z][a-z])", ". \\1") %>%
+          # remvove numbers and specials (keep only text and basic punctuation)
+          str_replace_all("[^([A-z]& &'&\\.&\\,&\\?&\\!&\\;&\\;)]", " ") %>% 
+          # remove space before periods
+          str_replace_all(" \\.", ". ") %>%
+          # double commas  
+          str_replace_all("(\\, \\,) ", ", ") %>% 
+          # double periods 
+          str_replace_all("(\\. \\.|\\.\\.) ", ". ") %>% 
+           str_squish() %>%
+          # one character after a period 
+          str_replace_all("\\. .\\. ", ". ") %>% 
+          # remove white space
+          str_replace_all(" \\,", ", ") %>%
+          str_replace_all(" \\.", ". ") %>%
+           str_remove_all("pagebreak|http www\\.magnifymoney\\.com") %>%
+          str_squish() # %>% clean_string() # optional
+          ) #%>%
+  # filter(d != "")  #filter out blank strings
 
+d %<>%
+  filter(document_id == "CFPB-2016-0025-5000-1") %>%
+  clean()
 
 summarizeText <- function(text) {
   
-  sentences <- commentText %>%
+  
+  sentences <- d %>%
     select(text) %>%
     unnest_sentences(output = sentences, input = text) %>%
     distinct() %>%
@@ -86,7 +120,7 @@ summarizeText <- function(text) {
     select(textrank_id, sentences)
 
   # select max sentences per section
-  sentences %<>% filter(textrank_id <= 400)
+  #sentences %<>% filter(textrank_id <= 400)
 
   words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
     distinct() %>% 
@@ -103,7 +137,12 @@ return(out)
 
 }
 
-summarizeText(commentText)
+
+
+summarizeText(d)
 #summary %>%   knitr::kable()
+
+d %>%
+  select(text)
 ```
 
