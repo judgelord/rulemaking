@@ -1,0 +1,94 @@
+---
+title: "How to Query Devin's Regulations.gov SQL Database"
+subtitle: "" 
+author: "Devin Judge-Lord"
+output:
+    # pdf_document:
+    #   toc: true
+    #   keep_tex: true
+    html_document:
+      highlight: zenburn
+      #toc: true
+      #toc_float: true
+      #code_folding: show
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = FALSE, 
+                      fig.width=8.5, 
+                      split = T,
+                      fig.align = 'center', 
+                      fig.path='figs/',
+                      warning=FALSE, 
+                      message=FALSE)
+
+
+library(tidyverse)
+library(magrittr)
+library(tidytext)
+library(xml2)
+library(knitr)
+library(kableExtra)
+
+library(ggplot2); theme_set(theme_bw())
+  options(
+    ggplot2.continuous.color = "viridis",
+    ggplot2.continuous.fill = "viridis"
+  )
+  scale_color_discrete <- function(...)
+    scale_color_viridis_d(..., direction = -1)
+  scale_fill_discrete <- function(...)
+    scale_fill_viridis_d(..., direction = -1)
+  
+  
+kablebox <- . %>%  knitr::kable() %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
+```
+
+# About 
+
+This database contains metadata on over 200,000 dockets and 80,000,000 public comments. It has two tables, `rules` and `comments` corresponding to how documents are organized and identified on regulations.gov (comments are also known as "public submission" documents).
+
+# Instructions
+
+With **R**:
+
+```{r}
+library(DBI)
+library(RSQLite)
+
+con <- DBI::dbConnect(RSQLite::SQLite(), here::here("db", "regs_dot_gov.sqlite"))
+
+dbListTables(con)
+```
+
+```{r, eval=FALSE}
+dbGetQuery(con, "SELECT * FROM rules WHERE docket_id = 'FDA-1976-N-0020'")
+```
+
+Where the SQL query to get NPRM and Final Rule data for a docket is: 
+
+```{sql, connection=con, output.var = "rule"}
+SELECT * FROM rules WHERE docket_id = 'FDA-1976-N-0020'
+```
+
+```{r, echo=FALSE}
+rule %>% kablebox()
+```
+
+Likewise, the SQL query to get comments on a docket is
+
+```{sql, connection = con, output.var = "comments", cache=TRUE}
+SELECT * FROM comments WHERE docket_id = 'CFPB-2018-0023'
+```
+
+```{r, echo=FALSE}
+comments %>% 
+  mutate(comment_text = str_sub(comment_text, 1, 140) %>% str_c("...") ) %>% 
+  kablebox()
+```
