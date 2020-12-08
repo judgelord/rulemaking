@@ -53,17 +53,18 @@ comments_all %>% filter(agency_acronym == "CFPB",
 
 comments <- comments_all
 # Update R data
-save(comments_metadata, file = "comments_metadata.Rdata")
-# load()
-nrow(comments_all)
-head(comments_all)
+save(comments, file = "comments_metadata.Rdata")
+# load("comments_metadata.Rdata")
+nrow(comments)
+head(comments)
 
-# LOAD RULES DATA 
+# LOAD RULES DATA FROM API 
 load(here::here("data", "AllRegsGovRules.Rdata"))
 names(d)
 
 rules <- d %>% select(-X)
 
+# Reformat
 names(rules)  <- names(rules) %>% 
   str_replace_all("([A-Z])", "_\\1") %>% 
   str_to_lower()
@@ -99,6 +100,12 @@ rules %<>% select(-fr_document_id2)
 # Update R data
 save(rules, file = "rules_metadata.Rdata")
 
+
+# load("rules_metadata.Rdata")
+# load("comment_metadata.Rdata")
+dim(rules)
+rules$docket_id %>% unique() %>% length()
+
 # Create RSQLite database
 library(DBI)
 library(RSQLite)
@@ -110,11 +117,12 @@ list.files()
 dbListTables(con)
 dbWriteTable(con, "comments", comments, overwrite = T)
 dbListTables(con)
-dbWriteTable(con, "rules", comments, overwrite = T)
+dbWriteTable(con, "rules", rules, overwrite = T)
 dbListTables(con)
 
 # check var names
 dbListFields(con, "comments")
+dbListFields(con, "rules")
 
 # fetch results for an agency
 res <- DBI::dbSendQuery(con, "SELECT * FROM comments WHERE agency_acronym = 'CFPB'")

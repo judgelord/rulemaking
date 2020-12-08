@@ -1,66 +1,85 @@
+names(rules)
+topdockets <- rules %>% 
+  ungroup() %>% 
+  filter(docket_type == "Rulemaking",
+         number_of_comments_received > 0) %>% 
+  group_by(agency_acronym) %>%
+  slice_max(order_by = number_of_comments_received,
+            n = 1,
+            with_ties =F)
 
-source("setup.R")
+dim(topdockets)
 
-library(DBI)
-library(RSQLite)
-con <- DBI::dbConnect(SQLite(), here::here("db", "regs_dot_gov.sqlite"))
+topdockets %>% count(number_of_comments_received)
 
-# fetch results for a docket
-get_comments <- function(docket){
-  comments <- DBI::dbSendQuery(con, str_c("SELECT * FROM comments WHERE docket_id = '",
-                                   docket, 
-                                   "'") 
-                        ) %>%
-    dbFetch()
-  
-  dbClearResult(res)
-  
-  return(comments)
-}
+names(comments)
 
-d<- get_comments("CFPB-2018-0023")
+d <- comments %>% filter(docket_id %in% topdockets$docket_id)
+dim(d)
 
+# apply auto-coding 
+#FIXME with updated org_names from hand-coding 
+source(here::here("code", "org_comment.R"))
+source(here::here("code", "comment_position.R"))
 
-#FIXME to pull from SQL and include urls for NPRM and FR
-# load("data/comment_metadata_CFPB.Rdata")
-# d <- comments_cfpb
-
-
-# ad document name and link
-d %<>% 
-  mutate(file_1 = ifelse(attachmentCount > 0,  
-                         str_c(documentId, "-1.pdf"), 
-                         NA),
-         comment_url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
-                             documentId) )
-
-d %<>% select(agency_acronym, 
-              docket_id, 
-              docket_title, 
-              document_id, 
-              comment_url, 
-              organization, 
-              comment_title,
-              attachment_count)
-
+# filter down to org comments
 d %<>% group_by(docket_id) %>% 
   #FIXME get this from data
-  add_count(name = "number_of_comments_received") %>% 
-  group_by(docket_id, organization) %>% 
+  add_count(name = "number_of_comments_received") %>%
+  # mass dockets
+  mutate(max = max(number_of_comments_received) ) %>% 
+  ungroup() %>% 
+  filter(max > 99) %>% 
+  group_by(docket_id, org_name) %>% 
   add_count(name = "org_total") %>% 
   ungroup() %>%
   arrange(-number_of_comments_received) %>% 
   filter(attachment_count > 0) %>% 
-  filter(!organization %in% c("NA", "na", "Organization Unknown 1"),
-         !is.na(organization),
+  filter(!org_name %in% c("NA", "na", "Organization Unknown 1"),
+         !is.na(org_name),
          #FIXME
          org_total < 5) %>% 
   add_count(docket_id)
 
 d %>% 
   #filter(n > 10, n < 20) %>% 
-  count(docket_id, sort = T)
-d$attachment_count
+  count(docket_id, sort = T) %>% knitr::kable()
+
+
+
+
+## AUGMENT FUNCTION
+# ad document name and link
+d %<>% 
+  mutate(file_1 = ifelse(attachment_count > 0,  
+                         str_c(document_id, "-1.pdf"), 
+                         NA),
+         attachment_txt = ifelse(attachment_count > 0,  
+                      str_c("https://ssc.wisc.edu/~judgelord/comment_text/",
+                            document_id %>% str_remove("-.*?$"),
+                            document_id,
+                            ".txt"), 
+                      NA),
+         comment_url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
+                             document_id),
+         proposed_url = NA,
+         final_url = NA)
+
+
+names(d)
+## PREP SHEETS
+d %<>% select(agency_acronym, 
+              docket_id, 
+              docket_title, 
+              document_id, 
+              proposed_url,
+              final_url,
+              comment_url, 
+              attachment_txt,
+              organization, 
+              comment_title,
+              attachment_count, 
+              org_name)
 
 # add blanks
 d %<>% mutate(position = "",
@@ -68,7 +87,7 @@ d %<>% mutate(position = "",
               comment_type = "",
               coalition_comment = "",
               coalition_type = "",
-              org_name = organization,
+              # org_name = organization, # run scratchpad/orgnames.R until this is a function
               org_name_short = "",
               org_type = "",
               ask = "",
@@ -87,22 +106,28 @@ d %<>% mutate(position = "",
               reject_phrases = "",
               notes = "")
 
-d %<>% select(-number_of_comments_received, -org_total)
+names(d)
+d %<>% select(-number_of_comments_received, 
+              -org_total)
 
-unique(d$organization)
+# unique(d$organization)
 
-#FIXME 
-write_csv(d, path = here::here("data/CFPB_org_comments.csv"))
+count(d, organization, sort = T) %>% head()
 
-saverules <- function(rule){
+# move to comment coding
+d %>% 
+head()
+
+write_comment_sheets <- function(docket){
   d %>% 
-    filter(docket_id == rule) %>% 
+    filter(docket_id == docket) %>% 
     write_csv(path = here::here("data",
                                 "datasheets",
-                              #str_sub(rule, 1, 4), 
-                              str_c(rule, "_org_comments.csv")))
+                              str_extract("^[A-Z]"), # agency  
+                              str_c(docket, "_org_comments.csv")))
 }
 
 unique(d$docket_id)
 
-walk(unique(d$docket_id), saverules)
+walk(unique(d$docket_id), write_comment_sheets)
+
