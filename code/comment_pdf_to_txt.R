@@ -1,7 +1,7 @@
 # could save a bit of unlisting: https://rdrr.io/github/enricoschumann/esutils/man/pdf2txt.html
 
 # pdftotext
-files <- list.files(here("comments")) %>% head()
+files <- list.files(here("comments")) # %>% head()
 
 
 
@@ -10,6 +10,7 @@ library(pdftools)
 
 # a function to read pdf into a string
 pdf_to_text <- function(file){
+  message(file)
   # default value is NA
   text <- NA
   # if the file is a pdf, run pdf_text
@@ -43,4 +44,7 @@ write_file(pdf_to_text(file),
            path = here("comments", agency, docket, str_replace(file, "pdf", "txt") ) )
 }
 
+length(files)
 walk(files, possibly(pdf_to_txt, otherwise = print("nope")))
+
+list.files(here::here("comments", "ACF", "ACF-2015-0002"))

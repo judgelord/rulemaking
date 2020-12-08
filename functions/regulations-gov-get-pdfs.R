@@ -22,6 +22,7 @@ all %<>%
                             "&attachmentNumber=1"),
          downloaded = file %in% list.files(here::here("comments")) )
 
+names(all)
 
 # inspect missing files
 all %>% 
@@ -80,7 +81,7 @@ dim(download)
 download %>% head() %>% select(file, attach.url, downloaded)
 download %>%  count(agencyAcronym, sort = T) %>% knitr::kable()
 
-download %<>% filter(agencyAcronym == "OCC")
+# download %<>% filter(agencyAcronym == "OCC")
 dim(download)
 # Load data on failed downloads 
 load("data/comment_fails.Rdata")
@@ -92,6 +93,8 @@ download %<>% anti_join(fails)
 dim(download)
 head(download$attach.url)
 
+
+download %<>% filter( !is.na(file) ) 
 
 download %<>% filter(!file %in% list.files("comments/") ) 
 
@@ -108,6 +111,7 @@ for(i in 1:n){
 download.file(download$attach.url[i], 
               destfile = str_c("comments/", download$file[i]) ) 
 }
+
 Sys.sleep(400) # wait after downloading the first one so we don't hit the limit on the first loop
 
 
