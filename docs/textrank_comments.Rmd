@@ -105,15 +105,18 @@ clean_comment <- . %>%
           ) #%>%
   # filter(d != "")  #filter out blank strings
 
-d %<>% group_by(document_id) %>% clean_comment()
+data %<>% group_by(document_id) %>% clean_comment()
 
 
-summarizeText <- function(document_id, data, max_sentences) {
   
-  sentences <- data %>%
+
+
+summarizeText <- function(document_id, text, max_sentences) {
+  
+  sentences <- text %>%
     # slect section provided in function input
     filter(document_id == document_id) %>%
-    select(data) %>%
+    select(text) %>%
     unnest_sentences(output = sentences, input = text) %>%
     distinct() %>%
     mutate(textrank_id = row_number()) %>% 
@@ -145,17 +148,18 @@ summarizeText <- function(document_id, data, max_sentences) {
 summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
   
   # section and clean text 
-  data %<>% group_by(document_id) %>% clean_comment()  %>% 
+  data %<>% group_by(document_id) %>% clean_comment()  #%>% 
     # drop headers and footnotes
     #filter(!is.na(section), part == "text") %>%
     #FIXME make max_sentences depend on section length
     # group_by(section) %>% 
-    add_count(as.numeric(document_id), name = "document_length") 
+    #add_count(document_id, name = "document_length") 
   
+
   # summarize, map summary function to each unique section
   text_summary <-  map(.x = data$document_id %>% unique() ,
                        .f = summarizeText, 
-                       data = data, 
+                       text = data, 
                        max_sentences = max_sentences) 
   
   # extract top n_sentences
