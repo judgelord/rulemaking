@@ -70,6 +70,7 @@ source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/
 
 ```{r summarize}
 
+
 clean_comment <- . %>%  
   # drop short texts
   #filter(nchar(d) > 60) %>% 
@@ -100,7 +101,7 @@ clean_comment <- . %>%
           # remove white space
           str_replace_all(" \\,", ", ") %>%
           str_replace_all(" \\.", ". ") %>%
-           str_remove_all("pagebreak|http www\\.magnifymoney\\.com") %>%
+           str_remove_all("pagebreak|http www\\.magnifymoney\\.com|docket no") %>%
           str_squish() # %>% clean_string() # optional
           ) #%>%
   # filter(d != "")  #filter out blank strings
@@ -182,40 +183,9 @@ summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
 
 comment_summary <- summarize_comments(d, n_sentences = 2, max_sentences = 50 )
 
-#summary %>%   knitr::kable()
+comment_summary %>%   knitr::kable()
 
-d %>%
-  select(text)
+# d %>%
+#   select(text)
 ```
 
-```{r comment}
-
-# summarizeText <- function(text) {
-#   
-#   
-#   sentences <- d %>%
-#     select(text) %>%
-#     unnest_sentences(output = sentences, input = text) %>%
-#     distinct() %>%
-#     mutate(textrank_id = row_number()) %>% 
-#     # textrank requires columns in order
-#     select(textrank_id, sentences)
-# 
-#   # select max sentences per section
-#   #sentences %<>% filter(textrank_id <= 400)
-# 
-#   words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
-#     distinct() %>% 
-#     anti_join(tidytext::stop_words)
-#   
-#   if(nrow(sentences) > 1){
-# out <- textrank::textrank_sentences(data = sentences, 
-#                                     terminology = words)
-#   } else {
-#     out <- list(sentences = as.data.frame(sentences))
-#   }
-# 
-# return(out)
-# 
-# }
-```
