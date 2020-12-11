@@ -1,6 +1,7 @@
 # a function for cleaner, more comparable strings
 clean_string <- . %>% 
   str_c(collapse = " ") %>% 
+  str_remove_all("Docket No\\. CFP-2016-0025 Consumer Financial Protection Bureau 1700 G Street, NW\\.") %>%
   # make sure sentences are ended
   str_replace_all("\\t|\\\n", " ") %>% 
   #str_replace_all("\\.([A-z])", ". \\1") %>%
