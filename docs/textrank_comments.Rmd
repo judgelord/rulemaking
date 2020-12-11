@@ -75,18 +75,23 @@ agency <- "CFPB"
 docket <- "CFPB-2016-0025"
 # get txt file names from a directory, here called “comment_text”
 comments <- tibble( path = list.files( here::here('comment_text', agency, docket), 
-                                       full.names = T) )
+                                       full.names = T) ) %>% 
+  filter( str_detect(path, "txt") )
 
-# filter to file paths ending in txt
-d <- comments %>%
-  filter( str_detect(path, "txt")) %>%
-  # in SQL, CFPB file names are regs_dot_gov_document_id, shortened to document_id for now
+#FIXME just working with a few comments for now
+d <- comments %>% head()
+```
+  
+  
+```{r testing}
+# the function now takes in file paths, so this step is not necessary, except to inspect text cleaning
+  
+# in SQL, CFPB file names are regs_dot_gov_document_id, shortened to document_id for now
+d %<>% 
   mutate( document_id = path %>%
             str_remove(".*/")  %>%
             str_remove("\\..*") 
    ) 
-
-d %<>% head()
 
 read_comment <- . %>%
   read_lines() %>%
@@ -98,6 +103,7 @@ d$text <- map_chr(d$path, read_comment)
 # inspect
 d
 
+d$text %>% kablebox()
 ```
 
 # CFPB Payday Loan Rule
@@ -176,11 +182,13 @@ max_sentences = 100
 
 summarizeText <- function(document_ids, data, max_sentences) {
   
-  # not cleaning data here; should we?
+  # select document(s) provided in function input
+  data %<>% filter(document_id == document_ids) 
+  
+  # load and clean text
+  d$text <-  d$path %>% read_lines() %>% clean_string()
   
   sentences <- data %>%
-    # slect section provided in function input
-    filter(document_id == document_ids) %>%
     select(text) %>%
     unnest_sentences(output = sentences, input = text) %>%
     distinct() %>%
@@ -220,6 +228,11 @@ summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
   
 
   # not cleaning data here either; should we? I think it is better to do it in the above function so it is done on one comment at a time.
+  # but we can create (must) document_id here if we want to feed in data with just path (not relying on text or doc names)
+  data %<>%  mutate( document_id = path %>%
+            str_remove(".*/")  %>%
+            str_remove("\\..*") 
+   ) 
 
   # summarize, map summary function to each unique section
   text_summary <-  map(.x = data$document_id %>% unique() ,
@@ -247,6 +260,6 @@ summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
 
 comment_summary <- summarize_comments(d, n_sentences = 2, max_sentences = 50 )
 
-comment_summary %>% select(document_id, summary) # %>% kablebox()
+comment_summary %>% select(document_id, summary) %>% kablebox()
 ```
 
