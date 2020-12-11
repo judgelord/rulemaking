@@ -647,9 +647,167 @@ summary {
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="kw">dbListTables</span>(con)</span></code></pre></div>
 <pre><code>## [1] &quot;comments&quot; &quot;rules&quot;</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="kw">dbGetQuery</span>(con, <span class="st">&quot;SELECT * FROM rules WHERE docket_id = &#39;FDA-1976-N-0020&#39;&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>rule &lt;-<span class="st"> </span><span class="kw">dbGetQuery</span>(con, <span class="st">&quot;SELECT * FROM rules WHERE docket_id = &#39;CFPB-2018-0023&#39;&quot;</span>)</span></code></pre></div>
 <p>Where the SQL query to get NPRM and Final Rule data for a docket is:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> rules <span class="kw">WHERE</span> docket_id <span class="op">=</span> <span class="st">&#39;FDA-1976-N-0020&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> rules <span class="kw">WHERE</span> docket_id <span class="op">=</span> <span class="st">&#39;CFPB-2018-0023&#39;</span></span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+name
+</th>
+<th style="text-align:left;">
+value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+agency_acronym
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+allow_late_comment
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+attachment_count
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+comment_due_date
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+comment_start_date
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+docket_id
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+docket_title
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+docket_type
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+document_id
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+document_status
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+document_type
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+fr_number
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+number_of_comments_received
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+open_for_comment
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+posted_date
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rin
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+title
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+fr_document_id
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+</tbody>
+</table>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; ">
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
@@ -712,340 +870,6 @@ fr_document_id
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-FDA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-FDA-1976-N-0020
-</td>
-<td style="text-align:left;">
-ANTIBIOTIC DRUGS/ISOLATION &amp; DIFF OF MICROORGANSM CLI USE
-</td>
-<td style="text-align:left;">
-Nonrulemaking
-</td>
-<td style="text-align:left;">
-FDA-1976-N-0020-0005
-</td>
-<td style="text-align:left;">
-Posted
-</td>
-<td style="text-align:left;">
-Notice
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-1978-07-10T00:00:00-04:00
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-Part 433 - Exemptions from Antibiotic Certification and Labeling Requirements - Notice of Confirmation of Effective Date
-</td>
-<td style="text-align:left;">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-FDA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-FDA-1976-N-0020
-</td>
-<td style="text-align:left;">
-ANTIBIOTIC DRUGS/ISOLATION &amp; DIFF OF MICROORGANSM CLI USE
-</td>
-<td style="text-align:left;">
-Nonrulemaking
-</td>
-<td style="text-align:left;">
-FDA-1976-N-0020-0006
-</td>
-<td style="text-align:left;">
-Posted
-</td>
-<td style="text-align:left;">
-Notice
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-1978-07-10T00:00:00-04:00
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-Part 460 - Antibiotic Drugs Intended for use in Laboratory Diagnosis of Disease - Notice of Final Rule
-</td>
-<td style="text-align:left;">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-FDA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-FDA-1976-N-0020
-</td>
-<td style="text-align:left;">
-ANTIBIOTIC DRUGS/ISOLATION &amp; DIFF OF MICROORGANSM CLI USE
-</td>
-<td style="text-align:left;">
-Nonrulemaking
-</td>
-<td style="text-align:left;">
-FDA-1976-N-0020-0004
-</td>
-<td style="text-align:left;">
-Posted
-</td>
-<td style="text-align:left;">
-Notice
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-1978-07-10T00:00:00-04:00
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-Part 147 - Antibiotics Intended for Use in the Laboraotry Diagnosis of Disease - Notice of Correction
-</td>
-<td style="text-align:left;">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-FDA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-FDA-1976-N-0020
-</td>
-<td style="text-align:left;">
-ANTIBIOTIC DRUGS/ISOLATION &amp; DIFF OF MICROORGANSM CLI USE
-</td>
-<td style="text-align:left;">
-Nonrulemaking
-</td>
-<td style="text-align:left;">
-FDA-1976-N-0020-0003
-</td>
-<td style="text-align:left;">
-Posted
-</td>
-<td style="text-align:left;">
-Notice
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-1978-07-10T00:00:00-04:00
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-Part 147 - Antibiotics Intended for Use in the Laboratory Diagnosis of Disease - Antibiotic Susceptibility of Dics - Notice of Final Rule
-</td>
-<td style="text-align:left;">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-FDA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-1971-06-09T23:59:59-04:00
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-FDA-1976-N-0020
-</td>
-<td style="text-align:left;">
-ANTIBIOTIC DRUGS/ISOLATION &amp; DIFF OF MICROORGANSM CLI USE
-</td>
-<td style="text-align:left;">
-Nonrulemaking
-</td>
-<td style="text-align:left;">
-FDA-1976-N-0020-0002
-</td>
-<td style="text-align:left;">
-Posted
-</td>
-<td style="text-align:left;">
-Notice
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-1978-07-10T00:00:00-04:00
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-Antibiotic Susceptibility Discs - Notice of Extension of Comments
-</td>
-<td style="text-align:left;">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-FDA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-1971-05-10T23:59:59-04:00
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-FDA-1976-N-0020
-</td>
-<td style="text-align:left;">
-ANTIBIOTIC DRUGS/ISOLATION &amp; DIFF OF MICROORGANSM CLI USE
-</td>
-<td style="text-align:left;">
-Nonrulemaking
-</td>
-<td style="text-align:left;">
-FDA-1976-N-0020-0001
-</td>
-<td style="text-align:left;">
-Posted
-</td>
-<td style="text-align:left;">
-Proposed Rule
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-28
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-1971-04-11T00:00:00-05:00
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-Announcement of Findings and Proposed Amendments re Antibiotic Susceptibility Discs - Notice of Proposed Rule
-</td>
-<td style="text-align:left;">
-NA
-</td>
 </tr>
 </tbody>
 </table>

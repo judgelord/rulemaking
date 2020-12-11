@@ -68,7 +68,7 @@ dbListTables(con)
 ```
 
 ```{r, eval=FALSE}
-dbGetQuery(con, "SELECT * FROM rules WHERE docket_id = 'FDA-1976-N-0020'")
+rule <- dbGetQuery(con, "SELECT * FROM rules WHERE docket_id = 'FDA-1976-N-0020'")
 ```
 
 Where the SQL query to get NPRM and Final Rule data for a docket is: 
@@ -78,6 +78,8 @@ SELECT * FROM rules WHERE docket_id = 'FDA-1976-N-0020'
 ```
 
 ```{r, echo=FALSE}
+# rule[1,] %>% mutate_all(as.character) %>% pivot_longer(everything()) %>% kable(format= "pipe")
+
 rule %>% kablebox()
 ```
 
