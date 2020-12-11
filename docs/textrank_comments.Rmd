@@ -64,21 +64,30 @@ You can download it [here](https://github.com/judgelord/rulemaking/blob/master/f
 ```{r}
 # load summarize_comment() function
 source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R")
+
+# load text cleaning function 
+source(here::here("functions", "clean_string.R"))
 ```
 
 ```{r data}
+# file paths for comments 
 agency <- "CFPB"
 docket <- "CFPB-2016-0025"
 # get txt file names from a directory, here called “comment_text”
 comments <- tibble( path = list.files( here::here('comment_text', agency, docket), 
-                                       full.names = T) )
+                                       full.names = T) ) %>% 
+  filter( str_detect(path, "txt") )
 
-source(here::here("functions", "clean_string.R"))
-
-# filter to file paths ending in txt
-d <- comments %>%
-  filter( str_detect(path, "txt")) %>%
-  # in SQL, CFPB file names are regs_dot_gov_document_id, shortened to document_id for now
+#FIXME just working with a few comments for now
+d <- comments %>% head()
+```
+  
+  
+```{r testing}
+# the function now takes in file paths, so this step is not necessary, except to inspect text cleaning
+  
+# in SQL, CFPB file names are regs_dot_gov_document_id, shortened to document_id for now
+d %<>% 
   mutate( document_id = path %>%
             str_remove(".*/")  %>%
             str_remove("\\..*") 
@@ -88,9 +97,13 @@ read_comment <- . %>%
   read_lines() %>%
   clean_string() 
 
+# map read
 d$text <- map_chr(d$path, read_comment)
+
+# inspect
 d
 
+d$text %>% kablebox()
 ```
 
 # CFPB Payday Loan Rule
@@ -162,14 +175,20 @@ d
 # #d %<>% group_by(document_id) %>% clean_comment()
 # 
 
-  
+# for testing 
+data <- d
+document_ids = d$document_id[1]
+max_sentences = 100
 
-
-summarizeText <- function(document_ids, text, max_sentences) {
+summarizeText <- function(document_ids, data, max_sentences) {
   
-  sentences <- text %>%
-    # slect section provided in function input
-    filter(document_id == document_ids) %>%
+  # select document(s) provided in function input
+  data %<>% filter(document_id == document_ids) 
+  
+  # load and clean text
+  d$text <-  d$path %>% read_lines() %>% clean_string()
+  
+  sentences <- data %>%
     select(text) %>%
     unnest_sentences(output = sentences, input = text) %>%
     distinct() %>%
@@ -189,6 +208,10 @@ summarizeText <- function(document_ids, text, max_sentences) {
   if(nrow(sentences) > 1){
     out <- textrank::textrank_sentences(data = sentences,
                                         terminology = words)
+    
+    # arrange by textrank 
+    out$sentences %<>% arrange(-textrank)
+    
     # so we format the unranked sentences data frame as an alternative
   } else {
     out <- list(sentences = as.data.frame(sentences))
@@ -203,21 +226,18 @@ summarizeText <- function(document_ids, text, max_sentences) {
 
 summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
   
-   # data %<>%
-   #   mutate(text = str_remove_all(text, "Docket no\\. Cfp consumer financial protection bureau g street, nw\\."))
-  # section and clean text 
-  data %<>% #group_by(document_id) %>% #clean_comment()  #%>% 
-    # drop headers and footnotes
-    #filter(!is.na(section), part == "text") %>%
-    #FIXME make max_sentences depend on section length
-    # group_by(section) %>% 
-    add_count(document_id, name = "document_length") 
-  
+
+  # not cleaning data here either; should we? I think it is better to do it in the above function so it is done on one comment at a time.
+  # but we can create (must) document_id here if we want to feed in data with just path (not relying on text or doc names)
+  data %<>%  mutate( document_id = path %>%
+            str_remove(".*/")  %>%
+            str_remove("\\..*") 
+   ) 
 
   # summarize, map summary function to each unique section
   text_summary <-  map(.x = data$document_id %>% unique() ,
                        .f = summarizeText, 
-                       text = data, 
+                       data = data, 
                        max_sentences = max_sentences) 
   
   # extract top n_sentences
@@ -228,27 +248,18 @@ summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
     str_to_sentence() %>%  
     str_c(collapse = " ")
   
-  # make a data frame of section headers and n_sentences pulled from textrank output
-  comment_summary <- tibble(
-    comment = pull(data, document_id) %>% unique(), 
-    summary = text_summary %>%
+  # add n_sentences pulled from textrank output to data
+  data$summary <- text_summary %>%
       #FIXME when this fails, it should default to the first sentence of the section. 
-      map_chr(possibly(pull_sentences, otherwise = " ") ) ) 
+      map_chr(possibly(pull_sentences, otherwise = " ") ) 
   
-  return(comment_summary)
+  return(data)
 }
 
 
 
 comment_summary <- summarize_comments(d, n_sentences = 2, max_sentences = 50 )
 
-comment_summary %>%   knitr::kable()
-
-# comment_summary %>%
-#   filter(comment == "CFPB-2016-0025-3913-1") %>%
-#   select(summary)
-
-# d %>%
-#   select(text)
+comment_summary %>% select(document_id, summary) %>% kablebox()
 ```
 
