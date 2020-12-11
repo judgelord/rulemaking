@@ -81,6 +81,10 @@ summarizeText <- function(sections, text, max_sentences) {
   if(nrow(sentences) > 1){
     out <- textrank::textrank_sentences(data = sentences,
                                         terminology = words)
+    
+    # arrange by textrank 
+    out$sentences %<>% arrange(-textrank)
+    
     # so we format the unranked sentences data frame as an alternative
   } else {
     out <- list(sentences = as.data.frame(sentences))
