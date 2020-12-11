@@ -50,7 +50,7 @@ I have collected two datasets from regulations.gov, one for all rules, proposed 
 |rin                         |NA                                                                        |
 |organization                |OLA                                                                        |
 | attachment_1                    | CFPB-2018-0023-0006-1.doc                                                                                                                                                                                                     |
-| comment_url                     | https://www.regulations.gov/contentStreamer?documentId=CFPB-2018-0023-0006                                                                                                                                 |
+| comment_url                     | https://www.regulations.gov/document?D=CFPB-2018-0023-0006                                                                                                                                 |
 
 ### Both tables are also available in [SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing) ([SQL instructions](https://judgelord.github.io/rulemaking/sql))
 
