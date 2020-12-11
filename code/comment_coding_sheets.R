@@ -21,7 +21,11 @@ dim(topdockets)
 topdockets %>% count(number_of_comments_received)
 
 
-d <- comments_all %>% filter(docket_id %in% topdockets$docket_id)
+d <- comments_all %>% 
+  # selecting agencies for hand codeing
+  filter(agency_acronym %in% c("ATF", "ED", "MSHA", "BSEE", "DOJ-CRT", "DOL", "BIA", "FEMA", "BLM", "DOI", "DARS", "DHS")) %>% 
+  filter(docket_id %in% topdockets$docket_id)
+
 dim(d)
 
 
@@ -68,17 +72,20 @@ d %<>%
                          NA),
          attachment_txt = ifelse(attachment_count > 0,  
                       str_c("https://ssc.wisc.edu/~judgelord/comment_text/",
-                            document_id %>% str_remove("-.*$"), # agency 
+                            document_id %>% str_remove("-.*$"), # agency folder
                             "/",
-                            document_id %>% str_remove("-.*?$"), # docket
+                            document_id %>% str_remove("-[A-z1-9]*$"), # docket folder
                             "/",
                             document_id,
                             ".txt"), 
                       NA),
-         comment_url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
+         comment_url = str_c("https://www.regulations.gov/document?D=",
                              document_id),
          proposed_url = NA,
          final_url = NA)
+
+d$attachment_txt[1]
+d$comment_url[1]
 
 d %<>% rename(comment_title = title)
 names(d)

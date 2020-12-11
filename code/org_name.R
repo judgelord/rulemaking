@@ -114,7 +114,7 @@ d %<>%
 
 #broader rules
 #############
-d %<>% mutate(title = comment_title)
+#d %<>% mutate(title = comment_title)
 
 d %<>% 
   #sponsored by
@@ -552,3 +552,5 @@ d %<>%
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "LLC|LC"), 
                           str_ext(comment_text, "\\w+ \\w+ \\w+ llc"), 
                           org_name))
+
+

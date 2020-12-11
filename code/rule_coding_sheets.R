@@ -18,6 +18,11 @@ d <- rules %>%
 dockets <- d 
 
 save(dockets, here::here("data", "dockets_metadata.Rdata") )
+# load(here::here("data", "dockets_metadata.Rdata"))
+
+d  <- dockets
+
+names(d)
   
 # d %>% filter(str_detect(fr_number,";;;")) %>% select(fr_number)
 
