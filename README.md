@@ -4,31 +4,40 @@ This is a project to collect and join various data on US federal agency rulemaki
 
 I have collected two datasets from regulations.gov, one for all rules, proposed rules, and notices and a second for all public comments:
 
-- Metadata for all rules, proposed rules, and notices on regulations.gov ([.Rdata](https://github.com/judgelord/rulemaking/blob/master/data/AllRegsGovRules.Rdata))
+1. Metadata for all rules, proposed rules, and notices on regulations.gov ([.Rdata](https://drive.google.com/file/d/1LrafvpLDC2vBjO8DxEyCsGCEXhlwlKEe/view?usp=sharing))
 
-```
- [1] "agencyAcronym"           
- [2] "allowLateComment"        
- [3] "attachmentCount"         
- [4] "commentDueDate"          
- [5] "commentStartDate"        
- [6] "docketId"                
- [7] "docketTitle"             
- [8] "docketType"              
- [9] "documentId"              
-[10] "documentStatus"          
-[11] "documentType"            
-[12] "frNumber"                
-[13] "numberOfCommentsReceived"
-[14] "openForComment"          
-[15] "postedDate"              
-[16] "rin"                     
-[17] "title" 
-```
+For example:
 
-- Metadata for all public comments on regulations.gov ([.SQLite](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing), [.Rdata](https://github.com/judgelord/rulemaking/blob/master/data/allcomments-sample.Rdata))
+|name                        |value                                                                                                                    |
+|:---------------------------|:------------------------------------------------------------------------------------------------------------------------|
+|agency_acronym              |FDA                                                                                                                      |
+|allow_late_comment          |0                                                                                                                        |
+|attachment_count            |0                                                                                                                        |
+|comment_due_date            |NA                                                                                                                       |
+|comment_start_date          |NA                                                                                                                       |
+|docket_id                   |FDA-1976-N-0020                                                                                                          |
+|docket_title                |ANTIBIOTIC DRUGS/ISOLATION & DIFF OF MICROORGANSM CLI USE                                                                |
+|docket_type                 |Nonrulemaking                                                                                                            |
+|document_id                 |FDA-1976-N-0020-0005                                                                                                     |
+|document_status             |Posted                                                                                                                   |
+|document_type               |Notice                                                                                                                   |
+|fr_number                   |NA                                                                                                                       |
+|number_of_comments_received |0                                                                                                                        |
+|open_for_comment            |0                                                                                                                        |
+|posted_date                 |1978-07-10T00:00:00-04:00                                                                                                |
+|rin                         |NA                                                                                                                       |
+|title                       |Part 433 - Exemptions from Antibiotic Certification and Labeling Requirements - Notice of Confirmation of Effective Date |
+|fr_document_id              |NA                                                                                                                       |
 
-**Using SQL**: For example, to get metadata for all CFPB comments (including those without attachments): 
+2. Metadata for all public comments on regulations.gov ([.Rdata](https://drive.google.com/file/d/1iryaZo4W4-mPnsNC535HPl2KbSt5RKav/view?usp=sharing))
+
+Both tables are also available in [SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing) ([SQL instructions](https://judgelord.github.io/rulemaking/sql))
+
+For example, to get metadata for all CFPB rules:
+
+`SELECT * FROM rules WHERE agency_acronym = 'CFPB')`
+
+and all comments on thosse rules (including those without attachments): 
 
 `SELECT * FROM comments WHERE agency_acronym = 'CFPB')`
 
@@ -37,12 +46,11 @@ In R, you can querry SQL databases with the `DBI` and `RSQLite` packages:
 ```
 library(DBI)
 library(RSQLite)
-con <- DBI::dbConnect(SQLite(), here::here("regs_dot_gov.sqlite"))
+
+con <- DBI::dbConnect(RSQLite::SQLite(), here::here("db", "regs_dot_gov.sqlite"))
 
 # results for a comment, CFPB-2018-0023-0006
-res <- DBI::dbSendQuery(con, "SELECT * FROM comments WHERE document_id = 'CFPB-2018-0023-0006'")
-dbFetch(res)  
-dbClearResult(res)
+dbGetQuery(con, "SELECT * FROM comments WHERE docket_id = 'CFPB-2018-0023-0006'")
 ```
 
 |name                        |value                                                                        |
