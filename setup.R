@@ -85,3 +85,27 @@ source(here::here("functions", "tengram.R"))
 # replace with fill()
 CopyIfNA <- function(x, na.rm = FALSE, ...) na.locf(x, na.rm = na.rm, ...)
 
+#functions for case sensitive string manipulation
+str_rm_all <- function(string, pattern) {
+  str_remove_all(string, regex(pattern, ignore_case = TRUE))
+}
+
+str_rpl <- function(string, pattern, replacement) {
+  str_replace(string, regex(pattern, ignore_case = TRUE), replacement)
+}
+
+str_rm <- function(string, pattern) {
+  str_remove(string, regex(pattern, ignore_case = TRUE))
+}
+
+str_dct <- function(string, pattern) {
+  str_detect(string, regex(pattern, ignore_case = TRUE))
+}
+
+str_ext <- function(string, pattern) {
+  str_extract(string, regex(pattern, ignore_case = TRUE))
+}
+
+str_spl <- function(string, pattern) {
+  str_split(string, regex(pattern, ignore_case = TRUE))
+}

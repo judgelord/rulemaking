@@ -1,4 +1,10 @@
+
+source("setup.R")
+load("rules_metadata.Rdata")
 names(rules)
+load("comment_metadata.Rdata")
+names(comments_all)
+
 topdockets <- rules %>% 
   ungroup() %>% 
   filter(docket_type == "Rulemaking",
@@ -8,34 +14,40 @@ topdockets <- rules %>%
             n = 1,
             with_ties =F)
 
+topdockets$number_of_comments_received %>% head()
+
 dim(topdockets)
 
 topdockets %>% count(number_of_comments_received)
 
-names(comments)
 
-d <- comments %>% filter(docket_id %in% topdockets$docket_id)
+d <- comments_all %>% filter(docket_id %in% topdockets$docket_id)
+dim(d)
+
+
+
+# filter to mass dockets
+d %<>% group_by(docket_id) %>% 
+  # mass dockets
+  mutate(number_of_comments_on_docket = sum(number_of_comments_received),
+         max = max(number_of_comments_received) ) %>% 
+  ungroup() %>% 
+  filter(max > 99 | number_of_comments_on_docket > 999)
 dim(d)
 
 # apply auto-coding 
 #FIXME with updated org_names from hand-coding 
-source(here::here("code", "org_comment.R"))
+source(here::here("code", "org_name.R"))
 source(here::here("code", "comment_position.R"))
 
 # filter down to org comments
-d %<>% group_by(docket_id) %>% 
-  #FIXME get this from data
-  add_count(name = "number_of_comments_received") %>%
-  # mass dockets
-  mutate(max = max(number_of_comments_received) ) %>% 
-  ungroup() %>% 
-  filter(max > 99) %>% 
+d %<>% 
   group_by(docket_id, org_name) %>% 
   add_count(name = "org_total") %>% 
   ungroup() %>%
   arrange(-number_of_comments_received) %>% 
   filter(attachment_count > 0) %>% 
-  filter(!org_name %in% c("NA", "na", "Organization Unknown 1"),
+  filter(!org_name %in% c("NA", "na", "Organization Unknown 1", "Organization Unknown 2", "Organization Unknown 3"),
          !is.na(org_name),
          #FIXME
          org_total < 5) %>% 
@@ -56,7 +68,10 @@ d %<>%
                          NA),
          attachment_txt = ifelse(attachment_count > 0,  
                       str_c("https://ssc.wisc.edu/~judgelord/comment_text/",
-                            document_id %>% str_remove("-.*?$"),
+                            document_id %>% str_remove("-.*$"), # agency 
+                            "/",
+                            document_id %>% str_remove("-.*?$"), # docket
+                            "/",
                             document_id,
                             ".txt"), 
                       NA),
@@ -65,16 +80,17 @@ d %<>%
          proposed_url = NA,
          final_url = NA)
 
-
+d %<>% rename(comment_title = title)
 names(d)
 ## PREP SHEETS
 d %<>% select(agency_acronym, 
               docket_id, 
               docket_title, 
               document_id, 
-              proposed_url,
-              final_url,
+              #proposed_url, #FIXME 
+              #final_url,
               comment_url, 
+              comment_text,
               attachment_txt,
               organization, 
               comment_title,
@@ -107,23 +123,24 @@ d %<>% mutate(position = "",
               notes = "")
 
 names(d)
-d %<>% select(-number_of_comments_received, 
-              -org_total)
 
 # unique(d$organization)
 
 count(d, organization, sort = T) %>% head()
 
-# move to comment coding
-d %>% 
-head()
+
+# create new directory if needed
+if (!dir.exists(here::here("data", "datasheets") ) ){
+  dir.create( here::here("data", "datasheets") )
+}
+
 
 write_comment_sheets <- function(docket){
   d %>% 
     filter(docket_id == docket) %>% 
     write_csv(path = here::here("data",
                                 "datasheets",
-                              str_extract("^[A-Z]"), # agency  
+                              #str_extract("^[A-Z]"), # agency  
                               str_c(docket, "_org_comments.csv")))
 }
 

@@ -16,7 +16,7 @@ d %<>%
 
 
 # clean up
-d %>% mutate(org_name = str_rm(org_name, "^comment from|^comment submitted by|^from|^re |- comment$|-comment$|comment$|^request for extension|^request for an extension"))
+d %<>% mutate(org_name = str_rm(org_name, "^comment from|^comment submitted by|^from|^re |- comment$|-comment$|comment$|^request for extension|^request for an extension"))
 
 
 # # Look for bad org names to remove 
@@ -33,7 +33,6 @@ d %>% mutate(org_name = str_rm(org_name, "^comment from|^comment submitted by|^f
 # Remove bad org names
 d %<>% 
   #mutate(org_name= tolower(org_name)) %>% 
-  mutate(org_name = str_rm(org_name, "^comment from|^comment submitted by|^from|^re |- comment$|-comment$|comment$|^request for extension|^request for an extension")) %>% 
   mutate(org_name = ifelse(str_dct(org_name, str_c("^none$", "^unknown$", "^individual$", "^citizen$", "self$", "not applicable", "^private$", "personal", "lover", "mr\\.$", "mrs\\.$", "^ms$",
                                                    "retired", "^dr$", "^miss$", "^mr$", "^ms\\.$", "^mr\\.$", "^na$", "^me$", "^-$|^--$", "street$", "^happy$", "^r$", "^home$", "please select", "^brain$", "^no name$",
                                                    "no one$", "^nol longer", "no organization$", "- select -", "- none - ","--none--", "concerned citizen$", "-none-", "select\\.\\.\\.", "send$", "^love$", "^n\\.a\\.$",
@@ -115,6 +114,8 @@ d %<>%
 
 #broader rules
 #############
+d %<>% mutate(title = comment_title)
+
 d %<>% 
   #sponsored by
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "sponsor... by [[:upper:]]"), 
@@ -365,9 +366,6 @@ d %<>%
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "Care2"), 
                           "Care2", 
                           org_name)) %>% 
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "Sierra Club"), 
-                          "Sierra Club", 
-                          org_name)) %>% 
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "Environmental Action"), 
                           "Environmental Action", 
                           org_name)) %>% 
@@ -454,7 +452,7 @@ d %<>%
   #Audobon California
   #FIXME
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "Audobon California"), 
-                          "Audobon California", 
+                          "Audubon California", 
                           org_name)) %>% 
   #Care2
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "Care2"), 
@@ -554,7 +552,3 @@ d %<>%
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "LLC|LC"), 
                           str_ext(comment_text, "\\w+ \\w+ \\w+ llc"), 
                           org_name))
-
-#org
-##############################
-

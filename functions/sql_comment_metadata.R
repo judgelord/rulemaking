@@ -1,4 +1,5 @@
-# This script joins data on all comments from regulations.gov
+# This script joins data on all comments from regulations.gov and formats them for SQL
+
 # Completing missing from any one dataset
 load(here::here("ascending2/allcomments.Rdata"))
 dim(all)
@@ -72,6 +73,7 @@ names(rules)
 head(rules)
 
 #FIXME lots more standardizing to do. Code for testing in sql_comment_metadata_CFPB
+# THIS SHOULD BE A FUNCTION clean_fr_number
 # standardize fr_document_id
 rules %<>% #mutate_all(as.character) %>%
   mutate(fr_document_id = fr_number %>% 
@@ -93,6 +95,7 @@ names(rules)
 
 rules %<>% select(-fr_document_id2)
 
+rules %<>% select(-fr_document_id2)
 
 
 
@@ -103,6 +106,7 @@ save(rules, file = "rules_metadata.Rdata")
 
 # load("rules_metadata.Rdata")
 # load("comment_metadata.Rdata")
+names(rules)
 dim(rules)
 rules$docket_id %>% unique() %>% length()
 
