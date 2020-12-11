@@ -88,8 +88,8 @@ read_comment <- . %>%
   clean_string() 
 
 d$text <- map_chr(d$path, read_comment)
-
 d
+
 ```
 
 # CFPB Payday Loan Rule
@@ -138,11 +138,11 @@ d
   
 
 
-summarizeText <- function(document_id, text, max_sentences) {
+summarizeText <- function(document_ids, text, max_sentences) {
   
   sentences <- text %>%
     # slect section provided in function input
-    filter(document_id == document_id) %>%
+    filter(document_id == document_ids) %>%
     select(text) %>%
     unnest_sentences(output = sentences, input = text) %>%
     distinct() %>%
@@ -159,13 +159,15 @@ summarizeText <- function(document_id, text, max_sentences) {
     anti_join(tidytext::stop_words)
   
   # textRank fails if you feed it only one sentence
-  if(nrow(sentences) > 1){
+  #if(nrow(sentences) > 1){
     out <- textrank::textrank_sentences(data = sentences,
                                         terminology = words)
     # so we format the unranked sentences data frame as an alternative
-  } else {
-    out <- list(sentences = as.data.frame(sentences))
-  }
+  #} else {
+   # out <- list(sentences = as.data.frame(sentences))
+ # }
+  
+  #out %>%   knitr::kable() 
   
   return(out)
   
@@ -175,12 +177,12 @@ summarizeText <- function(document_id, text, max_sentences) {
 summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
   
   # section and clean text 
-  data %<>% group_by(document_id) #%>% clean_comment()  #%>% 
+  data %<>% #group_by(document_id) %>% #clean_comment()  #%>% 
     # drop headers and footnotes
     #filter(!is.na(section), part == "text") %>%
     #FIXME make max_sentences depend on section length
     # group_by(section) %>% 
-    #add_count(document_id, name = "document_length") 
+    add_count(document_id, name = "document_length") 
   
 
   # summarize, map summary function to each unique section
@@ -206,6 +208,8 @@ summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
   
   return(comment_summary)
 }
+
+
 
 comment_summary <- summarize_comments(d, n_sentences = 2, max_sentences = 50 )
 
