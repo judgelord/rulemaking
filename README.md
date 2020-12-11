@@ -4,9 +4,7 @@ This is a project to collect and join various data on US federal agency rulemaki
 
 I have collected two datasets from regulations.gov, one for all rules, proposed rules, and notices and a second for all public comments:
 
-1. Metadata for all rules, proposed rules, and notices on regulations.gov ([.Rdata](https://drive.google.com/file/d/1LrafvpLDC2vBjO8DxEyCsGCEXhlwlKEe/view?usp=sharing))
-
-For example:
+### 1. Metadata for all rules, proposed rules, and notices on regulations.gov ([.Rdata](https://drive.google.com/file/d/1LrafvpLDC2vBjO8DxEyCsGCEXhlwlKEe/view?usp=sharing))
 
 |name                        |value                                                                                                                    |
 |:---------------------------|:------------------------------------------------------------------------------------------------------------------------|
@@ -29,29 +27,7 @@ For example:
 |title                       |Part 433 - Exemptions from Antibiotic Certification and Labeling Requirements - Notice of Confirmation of Effective Date |
 |fr_document_id              |NA                                                                                                                       |
 
-2. Metadata for all public comments on regulations.gov ([.Rdata](https://drive.google.com/file/d/1iryaZo4W4-mPnsNC535HPl2KbSt5RKav/view?usp=sharing))
-
-Both tables are also available in [SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing) ([SQL instructions](https://judgelord.github.io/rulemaking/sql))
-
-For example, to get metadata for all CFPB rules:
-
-`SELECT * FROM rules WHERE agency_acronym = 'CFPB')`
-
-and all comments on thosse rules (including those without attachments): 
-
-`SELECT * FROM comments WHERE agency_acronym = 'CFPB')`
-
-In R, you can querry SQL databases with the `DBI` and `RSQLite` packages: 
-
-```
-library(DBI)
-library(RSQLite)
-
-con <- DBI::dbConnect(RSQLite::SQLite(), here::here("db", "regs_dot_gov.sqlite"))
-
-# results for a comment, CFPB-2018-0023-0006
-dbGetQuery(con, "SELECT * FROM comments WHERE docket_id = 'CFPB-2018-0023-0006'")
-```
+### 2. Metadata for all public comments on regulations.gov ([.Rdata](https://drive.google.com/file/d/1iryaZo4W4-mPnsNC535HPl2KbSt5RKav/view?usp=sharing))
 
 |name                        |value                                                                        |
 |:---------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -75,6 +51,28 @@ dbGetQuery(con, "SELECT * FROM comments WHERE docket_id = 'CFPB-2018-0023-0006'"
 |organization                |OLA                                                                        |
 | attachment_1                    | CFPB-2018-0023-0006-1.doc                                                                                                                                                                                                     |
 | comment_url                     | https://www.regulations.gov/contentStreamer?documentId=CFPB-2018-0023-0006                                                                                                                                 |
+
+### Both tables are also available in [SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing) ([SQL instructions](https://judgelord.github.io/rulemaking/sql))
+
+For example, to get metadata for all CFPB rules:
+
+`SELECT * FROM rules WHERE agency_acronym = 'CFPB')`
+
+and all comments on those rules (including those without attachments): 
+
+`SELECT * FROM comments WHERE agency_acronym = 'CFPB')`
+
+In R, you can querry SQL databases with the `DBI` and `RSQLite` packages: 
+
+```
+library(DBI)
+library(RSQLite)
+
+con <- DBI::dbConnect(RSQLite::SQLite(), here::here("db", "regs_dot_gov.sqlite"))
+
+# results for a comment, CFPB-2018-0023-0006
+dbGetQuery(con, "SELECT * FROM comments WHERE docket_id = 'CFPB-2018-0023-0006'")
+```
 
 ## Unified Agenda of Regulatory and Deregulatory Actions
 
