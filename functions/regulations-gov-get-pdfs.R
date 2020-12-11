@@ -16,9 +16,9 @@ names(all)
 
 # urls for first attachments 
 all %<>% 
-  mutate(file = str_c(documentId, "-1.pdf"),
+  mutate(file = str_c(document_id, "-1.pdf"),
          attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
-                            documentId,
+                            document_id,
                             "&attachmentNumber=1"),
          downloaded = file %in% list.files(here::here("comments")) )
 
@@ -29,8 +29,8 @@ all %>%
   filter(!downloaded,
          #org.comment, # comments identified as a org comment 
          #!is.na(organization), # comments with an org name identified
-         attachmentCount > 0) %>% 
-         count(agencyAcronym, sort = T) %>% knitr::kable()
+         attachment_count > 0) %>% 
+         count(agency_acronym, sort = T) %>% knitr::kable()
 
 d <- all
 
@@ -48,15 +48,15 @@ head(d)
 
 # subset to download
 docs <- d %>% filter(#org.comment, # comments identified as a org comment 
-                     !is.na(organization), # comments with an org name identified
-                     attachmentCount>0) # subset to those with attachment
+                     !is.na(organization) | number_of_comments_received > 99, # comments with an org name identified
+                     attachment_count>0) # subset to those with attachment
 
 # Inspect
 nrow(docs)
 docs %>% head() %>% select(file, attach.url, downloaded)
 
 
-docs %>%  count(agencyAcronym, sort = T) %>% knitr::kable()
+docs %>%  count(agency_acronym, sort = T) %>% knitr::kable()
 #################################
 # files we do have 
 downloaded <- filter(docs, downloaded)
@@ -64,8 +64,8 @@ downloaded <- filter(docs, downloaded)
 # inspect 
 dim(downloaded)
 head(downloaded)
-sum(downloaded$numberOfCommentsReceived)
-write.table(sum(downloaded$numberOfCommentsReceived), file = "data/downloaded.tex")
+sum(downloaded$number_of_comments_received)
+write.table(sum(downloaded$number_of_comments_received), file = "data/downloaded.tex")
 
 # to DOWNLOAD 
 # files we don't have 
@@ -79,7 +79,7 @@ download <- filter(docs,
 dim(docs)
 dim(download)
 download %>% head() %>% select(file, attach.url, downloaded)
-download %>%  count(agencyAcronym, sort = T) %>% knitr::kable()
+download %>%  count(agency_acronym, sort = T) %>% knitr::kable()
 
 # download %<>% filter(agencyAcronym == "OCC")
 dim(download)
