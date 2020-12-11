@@ -106,7 +106,7 @@ clean_comment <- . %>%
           ) #%>%
   # filter(d != "")  #filter out blank strings
 
-data %<>% group_by(document_id) %>% clean_comment()
+d %<>% group_by(document_id) %>% clean_comment()
 
 
   
