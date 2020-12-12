@@ -141,7 +141,7 @@ clean_string <- . %>%
   str_remove_all("pagebreak") %>%
   str_remove_all(comment_footer) %>%
   str_remove_all(agency_address) %>%
-  str_remove_all("\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.") %>%
+  str_remove_all("\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.|www.magnifymoney.com|magnifymoney") %>%
   # str_replace_all(" \\,", ", ") %>%
   str_replace_all(" \\.", ". ") %>%
   str_squish() 
