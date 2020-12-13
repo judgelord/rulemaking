@@ -25,7 +25,28 @@ d <- comments_all %>%
   # filter to top dockets
   filter(docket_id %in% topdockets$docket_id) %>% 
   # selecting agencies for hand codeing
-  filter(agency_acronym %in% c("ATF", "ED", "MSHA", "BSEE", "DOJ-CRT", "DOL", "BIA", "FEMA", "BLM", "DOI", "DARS", "DHS")) 
+  filter(agency_acronym %in% c("ATF", 
+                               "NLRB",
+                               "OFCCP",
+                               "OJP",
+                               "USCG",
+                               "CIS",
+                               "USCBP",
+                               "PHMSA",
+                               "DOS",
+                               "ED", 
+                               "MSHA", 
+                               "BSEE", 
+                               "DOJ-CRT", 
+                               "DOL", 
+                               "BIA", 
+                               "FEMA", 
+                               "BLM", 
+                               "DOI", 
+                               "DEA",
+                               "OSHA",
+                               "DARS", 
+                               "DHS")) 
 
 dim(d)
 
@@ -44,6 +65,9 @@ dim(d)
 #FIXME with updated org_names from hand-coding 
 source(here::here("code", "org_name.R"))
 source(here::here("code", "comment_position.R"))
+
+temp <- d
+d <- temp
 
 d %>% count(org_name, sort = T)
 
@@ -78,7 +102,7 @@ d %<>%
                             document_id %>% str_remove("-[A-z1-9]*$"), # docket folder
                             "/",
                             document_id,
-                            ".txt"), 
+                            "-1.txt"), 
                       NA),
          comment_url = str_c("https://www.regulations.gov/document?D=",
                              document_id),
@@ -95,14 +119,13 @@ d %<>% select(agency_acronym,
               docket_id, 
               docket_title, 
               document_id, 
-              #proposed_url, #FIXME 
-              #final_url,
               comment_url, 
               comment_text,
               attachment_txt,
               organization, 
               comment_title,
               attachment_count, 
+              number_of_comments_received,
               org_name)
 
 # add blanks
@@ -135,7 +158,7 @@ names(d)
 # unique(d$organization)
 
 count(d, organization, sort = T) %>% head()
-
+count(d, org_name, sort = T) %>% head()
 
 # create new directory if needed
 if (!dir.exists(here::here("data", "datasheets") ) ){
@@ -152,7 +175,12 @@ write_comment_sheets <- function(docket){
                               str_c(docket, "_org_comments.csv")))
 }
 
+
+names(d)
+d %<>% mutate(comment_type = ifelse(number_of_comments_received > 99, "mass", comment_type))
+
 unique(d$docket_id)
 
 walk(unique(d$docket_id), write_comment_sheets)
+
 
