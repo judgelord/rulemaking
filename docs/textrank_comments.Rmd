@@ -104,76 +104,48 @@ d$text <- map_chr(d$path, read_comment)
 d
 
 d$text %>% kablebox()
+d$text
 ```
 
 # CFPB Payday Loan Rule
 
 ```{r summarize}
 
-# clean_string <- . %>% 
-#   str_c(collapse = " ") %>% 
-#   # make sure sentences are ended
-#   str_replace_all("\\t|\\\n", " ") %>%
-#   #str_replace_all("\\s+"," ") %>%
-#   #str_remove_all("\\(.*\\)|[0-9]|_") %>%
-#   #str_replace_all("[^([A-z]& &'&\\.&\\,&\\?&\\!&\\;&\\;)]", " ") %>% 
-#   #str_replace_all("\\.([A-z])", ". \\1") %>%
-#   # remvove numbers and specials (keep only text and basic punctuation)
-#   str_remove_all("\\\\") %>% 
-#   str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;<>]", " ") %>% 
-#   str_squish() %>%
-#   str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
-#   str_replace_all(" , ", " ") %>% 
-#   # double commas  
-#   #str_replace_all("\\, \\, ", ", ") %>% 
-#   # double periods 
-#   #str_replace_all("\\. \\. ", ". ") %>% 
-#   # one character after a period 
-#   str_replace_all("\\. .\\. ", ". ") %>% 
-#   # remove white space
-#   str_squish() %>% 
-#   # str_replace_all(" \\,", ", ") %>%
-#   str_replace_all(" \\.", ". ") %>%
-#   str_squish() 
+comment_header <- c("Docket No. CFP Consumer Financial Protection Bureau G Street, NW. Washington, DC")
 
+comment_footer <- c("Sincerely,|Signature|Print Name|Address|City|State|Docket No\\. CFP|Zip|Email|Date")
 
-# clean_comment <- . %>%  
-#   # drop short texts
-#   #filter(nchar(d) > 60) %>% 
-#   # identify headings as lines with a period in the beginning (also captures some footnotes)
-#   #mutate(part = ifelse(str_detect(str_sub(d, 1, 5) ,'\\.'), 'head', 'd')) %>% 
-#   # idetify footnotes with a number and no period
-#   #mutate(part = ifelse(d %>% str_detect("^[0-9](?!\\.)"), 'footnote', part) ) %>% 
-#   summarize(text = text %>% 
-#            str_c(collapse = " ") %>% 
-#            # CAUTION: removes all text in parentheses
-#            str_replace_all("\\s+"," ") %>%
-#            #str_remove_all("\\(.*\\)|[0-9]|_") %>%
-#            #str_remove_all(d, "§") %>% 
-#            str_squish() %>% 
-#            # add space after periods
-#            str_replace_all("\\.([A-Z][a-z])", ". \\1") %>%
-#           # remvove numbers and specials (keep only text and basic punctuation)
-#           str_replace_all("[^([A-z]& &'&\\.&\\,&\\?&\\!&\\;&\\;)]", " ") %>% 
-#           # remove space before periods
-#           str_replace_all(" \\.", ". ") %>%
-#           # double commas  
-#           str_replace_all("(\\, \\,) ", ", ") %>% 
-#           # double periods 
-#           str_replace_all("(\\. \\.|\\.\\.) ", ". ") %>% 
-#            str_squish() %>%
-#           # one character after a period 
-#           str_replace_all("\\. .\\. ", ". ") %>% 
-#           # remove white space
-#           str_replace_all(" \\,", ", ") %>%
-#           str_replace_all(" \\.", ". ") %>%
-#            str_remove_all("pagebreak|http www\\.magnifymoney\\.com|docket no") %>%
-#           str_squish() # %>% clean_string() # optional
-#           ) #%>%
-#   # filter(d != "")  #filter out blank strings
-# 
-# #d %<>% group_by(document_id) %>% clean_comment()
-# 
+agency_address <- c("Dear Consumer Financial Protection Bureau CFPB")
+
+clean_string <- . %>% 
+  str_c(collapse = " ") %>% 
+  # make sure sentences are ended
+  str_replace_all("\\t|\\\n", " ") %>% 
+  str_remove_all("<|>") %>%
+  #str_replace_all("\\.([A-z])", ". \\1") %>%
+  # remvove numbers and specials (keep only text and basic punctuation)
+  str_remove_all("\\\\") %>% 
+  str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;<>]", " ") %>% 
+  str_squish() %>%
+  str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
+  str_replace_all(" , ", " ") %>% 
+  # double commas  
+  #str_replace_all("\\, \\, ", ", ") %>% 
+  # double periods 
+  #str_replace_all("\\. \\. ", ". ") %>% 
+  # one character after a period 
+  str_replace_all("\\. .\\. ", ". ") %>% 
+  # remove white space
+  str_squish() %>% 
+  str_remove_all(comment_header) %>%
+  str_remove_all("pagebreak") %>%
+  str_remove_all(comment_footer) %>%
+  str_remove_all(agency_address) %>%
+  str_remove_all("\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.|www.magnifymoney.com|magnifymoney") %>%
+  # str_replace_all(" \\,", ", ") %>%
+  str_replace_all(" \\.", ". ") %>%
+  str_squish() 
+
 
 # for testing 
 data <- d
