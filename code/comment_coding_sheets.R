@@ -22,9 +22,10 @@ topdockets %>% count(number_of_comments_received)
 
 
 d <- comments_all %>% 
+  # filter to top dockets
+  filter(docket_id %in% topdockets$docket_id) %>% 
   # selecting agencies for hand codeing
-  filter(agency_acronym %in% c("ATF", "ED", "MSHA", "BSEE", "DOJ-CRT", "DOL", "BIA", "FEMA", "BLM", "DOI", "DARS", "DHS")) %>% 
-  filter(docket_id %in% topdockets$docket_id)
+  filter(agency_acronym %in% c("ATF", "ED", "MSHA", "BSEE", "DOJ-CRT", "DOL", "BIA", "FEMA", "BLM", "DOI", "DARS", "DHS")) 
 
 dim(d)
 
@@ -44,6 +45,8 @@ dim(d)
 source(here::here("code", "org_name.R"))
 source(here::here("code", "comment_position.R"))
 
+d %>% count(org_name, sort = T)
+
 # filter down to org comments
 d %<>% 
   group_by(docket_id, org_name) %>% 
@@ -52,9 +55,7 @@ d %<>%
   arrange(-number_of_comments_received) %>% 
   filter(attachment_count > 0) %>% 
   filter(!org_name %in% c("NA", "na", "Organization Unknown 1", "Organization Unknown 2", "Organization Unknown 3"),
-         !is.na(org_name),
-         #FIXME
-         org_total < 5) %>% 
+         !is.na(org_name) ) %>% 
   add_count(docket_id)
 
 d %>% 
