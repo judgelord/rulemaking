@@ -62,7 +62,7 @@ and all comments on those rules (including those without attachments):
 
 `SELECT * FROM comments WHERE agency_acronym = 'CFPB')`
 
-In R, you can querry SQL databases with the `DBI` and `RSQLite` packages: 
+In R, you can query SQL databases with the `DBI` and `RSQLite` packages: 
 
 ```
 library(DBI)
