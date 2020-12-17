@@ -1,12 +1,14 @@
 # This script builds functions to pull from the regulations.gov API, see http://regulationsgov.github.io/developers/console/#!/documents.json/documents_get_0
 
-# load packages
-source("setup.R")
-
 # grab your regulations.gov API key from a seperate file
-source("api-key.R") 
+# source("api-key.R") 
 # or otherwise define it
-api_key <- api_key
+# api_key <- api_key
+
+library(httr)
+library(jsonlite)
+library(tidyverse)
+library(magrittr)
 
 
 # defaults 
@@ -53,6 +55,7 @@ search.docs <- function(documenttype, n) {
   # loop over and bind additional pages 
   if(n>=2000){
   for(i in round(start/1000)+1:round(n/1000)){
+    Sys.sleep(60)
     #tryCatch({
     raw.result <- GET(url = url, path = paste0(path, "&po=", page[i]))
     if(raw.result$status_code == 200){
@@ -165,33 +168,6 @@ if(raw.result$status_code != 200){ print(paste("Error: status code =", raw.resul
 ########################################################
 # KEYWORD SEARCH #
 ##################
-# create path function for keyword searches, comment out things like agency or status
-search.keywords <- function(documenttype, keywords, n) {
-  keywords <- gsub(" ", "%2B", keywords)
-  documenttype <- gsub(", ", "%2B", documenttype)
-  
-  regs.gov.path <- function(documenttype, search){
-    paste0("/regulations/v3/documents?api_key=", api_key, 
-           "&rpp=", rpp, 
-           #"&a=", agency,
-           "&so=", order, 
-           "&sb=", sortby, 
-           "&s=", search, 
-           #"&cp=", status,
-           "&dct=", documenttype)
-  }
-
-# clear paths
-paths <- NA
-
-# make a vector of paths for each keyword
-for(i in 1:length(keywords)){
-  paths[i] <- regs.gov.path(
-    documenttype = documenttype, # "N%2BPR%2BFR%2BPS%2BSR%2BO" # N%2BPR%2BFR%2BPS%2BSR%2BO = all docs, N: Notice PR: Proposed Rule FR: Rule O: Other SR: Supporting & Related Material PS: Public Submission
-    search = keywords[i])
-  return(paths)
-}
-
 
 
 ######################
@@ -219,6 +195,36 @@ search.keyword <- function(path) {
   } # end loop
   return(d)
 } # end keyword function
+
+
+# create path function for keyword searches, comment out things like agency or status
+search.keywords <- function(documenttype, keywords, n) {
+  keywords <- gsub(" ", "%2B", keywords)
+  documenttype <- gsub(", ", "%2B", documenttype)
+  
+  regs.gov.path <- function(documenttype, search){
+    paste0("/regulations/v3/documents?api_key=", api_key, 
+           "&rpp=", rpp, 
+           #"&a=", agency,
+           "&so=", order, 
+           "&sb=", sortby, 
+           "&s=", search, 
+           #"&cp=", status,
+           "&dct=", documenttype)
+  }
+
+# clear paths
+paths <- NA
+
+# make a vector of paths for each keyword
+for(i in 1:length(keywords)){
+  paths[i] <- regs.gov.path(
+    documenttype = documenttype, # "N%2BPR%2BFR%2BPS%2BSR%2BO" # N%2BPR%2BFR%2BPS%2BSR%2BO = all docs, N: Notice PR: Proposed Rule FR: Rule O: Other SR: Supporting & Related Material PS: Public Submission
+    search = keywords[i])
+}
+
+
+
 
 
 ###################
@@ -275,7 +281,7 @@ return(d)
 
 ###############################
 # One document (requires knowing the document id)
-docID <- d$documentId[2]
+# docID <- d$documentId[2]
 
 search.doc <- function(docID) {
 
