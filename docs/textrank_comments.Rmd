@@ -60,6 +60,42 @@ When the function is done, I'll add it to the textrank.R file.
 
 You can download it [here](https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R) or load it in R with `source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R")`
 
+```{r gs}
+
+library(googlesheets4)
+library(readtext)
+
+gs4_auth(
+  email = gargle::gargle_oauth_email()
+  )
+
+
+#Read in handcoded asks
+# table1 <- read_sheet("https://docs.google.com/spreadsheets/d/1jdQjknkJ4LlTMaBUVRUoJwF34C0ose1NJznhPlctciI/edit")
+# table2 <- read_sheet("https://docs.google.com/spreadsheets/d/1Z0hkac2hlNzBKYJzE3aGjGhM8D00rZcPPBRrllD6rwI/edit#gid=1545760618")
+# table3 <- read_sheet("https://docs.google.com/spreadsheets/d/1a1pPe70tiB-a8YRIHGBuKZzXC3R3wBwCKtEJFatiyAE/edit")
+
+#Join asks into one df
+asksData <- 
+  left_join(read_sheet("https://docs.google.com/spreadsheets/d/1jdQjknkJ4LlTMaBUVRUoJwF34C0ose1NJznhPlctciI/edit"), 
+            read_sheet("https://docs.google.com/spreadsheets/d/1Z0hkac2hlNzBKYJzE3aGjGhM8D00rZcPPBRrllD6rwI/edit#gid=1545760618"), 
+            by = c("proposed_url", "final_url", "comment_url", "document_id", "organization", "position_certainty", "comment_type", "coalition_comment", "coalition_type", "org_name", "org_name_short", "org_type", "ask", "ask1", "ask2", "ask3", "success", "success_certainty", "sucess1", "success2", "success3", "response", "pressure_phrases", "compromise_phrases", "notes")) %>%
+  left_join(read_sheet("https://docs.google.com/spreadsheets/d/1a1pPe70tiB-a8YRIHGBuKZzXC3R3wBwCKtEJFatiyAE/edit"), 
+            by = c("proposed_url", "final_url", "comment_url", "document_id", "organization", "position_certainty", "comment_type", "coalition_comment", "coalition_type", "org_name", "org_name_short", "org_type", "ask", "ask1", "ask2", "ask3", "success", "success_certainty", "sucess1", "success2", "success3", "response", "pressure_phrases", "compromise_phrases", "notes"))
+
+```
+
+```{r filter}
+#Filter out NA asks
+ # d <- asksData %>%
+ #   filter(! is.na(ask)) 
+  
+#FIXME read in txt files
+# comments <-  map(.x = d$document_id %>% unique(),
+#                  read_sheet ) 
+#   
+# comment <- read_sheet("https://docs.google.com/document/d/1qtW-HhPFGbp167CjC9zRRkPViqKaNZhnJ6LoYFTA_LY/edit")
+```
 
 ```{r}
 # load summarize_comment() function
@@ -74,7 +110,7 @@ source(here::here("functions", "clean_string.R"))
 agency <- "CFPB"
 docket <- "CFPB-2016-0025"
 # get txt file names from a directory, here called “comment_text”
-comments <- tibble( path = list.files( here::here('comment_text', agency, docket), 
+omments <- tibble( path = list.files( here::here('comment_text', agency, docket), 
                                        full.names = T) ) %>% 
   filter( str_detect(path, "txt") )
 
