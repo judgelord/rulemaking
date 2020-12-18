@@ -60,15 +60,87 @@ tail(support$postedDate)
 save(support, file = here::here("data", str_c("support", Sys.Date(), ".Rdata")))
 
 # EJ
-ejPS <- search.keywords(keywords = c("environmental justice"),
-                     documenttype = "PS",
-                     n = 100000)
 
-ejNPRM <- search.keywords(keywords = c("environmental justice"),
-                        documenttype = "PR",
-                        n = 100000)
+# EJ NPRMs
+# test with first 10k
+ejPR <- map_dfr(.x = c(1:10),
+                .f = search_keyword_page,
+                documenttype = "PR",
+                keyword = "environmental justice")
 
-ejFR <- search.keywords(keywords = c("environmental justice"),
-                          documenttype = "FR",
-                          n = 100000)
+# # up to 100k
+# ejPR100 <- map_dfr(.x = c(11:100),
+#                  .f = search_keyword_page,
+#                  documenttype = "FR",
+#                  keyword = "environmental justice")
 
+# # inspect
+# ejPR100 %>% 
+#   filter(!is.na(postedDate)) %>% 
+#   tail() %>% 
+#   .$postedDate
+# 
+# ejPR %<>% full_join(ejPR100)
+
+save(ejPR, file = here::here("data", "ejPR.Rdata"))
+
+##################################
+# EJ Rules 
+# test with first 10k
+ejFR <- map_dfr(.x = c(1:10),
+                      .f = search_keyword_page,
+                      documenttype = "FR",
+                      keyword = "environmental justice")
+
+# up to 100k
+ejFR100 <- map_dfr(.x = c(11:100),
+                 .f = search_keyword_page,
+                 documenttype = "FR",
+                 keyword = "environmental justice")
+
+# inspect
+ejFR100 %>% 
+  filter(!is.na(postedDate)) %>% 
+  tail() %>% 
+  .$postedDate
+
+ejFR %<>% full_join(ejFR100)
+
+save(ejFR, file = here::here("data", "ejFR.Rdata"))
+
+
+
+###################
+# EJ COMMENTS 
+
+# test with first 10k
+ejcomments <- map_dfr(.x = c(1:10),
+                      .f = search_keyword_page,
+                      documenttype = "PS",
+                      keyword = "environmental justice")
+
+# up to 100k
+ej100 <- map_dfr(.x = c(11:100),
+                 .f = search_keyword_page,
+                 documenttype = "PS",
+                 keyword = "environmental justice")
+
+# inspect
+ej100 %>% 
+  filter(!is.na(postedDate)) %>% 
+  tail() %>% 
+  .$postedDate
+
+ejcomments %<>% full_join(ej100)
+
+save(ejcomments, file = here::here("data", "ejcomments.Rdata"))
+
+# # up to .5m if needed (but as of 2020, n = 41,591k)
+# ej500 <- map_dfr(.x = c(101:500),
+#                  .f = search_keyword_page,
+#                  documenttype = "PS",
+#                  keyword = "environmental justice")
+# 
+# ejcomments %<>% full_join(ej500)
+# 
+# save(ejcomments, file =  here::here("data", "ejcomments.Rdata"))
