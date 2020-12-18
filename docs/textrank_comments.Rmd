@@ -112,7 +112,7 @@ d <- comments %>%
   # select comments that have been hand coded
   filter(document_id %in% coded$document_id)
 
-# d %<>% head() #FIXME just working with a few comments for now
+d %<>% head() #FIXME just working with a few comments for now
 ```
   
 
