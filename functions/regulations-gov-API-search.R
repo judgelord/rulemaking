@@ -224,9 +224,6 @@ for(i in 1:length(keywords)){
 }
 
 
-
-
-
 ###################
 # get keyword 1  #
 ##################
@@ -253,10 +250,33 @@ return(d)
 } # end search.keywords() function 
 
 
-
-
-
-
+search_keyword_page <- function(page, documenttype, keyword){
+  
+  # format
+search <- gsub(" ", "%2B", keyword)
+documenttype <- gsub(", ", "%2B", documenttype)
+rpp <- 1000
+page <- page*rpp
+path <- paste0("/regulations/v3/documents?api_key=", api_key, 
+         "&rpp=", rpp, 
+         #"&a=", agency,
+         "&so=", order, 
+         "&sb=", sortby, 
+         "&s=", search, 
+         #"&cp=", status,
+         "&dct=", documenttype,
+         "&po=", page)
+  
+  
+  raw.result <- GET(url = url, path = path)
+  
+  content <- fromJSON(rawToChar(raw.result$content))
+  
+  d <- as.data.frame(content[[1]]) %>% as_tibble() %>% 
+    mutate(page = page/rpp)
+  
+  return(d)
+}
 
 
 
@@ -319,7 +339,6 @@ search.doc <- function(docID) {
 
 
 
-
 ##########################################################
 
 
@@ -342,4 +361,3 @@ search.doc <- function(docID) {
 # d$summary <- gsub("\n", "", d$summary)
 # d$commentText <- gsub("\n", "", d$commentText)
 # write.csv(names(d), paste(documenttype, keywords, ".csv"))
-
