@@ -1,15 +1,14 @@
 ---
-title: "Rules summarized with `textrank`"
-subtitle: 
-author: ""
+title: "CFPB Payday Loan Rule"
+subtitle: "Comments summarized with `textrank` compared to hand-coded key sentences"
 output:
     # pdf_document:
     #   toc: true
     #   keep_tex: true
     html_document:
       highlight: zenburn
-      toc: true
-      toc_float: true
+      #toc: true
+      # toc_float: true
       code_folding: hide
 editor_options: 
   chunk_output_type: console
@@ -56,36 +55,28 @@ kablebox <- . %>%  knitr::kable() %>%
 1. The number of sentences to return, `n_sentences` (optional)--this controls the length of the summary. Do you want each comment summarized in one sentence summary or five? The current default is two sentences per comment, but I plan to make this vary by a comment's length (longer comment may deserve a longer summary).  
 1. The maximum number of sentences per comment to summarize `max_sentences` (optional). Fewer sentences makes textrank go faster, but we will often want to use all sentences. The default is 100 sentences per comment.
 
-When the function is done, I'll add it to the textrank.R file.
+When the function is done, I'll add it to the textrank.R file, available [here](https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R). Load it in R with `source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R")`
 
-You can download it [here](https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R) or load it in R with `source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R")`
+```{r}
+# load summarize_comment() function
+source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R")
 
-```{r gs}
-
-library(googlesheets4)
-library(readtext)
-
-gs4_auth(
-  email = gargle::gargle_oauth_email()
-  )
-
-
-#Read in handcoded asks
-# table1 <- read_sheet("https://docs.google.com/spreadsheets/d/1jdQjknkJ4LlTMaBUVRUoJwF34C0ose1NJznhPlctciI/edit")
-# table2 <- read_sheet("https://docs.google.com/spreadsheets/d/1Z0hkac2hlNzBKYJzE3aGjGhM8D00rZcPPBRrllD6rwI/edit#gid=1545760618")
-# table3 <- read_sheet("https://docs.google.com/spreadsheets/d/1a1pPe70tiB-a8YRIHGBuKZzXC3R3wBwCKtEJFatiyAE/edit")
-
-#Join asks into one df
-asksData <- 
-  left_join(read_sheet("https://docs.google.com/spreadsheets/d/1jdQjknkJ4LlTMaBUVRUoJwF34C0ose1NJznhPlctciI/edit"), 
-            read_sheet("https://docs.google.com/spreadsheets/d/1Z0hkac2hlNzBKYJzE3aGjGhM8D00rZcPPBRrllD6rwI/edit#gid=1545760618"), 
-            by = c("proposed_url", "final_url", "comment_url", "document_id", "organization", "position_certainty", "comment_type", "coalition_comment", "coalition_type", "org_name", "org_name_short", "org_type", "ask", "ask1", "ask2", "ask3", "success", "success_certainty", "sucess1", "success2", "success3", "response", "pressure_phrases", "compromise_phrases", "notes")) %>%
-  left_join(read_sheet("https://docs.google.com/spreadsheets/d/1a1pPe70tiB-a8YRIHGBuKZzXC3R3wBwCKtEJFatiyAE/edit"), 
-            by = c("proposed_url", "final_url", "comment_url", "document_id", "organization", "position_certainty", "comment_type", "coalition_comment", "coalition_type", "org_name", "org_name_short", "org_type", "ask", "ask1", "ask2", "ask3", "success", "success_certainty", "sucess1", "success2", "success3", "response", "pressure_phrases", "compromise_phrases", "notes"))
-
+# load text cleaning function 
+source(here::here("functions", "clean_string.R"))
 ```
 
-```{r filter}
+
+To assess the quality of computer-generated summaries, we can compare them to the key sentences identified by hand. Specifically, RAs were asked to identify the top three key "asks" in each comment and select the text associated with those askes in each comment. They also identified the commener's organization, overall position on the proposed rule, and several other key things that might help assess the quality of textrank-generated summaries. 
+
+Load hand-coded data.
+
+```{r gs}
+load(here::here("data", "CFPB-2016-0025-coded.Rdata"))
+
+coded %<>% mutate(hand_selected_summary = paste(ask, ask1, ask2, ask3, sep = "...") %>% str_remove_all("\\...NA")) 
+```
+
+```{r filter, include = FALSE, eval = FALSE}
 #Filter out NA asks
  # d <- asksData %>%
  #   filter(! is.na(ask)) 
@@ -97,38 +88,36 @@ asksData <-
 # comment <- read_sheet("https://docs.google.com/document/d/1qtW-HhPFGbp167CjC9zRRkPViqKaNZhnJ6LoYFTA_LY/edit")
 ```
 
-```{r}
-# load summarize_comment() function
-source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R")
 
-# load text cleaning function 
-source(here::here("functions", "clean_string.R"))
-```
+Get file paths comment texts.
 
 ```{r data}
 # file paths for comments 
 agency <- "CFPB"
 docket <- "CFPB-2016-0025"
 # get txt file names from a directory, here called “comment_text”
-omments <- tibble( path = list.files( here::here('comment_text', agency, docket), 
+comments <- tibble( path = list.files( here::here('comment_text', agency, docket), 
                                        full.names = T) ) %>% 
   filter( str_detect(path, "txt") )
 
-#FIXME just working with a few comments for now
-d <- comments %>% head()
-```
-  
-  
-```{r testing}
-# the function now takes in file paths, so this step is not necessary, except to inspect text cleaning
-  
 # in SQL, CFPB file names are regs_dot_gov_document_id, shortened to document_id for now
-d %<>% 
+comments %<>% 
   mutate( document_id = path %>%
             str_remove(".*/")  %>%
-            str_remove("\\..*") 
+            str_remove("-[0-9]*\\..*") 
    ) 
 
+
+d <- comments %>% 
+  # select comments that have been hand coded
+  filter(document_id %in% coded$document_id)
+
+# d %<>% head() #FIXME just working with a few comments for now
+```
+  
+
+
+```{r testing, include = FALSE, eval = FALSE}
 read_comment <- . %>%
   read_lines() %>%
   clean_string() 
@@ -140,13 +129,13 @@ d$text <- map_chr(d$path, read_comment)
 d
 
 d$text %>% kablebox()
-d$text
 ```
 
-# CFPB Payday Loan Rule
+
+Clean comment texts.
 
 ```{r summarize}
-
+# remove some common things. This can be generalized with info from data
 comment_header <- c("Docket No. CFP Consumer Financial Protection Bureau G Street, NW. Washington, DC")
 
 comment_footer <- c("Sincerely,|Signature|Print Name|Address|City|State|Docket No\\. CFP|Zip|Email|Date")
@@ -174,19 +163,23 @@ clean_string <- . %>%
   # remove white space
   str_squish() %>% 
   str_remove_all(comment_header) %>%
-  str_remove_all("pagebreak") %>%
+  str_remove_all("pagebreak|<pagebreak>") %>% # Devin's OCR method adds this 
   str_remove_all(comment_footer) %>%
   str_remove_all(agency_address) %>%
-  str_remove_all("\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.|www.magnifymoney.com|magnifymoney") %>%
+  #str_replace_all("\\.*", " ") %>% 
+  str_remove_all("www.magnifymoney.com|magnifymoney") %>%
   # str_replace_all(" \\,", ", ") %>%
   str_replace_all(" \\.", ". ") %>%
   str_squish() 
+```
 
+Summarize comments.
 
-# for testing 
-data <- d
-document_ids = d$document_id[1]
-max_sentences = 100
+```{r}
+# # for testing 
+# data <- d
+# document_ids = d$document_id[1]
+# max_sentences = 100
 
 summarizeText <- function(document_ids, data, max_sentences) {
   
@@ -194,7 +187,7 @@ summarizeText <- function(document_ids, data, max_sentences) {
   data %<>% filter(document_id == document_ids) 
   
   # load and clean text
-  d$text <-  d$path %>% read_lines() %>% clean_string()
+  data$text <-  data$path %>% read_lines() %>% clean_string()
   
   sentences <- data %>%
     select(text) %>%
@@ -236,10 +229,10 @@ summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
   
 
   # not cleaning data here either; should we? I think it is better to do it in the above function so it is done on one comment at a time.
-  # but we can create (must) document_id here if we want to feed in data with just path (not relying on text or doc names)
+  # but we can (must) create document_id here if we want to feed in data with just path (not relying on text or doc names)
   data %<>%  mutate( document_id = path %>%
             str_remove(".*/")  %>%
-            str_remove("\\..*") 
+            str_remove("-[0-9]*\\..*") 
    ) 
 
   # summarize, map summary function to each unique section
@@ -266,8 +259,28 @@ summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
 
 
 
-comment_summary <- summarize_comments(d, n_sentences = 2, max_sentences = 50 )
-
-comment_summary %>% select(document_id, summary) %>% kablebox()
+comment_summary <- summarize_comments(d, n_sentences = 3, max_sentences = 50 )
 ```
+
+Compare to hand-coded key sentences.
+
+```{r}
+comment_summary %>% 
+  rename(textrank_summary = summary) %>%
+  # join with coded data 
+  left_join(coded) %>% 
+  select(org_name, textrank_summary, hand_selected_summary, comment_url)  %>% kablebox()
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
