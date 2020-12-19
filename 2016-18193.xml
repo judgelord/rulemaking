@@ -1,0 +1,536 @@
+<RULE>
+      <PREAMB>
+        <PRTPAGE P="50605"/>
+        <AGENCY TYPE="F">DEPARTMENT OF THE TREASURY</AGENCY>
+        <SUBAGY>Office of the Comptroller of the Currency</SUBAGY>
+        <CFR>12 CFR Part 45</CFR>
+        <DEPDOC>[Docket No. OCC-2015-0023]</DEPDOC>
+        <RIN>RIN 1557-AD00</RIN>
+        <AGENCY TYPE="O">FEDERAL RESERVE SYSTEM</AGENCY>
+        <CFR>12 CFR Part 237</CFR>
+        <DEPDOC>[Docket No. R-1415]</DEPDOC>
+        <RIN>RIN 7100-AD74</RIN>
+        <AGENCY TYPE="O">FEDERAL DEPOSIT INSURANCE CORPORATION</AGENCY>
+        <CFR>12 CFR Part 349</CFR>
+        <RIN>RIN 3064-AE21</RIN>
+        <AGENCY TYPE="O">FARM CREDIT ADMINISTRATION</AGENCY>
+        <CFR>12 CFR Part 624</CFR>
+        <RIN>RIN 3052-AC69</RIN>
+        <AGENCY TYPE="O">FEDERAL HOUSING FINANCE AGENCY</AGENCY>
+        <CFR>12 CFR Part 1221</CFR>
+        <RIN>RIN 2590-AA45</RIN>
+        <SUBJECT>Margin and Capital Requirements for Covered Swap Entities</SUBJECT>
+        <AGY>
+          <HD SOURCE="HED">AGENCY:</HD>
+          <P>Office of the Comptroller of the Currency, Treasury (“OCC”); Board of Governors of the Federal Reserve System (“Board”); Federal Deposit Insurance Corporation (“FDIC”); Farm Credit Administration (“FCA”); and the Federal Housing Finance Agency (“FHFA”).</P>
+        </AGY>
+        <ACT>
+          <HD SOURCE="HED">ACTION:</HD>
+          <P>Final rule.</P>
+        </ACT>
+        <SUM>
+          <HD SOURCE="HED">SUMMARY:</HD>
+          <P>The OCC, Board, FDIC, FCA, and FHFA (each an “Agency” and, collectively, the “Agencies”) are adopting exemptions from the initial and variation margin requirements published by the Agencies in November 2015 pursuant to sections 731 and 764 of the Dodd-Frank Wall Street Reform and Consumer Protection Act (the “Dodd-Frank Act” or the “Act”). Pursuant to Title III of the Terrorism Risk Insurance Program Reauthorization Act of 2015 (“TRIPRA”), this final rule exempts certain non-cleared swaps and non-cleared security-based swaps with certain financial and non-financial end users that qualify for an exception or exemption from clearing.</P>
+        </SUM>
+        <EFFDATE>
+          <HD SOURCE="HED">DATES:</HD>
+          <P>This final rule is effective October 1, 2016.</P>
+        </EFFDATE>
+        <FURINF>
+          <HD SOURCE="HED">FOR FURTHER INFORMATION CONTACT:</HD>
+          <P> </P>
+          <P>
+            <E T="03">OCC:</E> Ang Middleton, Risk Specialist, Financial Markets Group, (202) 649-7138, or Carl Kaminski, Special Counsel, Legislative and Regulatory Activities Division, (202) 649-5490, for persons who are deaf or hard of hearing, TTY (202) 649-5597, Office of the Comptroller of the Currency, 400 7th Street SW., Washington, DC 20219.</P>
+          <P>
+            <E T="03">Board:</E> Sean D. Campbell, Associate Director, (202) 452-3760, Anna M. Harrington, Senior Supervisory Financial Analyst, (202) 452-6406, or Lesley Chao, Senior Supervisory Financial Analyst, (202) 974-7063, Division of Banking Supervision and Regulation; Victoria M. Szybillo, Counsel, (202) 475-6325, or Adam Cohen, Counsel, (202) 912-4658, Legal Division, Board of Governors of the Federal Reserve System, 20th and C Streets NW., Washington, DC 20551.</P>
+          <P>
+            <E T="03">FDIC:</E> Karl R. Reitz, Corporate Expert, Capital Markets, <E T="03">kreitz@fdic.gov;</E> Michael E. Spencer, Chief, Capital Markets Strategy Section, <E T="03">michspencer@fdic.gov,</E> Division of Risk Management Supervision, (202) 898-6888; Thomas F. Hearn, Counsel, <E T="03">thohearn@fdic.gov,</E> (202) 898-6967, or Catherine Topping, Counsel, <E T="03">ctopping@fdic.gov,</E> (202) 898-3975, Legal Division, Federal Deposit Insurance Corporation, 550 17th Street NW., Washington, DC 20429.</P>
+          <P>
+            <E T="03">FCA:</E> J.C. Floyd, Associate Director, Finance &amp; Capital Markets Team, Timothy T. Nerdahl, Senior Policy Analyst—Capital Markets, Jeremy R. Edelstein, Senior Policy Analyst, Office of Regulatory Policy, (703) 883-4414, TTY (703) 883-4056, or Richard A. Katz, Senior Counsel, Office of General Counsel, (703) 883-4020, TTY (703) 883-4056, Farm Credit Administration, 1501 Farm Credit Drive, McLean, VA 22102-5090.</P>
+          <P>
+            <E T="03">FHFA:</E> George Sacco, Senior Financial Analyst, Division of Housing Mission and Goals, (202) 649-3276, <E T="03">George.Sacco@fhfa.gov,</E> or Peggy K. Balsawer, Associate General Counsel, Office of General Counsel, (202) 649-3060, <E T="03">Peggy.Balsawer@fhfa.gov,</E> Federal Housing Finance Agency, Constitution Center, 400 7th St. SW., Washington, DC 20219. The telephone number for the Telecommunications Device for the Hearing Impaired is (800) 877-8339.</P>
+        </FURINF>
+      </PREAMB>
+      <SUPLINF>
+        <HD SOURCE="HED">SUPPLEMENTARY INFORMATION:</HD>
+        <HD SOURCE="HD1">I. Background</HD>
+        <P>The Dodd-Frank Act was enacted on July 21, 2010.<SU>1</SU>
+          <FTREF/> Title VII of the Dodd-Frank Act established a comprehensive new regulatory framework for derivatives, which the Act generally characterizes as “swaps” and “security-based swaps.” <SU>2</SU>
+          <FTREF/> As part of this new regulatory framework, sections 731 and 764 of the Dodd-Frank Act added, respectively, a new section 4s to the Commodity Exchange Act of 1936 (the “Commodity Exchange Act”), and a new section 15F to the Securities Exchange Act of 1934 (the “Securities Exchange Act”), which require registration with the U.S. Commodity Futures Trading Commission (the “CFTC”) of swap dealers and major swap participants and with the U.S. Securities and Exchange Commission (the “SEC”) of security-based swap dealers and major security-based swap participants.<SU>3</SU>
+          <FTREF/> These <PRTPAGE P="50606"/>registrants are collectively referred to in this preamble as “swap entities.”</P>
+        <FTNT>
+          <P>
+            <SU>1</SU> Public Law 111-203, 124 Stat. 1376 (2010).</P>
+        </FTNT>
+        <FTNT>
+          <P>
+
+            <SU>2</SU> “Swaps” are defined in section 721 of the Dodd-Frank Act to include interest rate swaps, commodity-based swaps, equity swaps and credit default swaps. “Security-based swaps” are defined in section 761 of the Dodd-Frank Act to include a swap based on a single security or loan or on a narrow-based security index. <E T="03">See</E> 7 U.S.C. 1a(47); 15 U.S.C. 78c(a)(68).</P>
+        </FTNT>
+        <FTNT>
+          <P>
+            <SU>3</SU> <E T="03">See</E> 7 U.S.C. 6s; 15 U.S.C. 78o-10. Section 731 of the Dodd-Frank Act requires swap dealers and major swap participants to register with the CFTC, which is vested with primary responsibility for the oversight of the swaps market under Title VII of the Dodd-Frank Act. Section 764 of the Dodd-Frank Act requires security-based swap dealers and major security-based swap participants to register with the SEC, which is vested with primary responsibility for the oversight of the security-based swaps market under Title VII of the Dodd-Frank Act. Section 712(d)(1) of the Dodd-Frank Act requires the CFTC and SEC to issue joint rules further defining the terms swap, security-based swap, swap dealer, major swap participant, security-based swap dealer, and major security-based swap participant. The CFTC and SEC issued final joint rulemakings with <PRTPAGE/>respect to these definitions in May 2012 and August 2012, respectively. <E T="03">See</E> 77 FR 30596 (May 23, 2012); 77 FR 39626 (July 5, 2012) (correction of footnote in the Supplementary Information accompanying the rule); and 77 FR 48207 (August 13, 2012). 17 CFR part 1; 17 CFR parts 230, 240 and 241.</P>
+        </FTNT>
+        <P>Sections 731 and 764 of the Dodd-Frank Act require the Agencies to adopt joint rules that apply to all swap entities for which any one of the Agencies is the prudential regulator,<SU>4</SU>
+          <FTREF/> imposing capital requirements and initial and variation margin requirements on all swaps and security-based swaps not cleared by a registered derivatives clearing organization or clearing agency.<SU>5</SU>
+          <FTREF/> After a rulemaking process that began in 2011, the Agencies published a joint final rule to implement these Dodd-Frank Act requirements on November 30, 2015 (the “joint final rule”).<SU>6</SU>
+          <FTREF/>
+        </P>
+        <FTNT>
+          <P>
+            <SU>4</SU> Section 1a(39) of the Commodity Exchange Act defines the term “prudential regulator” for purposes of the capital and margin requirements applicable to swap dealers, major swap participants, security-based swap dealers and major security-based swap participants. 7 U.S.C. 1a(39).</P>
+        </FTNT>
+        <FTNT>
+          <P>
+            <SU>5</SU> <E T="03">See</E> 7 U.S.C. 6s(e)(2)(A); 15 U.S.C. 78o-10(e)(2)(A).</P>
+        </FTNT>
+        <FTNT>
+          <P>
+            <SU>6</SU> 80 FR 74840 (November 30, 2015).</P>
+        </FTNT>
+        <P>The capital and margin requirements under sections 731 and 764 of the Dodd-Frank Act apply to non-cleared swaps and non-cleared security-based swaps and complement other provisions of the Dodd-Frank Act that require the CFTC and SEC to make determinations as to whether certain swaps or security-based swaps, or a group, category, or class of such transactions, should be required to be cleared.<SU>7</SU>
+          <FTREF/> If the CFTC or SEC has made such a determination, it is generally unlawful for any person to engage in such a swap or security-based swap unless the transaction is submitted to a derivatives clearing organization or clearing agency, as applicable, for clearing.</P>
+        <FTNT>
+          <P>
+            <SU>7</SU> 7 U.S.C. 2(h); 15 U.S.C. 78c-3. The Commodity Exchange Act and the Securities Exchange Act set out standards that the CFTC and the SEC, respectively, are required to apply when making determinations about clearing, which generally address whether a swap or security-based swap is sufficiently standardized to be cleared. 7 U.S.C. 2(h)(2)(D); 15 U.S.C. 78c-3(b)(4).</P>
+        </FTNT>
+        <P>The clearing requirements, however, do not apply to an entity that is not a financial entity, is using a swap or security-based swap to hedge or mitigate commercial risk, and notifies the CFTC or the SEC, in a manner set forth by the appropriate Commission, how it generally meets its financial obligations.<SU>8</SU>
+          <FTREF/> Thus, a particular swap or security-based swap might not be cleared either because it is not subject to the mandatory clearing requirement or because one of the parties to the swap is eligible for, and elects to use, an exception or exemption from the mandatory clearing requirement. Such a swap or security-based swap is “non-cleared” for purposes of the capital and margin requirements established under sections 731 and 764 of the Dodd-Frank Act.</P>
+        <FTNT>
+          <P>
+            <SU>8</SU> <E T="03">See</E> 7 U.S.C. 2(h)(7); 15 U.S.C. 78c-3(g). Further, the CFTC has authority to exempt swaps from the clearing requirement. 7 U.S.C. 6(c)(1). Pursuant to this authority, the CFTC has provided an exemption from clearing to certain cooperatives that are financial entities. <E T="03">See</E> 17 CFR 50.51. The SEC has similar exemptive authority under section 36(c) of the Securities Exchange Act. 15 U.S.C. 78mm(c).</P>
+        </FTNT>
+        <P>Sections 731 and 764 direct the Agencies to impose initial and variation margin requirements on all non-cleared swaps and non-cleared security-based swaps. The joint final rule takes into account the risk posed by a covered swap entity's counterparties in establishing the minimum amount of initial and variation margin that the covered swap entity must exchange with its counterparties.<SU>9</SU>
+          <FTREF/> In implementing this risk-based approach, the joint final rule distinguishes among four separate types of swap counterparties: (1) Counterparties that are themselves swap entities; (2) counterparties that are financial end users with a material swaps exposure; (3) counterparties that are financial end users without a material swaps exposure, and (4) other counterparties, including non-financial end users, sovereigns, and multilateral development banks.<SU>10</SU>
+          <FTREF/> The joint final rule makes a covered swap entity's collection of margin from these “other counterparties,” including commercial end users, subject to the judgment of the covered swap entity. In particular, a covered swap entity is not required to collect initial and variation margin from these “other counterparties” as a matter of course; a covered swap entity should collect initial or variation margin at such times and in such forms and amounts (if any) as the covered swap entity determines appropriate in its overall credit risk management of the covered swap entity's exposure to the customer.<SU>11</SU>
+          <FTREF/>
+        </P>
+        <FTNT>
+          <P>
+            <SU>9</SU> Each Agency has codified its rule within its respective title of the Code of Federal Regulations. Specifically, the Agencies codified the rules as follows: 12 CFR part 45 (OCC); 12 CFR part 237 (the Board); 12 CFR part 349 (FDIC); 12 CFR part 624 (FCA); and 12 CFR part 1221 (FHFA).</P>
+        </FTNT>
+        <FTNT>
+          <P>
+            <SU>10</SU> <E T="03">See</E> § _.2 of the joint final rule for the various definitions that identify these four types of swaps counterparties. The terms “non-financial end user” and “commercial end user” are used interchangeably throughout this preamble. Although the term “commercial end user” is not defined in the Dodd-Frank Act, it is used in this preamble to mean a company that is eligible for the exception to the mandatory clearing requirement for swaps under section 2(h)(7)(A) of the Commodity Exchange Act and section 3C(g)(1) of the Securities Exchange Act, respectively. This exception is generally available to a person that (1) is not a financial entity, (2) is using the swap to hedge or mitigate commercial risk, and (3) has notified the CFTC or SEC how it generally meets its financial obligations with respect to non-cleared swaps or security-based swaps, respectively. <E T="03">See</E> 7 U.S.C. 2(h)(7)(A) and 15 U.S.C. 78c-3(g)(1); <E T="03">see also</E> 80 FR 74848 note 70.</P>
+        </FTNT>
+        <FTNT>
+          <P>
+            <SU>11</SU> <E T="03">See</E> §§ _.3(d) and _.4(c) of the joint final rule.</P>
+        </FTNT>
+        <P>On January 12, 2015, President Obama signed TRIPRA into law.<SU>12</SU>
+          <FTREF/> Title III of TRIPRA, the “Business Risk Mitigation and Price Stabilization Act of 2015,” amends the statutory provisions added by the Dodd-Frank Act relating to margin requirements for non-cleared swaps and non-cleared security-based swaps. Specifically, section 302 of TRIPRA amends sections 731 and 764 of the Dodd-Frank Act to provide that the initial and variation margin requirements do not apply to certain transactions of specified counterparties that would qualify for an exception or exemption from clearing, as explained more fully below. Qualifying non-cleared swaps and non-cleared security-based swaps of entities covered by section 302 of TRIPRA are not subject to the Agencies' joint final rule.</P>
+        <FTNT>
+          <P>
+            <SU>12</SU> Public Law 114-1, 129 Stat. 3 (2015).</P>
+        </FTNT>
+        <P>Section 303 of TRIPRA requires the Agencies to implement the provisions of section 302 by promulgating an interim final rule pursuant to which public comment is sought before a final rule is issued. On November 30, 2015, the Agencies published and sought comment on an interim final rule, which added § _.1(d) to the joint final rule.<SU>13</SU>
+          <FTREF/> The Agencies are adopting as a final rule without change the interim final rule that went into effect on April 1, 2016.</P>
+        <FTNT>
+          <P>
+            <SU>13</SU> 80 FR 74916 (November 30, 2015) (the “interim final rule”).</P>
+        </FTNT>
+        <HD SOURCE="HD1">II. Summary of Public Comments on Matters Raised in the Interim Final Rule</HD>
+        <P>Three banking organizations, two individuals, two trade associations, and one nonprofit finance cooperative submitted comments in response to the interim final rule.<SU>14</SU>
+          <FTREF/> Four of the commenters expressed strong support for the approach taken in the interim final rule.</P>
+        <FTNT>
+          <P>
+            <SU>14</SU> The Agencies carefully considered all comments received on the interim final rule. In addition, representatives of the FDIC and FCA had a telephone call with one commenter after the comment period closed. Comments received on the interim final rule, as well as a summary of the call with this commenter, are available on the applicable Agencies' respective public Web sites.</P>
+        </FTNT>
+
+        <P>Comments were received from two public sector entities organized under foreign laws whose obligations are guaranteed by foreign governments (“foreign public sector entities”). These <PRTPAGE P="50607"/>commenters argued that, even though they are not included among the type of entities expressly covered by section 302 of TRIPRA, foreign public sector entities should still not be subject to the joint final rule because the CFTC has determined that these types of entities are not subject to the mandate to clear swaps that are otherwise required to be cleared.</P>
+        <P>The Agencies are not providing the relief requested by these commenters since the purpose of this final rule is to incorporate the terms of section 302 of TRIPRA, and the treatment of foreign public sector entities is not specified by section 302. Even though the CFTC has interpreted the Commodity Exchange Act to exclude certain foreign public sector entities from the clearing mandate that the Dodd-Frank Act added to the Commodity Exchange Act, such entities are not addressed in section 302 of TRIPRA.<SU>15</SU>
+          <FTREF/>
+        </P>
+        <FTNT>
+          <P>
+
+            <SU>15</SU> Alternatively, each of these two foreign public sector entities sought clarification that it meets the definition of “sovereign entity” or “multilateral development bank” under the joint final rule. The joint final rule expressly excludes from the definition of “financial end user” an entity that meets the definition of “sovereign entity” or “multilateral development bank.” Whether an entity meets the definition of “sovereign entity” or “multilateral development bank” depends on facts and circumstances that may vary from entity to entity and is outside the scope of this rulemaking. The Agencies note that they considered similar comments received on the joint final rule and determined not to exclude entities guaranteed by a foreign sovereign from the definition of financial end user. <E T="03">See</E> 80 FR 74,840, 74,856 (The Agencies explained: “[a]n entity guaranteed by a sovereign entity is not explicitly excluded from the definition of financial end user in the final rule, unless that entity qualifies as a central government agency, department, or central bank. The existence of a government guarantee does not in and of itself exclude the entity from the definition of financial end user.”)</P>
+        </FTNT>
+        <P>One commenter asked for clarification that swap transaction documentation that contains “flip clauses” or “rating agency condition” (“RAC”) provisions cannot qualify for an exemption from the Agencies' joint final rule or this final rule.<SU>16</SU>
+          <FTREF/> Specifically, the commenter stated that Title III of TRIPRA does not exempt a swap with a flip clause or RAC provision from the margin requirements of the joint final rule. The commenter further requested that an entity covered by section 302 of TRIPRA be required to file with the CFTC a signed affidavit stating that all swaps that are exempt from the joint final rule's margin requirements because of section 302 of TRIPRA do not have a flip clause or any other clause that can be reasonably classified as a walk-away provision or RAC provision. Finally, the commenter recommended that the prudential regulators should obligate a covered swap entity to post initial margin and variation margin to its guarantor or hedging affiliate against a swap that contains a “flip clause” or any other clause that can be reasonably classified as a walk-away provision. The Agencies are declining to make the requested changes, since the purpose of the final rule is to incorporate the terms of section 302 of TRIPRA, and the treatment of flip clauses or RAC provisions is not specified by section 302.</P>
+        <FTNT>
+          <P>
+
+            <SU>16</SU> The commenter has previously referred to a description of a “flip clause” as a contractual provision in a swap to which a special purpose vehicle (“SPV”) is a party and under which the payments owed by the SPV to a swap provider are at least <E T="03">pari passu</E> with interest of the senior most class of debt issued by the structured finance vehicle. In the description that the commenter referred to, a “flip clause” was described as a provision that provides that should the swap provider be the defaulting party to a swap, such default causes the swap provider to “flip” to a more junior position in the priority of payments.</P>
+        </FTNT>
+
+        <P>The Agencies received one request for clarification with respect to paragraph (1)(xi) of the definition of “financial end user” set forth in the joint final rule. Specifically, the commenter asked the Agencies to clarify and consider the use of certain terms and phrases (<E T="03">i.e.,</E> “investing or trading,” “other assets,” and “primarily”) in this prong of the financial end user definition. While § _.1(d), as adopted in this final rule, works in conjunction with the joint final rule, the Agencies find this comment does not relate to § _.1(d) and thus is outside of the scope of the interim final rule, which implements section 302 of TRIPRA.</P>
+        <P>The Agencies also received four comments in support of the treatment of certain cooperative entities under the interim final rule. One comment was received from an individual expressing his support for the approach taken in the interim final rule.</P>
+        <HD SOURCE="HD1">III. Description of the Final Rule</HD>
+        <P>The interim final rule adopted § _.1(d) to implement section 302 of TRIPRA. The final rule makes no changes to § _.1(d).</P>
+        <P>TRIPRA provides that the initial and variation margin requirements in sections 731 and 764 of the Dodd-Frank Act do not apply to qualifying non-cleared swaps and non-cleared security-based swaps of certain categories of counterparties. In particular, section 302(a) of TRIPRA amends section 731 of the Dodd-Frank Act so that initial and variation margin requirements will not apply to a swap in which a counterparty (to a covered swap entity) is:</P>
+        <P>(1) A non-financial entity (including a small financial institution and a captive finance company) that qualifies for the clearing exception under section 2(h)(7)(A) of the Commodity Exchange Act;</P>
+        <P>(2) A cooperative entity that qualifies for an exemption from the clearing requirements issued under section 4(c)(1) of the Commodity Exchange Act; or</P>
+        <P>(3) A treasury affiliate that satisfies the criteria for an exception from clearing in section 2(h)(7)(D) of the Commodity Exchange Act.</P>
+        <P>Similarly, section 302(b) of TRIPRA amends section 764 of the Dodd-Frank Act so that initial and variation margin requirements will not apply to a security-based swap in which a counterparty (to a covered swap entity) is:</P>
+        <P>(1) A non-financial entity (including a small financial institution) that qualifies for the clearing exception under section 3C(g)(1) of the Securities Exchange Act; or</P>
+        <P>(2) A treasury affiliate that satisfies the criteria for an exception from clearing in section 3C(g)(4) of the Securities Exchange Act.</P>
+        <P>Below is a discussion of each type of entity covered by section 302 of TRIPRA as well as a discussion of how related reporting requirements can be satisfied.</P>
+        <HD SOURCE="HD2">A. Non-Financial Entities</HD>
+        <P>TRIPRA provides that the initial and variation margin requirements of the joint final rule shall not apply to a non-cleared swap in which a counterparty qualifies for an exception under section 2(h)(7)(A) of the Commodity Exchange Act or a non-cleared security-based swap in which a counterparty qualifies for an exception under section 3C(g)(1) of the Securities Exchange Act.<SU>17</SU>
+          <FTREF/> Section 2(h)(7)(A) and section 3C(g)(1) except from clearing swaps or security-based swaps where one of the counterparties: (1) Is not a financial entity; (2) is using the swap to hedge or mitigate commercial risk; and (3) notifies the CFTC or SEC how it generally meets its financial obligations associated with entering into non-cleared swaps or non-cleared security-based swaps. A number of different types of counterparties may qualify for an exception from clearing under section 2(h)(7)(A) and section 3C(g)(1), including non-financial end users and small banks, savings associations, Farm Credit System institutions, and credit unions. In addition, captive finance companies qualify for an exception from clearing swaps under section 2(h)(7)(A).<SU>18</SU>
+          <FTREF/>
+        </P>
+        <FTNT>
+          <P>
+            <SU>17</SU> <E T="03">See</E> 7 U.S.C. 2(h)(7)(A); 15 U.S.C. 78c-3(g)(1).</P>
+        </FTNT>
+        <FTNT>
+          <P>
+
+            <SU>18</SU> There is no corresponding exclusion from clearing security-based swaps under section <PRTPAGE/>3C(g)(1) of the Securities Exchange Act for captive finance companies. Similarly, with respect to financial cooperatives, TRIPRA exempts such entities from exchanging initial and variation margin under the joint final rule on all swaps that are subject to the exemption from clearing provided by the CFTC. <E T="03">See</E> 7 U.S.C. 6(c)(1). There is no corresponding exclusion under the Securities Exchange Act.</P>
+        </FTNT>
+        <PRTPAGE P="50608"/>
+        <P>
+          <E T="03">Non-financial end users.</E> A counterparty that is not a financial entity <SU>19</SU>
+          <FTREF/> and that is using swaps to hedge or mitigate commercial risk generally would qualify for an exception from clearing under section 2(h)(7)(A) or section 3C(g)(1) and thus from the requirements of the joint final rule for non-cleared swaps and non-cleared security-based swaps pursuant to § _.1(d).</P>
+        <FTNT>
+          <P>
+            <SU>19</SU> <E T="03">See</E> 7 U.S.C. 2(h)(7)(A); 15 U.S.C. 78c-3(g)(1); 17 CFR 50.50. A “financial entity” is defined to mean (i) a swap dealer; (ii) a security-based swap dealer; (iii) a major swap participant; (iv) a major security-based swap participant; (v) a commodity pool; (vi) a private fund as defined in section 202(a) of the Investment Advisers Act of 1940; (vii) an employee benefit plan as defined in sections 3(3) and 3(32) of the Employment Retirement Income Security Act of 1974; and (viii) a person predominantly engaged in activities that are in the business of banking, or in activities that are financial in nature, as defined in section 4(k) of the Bank Holding Company Act of 1956. <E T="03">See</E> 7 U.S.C. 2(h)(7)(C)(i); 15 U.S.C. 78c-3(g)(3).</P>
+        </FTNT>
+        <P>
+          <E T="03">Small banks, savings associations, Farm Credit System institutions, and credit unions.</E> Section 2(h)(7)(C)(ii) provides that the CFTC shall consider whether to exempt small banks, savings associations, Farm Credit System institutions, and credit unions with total assets of $10 billion or less from the definition of financial entity. Pursuant to this authority, the CFTC has exempted small banks, savings associations, Farm Credit System institutions, and credit unions with total assets of $10 billion or less from the definition of “financial entity,” thereby permitting these institutions to avail themselves of the clearing exception when they are using swaps to hedge or mitigate risk.<SU>20</SU>
+          <FTREF/> As a result, non-cleared swaps used by these small financial institutions to hedge or mitigate commercial risk would also qualify for an exemption from the initial and variation margin requirements of the joint final rule pursuant to § _.1(d).</P>
+        <FTNT>
+          <P>
+            <SU>20</SU> <E T="03">See</E> 7 U.S.C. 2(h)(7)(C)(ii); 17 CFR 50.50; 77 FR 42560 (July 19, 2012); as recodified by  77 FR 74284 (December 13, 2012).</P>
+        </FTNT>
+        <P>Similarly, section 3C(g) provides that the SEC shall consider whether to exempt small banks, savings associations, Farm Credit System institutions, and credit unions with total assets of $10 billion or less from the definition of “financial entity.” <SU>21</SU>
+          <FTREF/> If the SEC were to implement an exemption for such entities from clearing, non-cleared security-based swaps with those entities would be eligible for the exemption in the joint final rule pursuant to § _.1(d) as required under TRIPRA, provided they met the other requirements for the clearing exemption.<SU>22</SU>
+          <FTREF/>
+        </P>
+        <FTNT>
+          <P>
+            <SU>21</SU> <E T="03">See</E> 15 U.S.C. 78c-3(g)(3)(B).</P>
+        </FTNT>
+        <FTNT>
+          <P>
+
+            <SU>22</SU> On December 21, 2010, the SEC proposed to exempt security-based swaps used by small depository institutions, small Farm Credit System institutions, and small credit unions with total assets of $10 billion or less from clearing. <E T="03">See</E> 75 FR 79992 (December 21, 2010).</P>
+        </FTNT>
+        <P>
+          <E T="03">Captive finance companies.</E> Section 2(h)(7)(C) also provides that the definition of “financial entity” does not include an entity whose primary business is providing financing and uses derivatives for the purposes of hedging underlying commercial risks relating to interest rate and foreign exchange exposures, 90 percent or more of which arise from financing that facilitates the purchase or lease of products, 90 percent or more of which are manufactured by the parent company or another subsidiary of the parent company (“captive finance company”).<SU>23</SU>
+          <FTREF/> These entities can qualify for a clearing exception when they are using swaps to hedge or mitigate commercial risk and thus non-cleared swaps of these entities would be eligible for the exemption in the joint final rule pursuant to § __.1(d).</P>
+        <FTNT>
+          <P>
+            <SU>23</SU> <E T="03">See</E> 7 U.S.C. 2(h)(7)(C)(iii).</P>
+        </FTNT>
+        <HD SOURCE="HD2">B. Treasury Affiliates</HD>
+        <P>Section 302 of TRIPRA provides that the initial and variation margin requirements shall not apply to a non-cleared swap or non-cleared security-based swap in which a counterparty satisfies the criteria in section 2(h)(7)(D) of the Commodity Exchange Act or section 3C(g)(4) of the Securities Exchange Act. At the time the interim final rule was published, these sections provided that, where a person qualifies for an exception from the clearing requirements, an affiliate of that person (including an affiliate predominantly engaged in providing financing for the purchase of the merchandise or manufactured goods of the person) would have qualified for the exception as well, but only if the affiliate is acting on behalf of the person and as an agent and uses the swap to hedge or mitigate the commercial risk of the person or other affiliate of the person that is not a financial entity (“treasury affiliate acting as agent”).<SU>24</SU>
+          <FTREF/> Under the interim final rule, non-cleared swaps and non-cleared security-based swaps of a treasury affiliate acting as agent that met the requirements for a clearing exception would also be eligible for an exemption pursuant to § _.1(d) from the joint final rule.</P>
+        <FTNT>
+          <P>
+            <SU>24</SU> <E T="03">See</E> 7 U.S.C. 2(h)(7)(D); 15 U.S.C. 78c-3(g)(4). This exception does not apply to a person that is a swap dealer, security-based swap dealer, major swap participant, major security-based swap participant, an issuer that would be an investment company as defined in section 3 of the Investment Company Act of 1940 (15 U.S.C. 80a-3) but for section 3(c)(1) or 3(c)(7) of that Act, a commodity pool, or a bank holding company with over $50 billion in consolidated assets.</P>
+        </FTNT>
+        <P>The Consolidated Appropriations Act, 2016 (“Appropriations Act of 2016”), which was enacted on December 18, 2015, amended section 2(h)(7)(D) of the Commodity Exchange Act and section 3C(g)(4) of the Securities Exchange Act.<SU>25</SU>
+          <FTREF/> Specifically, section 705 of the Appropriations Act of 2016 removed the requirement that treasury affiliates must act on behalf of a person and as an agent in order to avail themselves of the clearing exception. The Appropriations Act of 2016 also included certain conditions on the application of the treasury affiliate exception <SU>26</SU>
+          <FTREF/> and imposed certain limitations on the types of entities that can qualify for the exception.<SU>27</SU>
+          <FTREF/>
+        </P>
+        <FTNT>
+          <P>
+            <SU>25</SU> Pub. L. 114-113, 129 Stat. 2242 (2015).</P>
+        </FTNT>
+        <FTNT>
+          <P>
+
+            <SU>26</SU> Under section 705 of the Appropriations Act of 2016, a treasury affiliate may qualify for an exception from the clearing requirements only if the affiliate (i) enters into the swap to hedge or mitigate the commercial risk of the person or other affiliate of the person that is not a financial entity, and the commercial risk that the affiliate is hedging or mitigating has been transferred to the affiliate; (ii) is directly and wholly-owned by another affiliate qualified for the exception under section 2(h)(7)(D)(i) of the Commodity Exchange Act or an entity that is not a financial entity; (iii) is not indirectly majority-owned by a financial entity; (iv) is not ultimately owned by a parent company that is a financial entity; and (v) does not provide any services, financial or otherwise, to any affiliate that is a nonbank financial company supervised by the Board of Governors (as defined under section 102 of the Financial Stability Act of 2010). With respect to the treasury affiliate exception, the affiliate may not enter into any swap other than for the purpose of hedging or mitigating commercial risk; and neither the affiliate nor any person affiliated with the affiliate that is not a financial entity may enter into a swap with or on behalf of any affiliate that is a financial entity or otherwise assume, net, combine, or consolidate the risk of swaps entered into by any such financial entity, except one that is an affiliate that qualifies for the exception. Further, any swap entered into by an affiliate that qualifies for the exception shall be subject to a centralized risk management program of the affiliate, which is reasonably designed both to monitor and manage the risks associated with the swap and to identify each of the affiliates on whose behalf a swap was entered into. <E T="03">See</E> Pub. L. 114-113, 129 Stat. 2242 (2015).</P>
+        </FTNT>
+        <FTNT>
+          <P>
+
+            <SU>27</SU> For example, the treasury affiliate exception will not apply if the affiliate is a swap dealer, a security-based swap dealer, a major swap participant, a major security-based swap participant, a commodity pool, a bank holding company, a private fund (as defined in section 202(a) of the Investment Advisers Act of 1940), an employee benefit plan or government plan (as defined in paragraphs (3) and (32) of section 3 of the Employee Retirement Income Security Act of 1974), an insured depository institution, a Farm Credit System institution, a credit union, a nonbank <PRTPAGE/>financial company supervised by the Board, or an entity engaged in the insurance business and subject to capital regulation by an insurance regulator. The Appropriations Act of 2016 further prohibited the treasury affiliate exception from applying to affiliates which are themselves affiliated with swap entities unless the CFTC or the SEC, as applicable, determines that doing so is in the public interest. <E T="03">See</E> Pub. L. 114-113, 129 Stat. 2242 (2015).</P>
+        </FTNT>
+        <PRTPAGE P="50609"/>
+        <P>Since the exemption in § __.1(d) of the final rule incorporates the treasury affiliate exception by reference to section 2(h)(7)(D) of the Commodity Exchange Act and section 3C(g)(4) of the Securities Exchange Act, the exemption will by operation of law apply to qualifying non-cleared swaps and non-cleared security-based swaps of treasury affiliates, acting as either principal or agent. For this reason, no changes to the regulatory text were necessary to reflect these changes to the underlying statutes.<SU>28</SU>
+          <FTREF/>
+        </P>
+        <FTNT>
+          <P>
+            <SU>28</SU> Accordingly, the Agencies find it unnecessary to provide further notice or seek further public comment regarding the effect of the Appropriations Act of 2016 on this final rule.</P>
+        </FTNT>
+        <HD SOURCE="HD2">C. <E T="03">Certain Cooperative Entities</E>
+        </HD>
+        <P>Section 302 of TRIPRA provides that the initial and variation margin requirements shall not apply to a non-cleared swap in which a counterparty qualifies for an exemption issued under section 4(c)(1) of the Commodity Exchange Act from the clearing requirements of section 2(h)(1)(A) of the Commodity Exchange Act for cooperative entities as defined in such exemption.<SU>29</SU>
+          <FTREF/> The CFTC, pursuant to its authority under section 4(c)(1) of the Commodity Exchange Act, adopted a regulation that allows cooperatives that are financial entities to elect an exemption from mandatory clearing of swaps that: (1) They enter into in connection with originating loans for their members; or (2) hedge or mitigate commercial risk related to loans or swaps with their members, or arising from certain swaps with members.<SU>30</SU>
+          <FTREF/> The swaps of these cooperatives that would qualify for an exemption from clearing also would qualify pursuant to § __.1(d) for an exemption from the margin requirements of the joint final rule.</P>
+        <FTNT>
+          <P>
+            <SU>29</SU> <E T="03">See</E> 7 U.S.C. 6(c)(1). The CFTC, pursuant to its authority under section 4(c)(1) of the Commodity Exchange Act, adopted 17 CFR 50.51, which allows cooperative financial entities that meet certain qualifications to elect not to clear certain swaps that are otherwise required to be cleared pursuant to section 2(h)(1)(A) of the Commodity Exchange Act.</P>
+        </FTNT>
+        <FTNT>
+          <P>
+            <SU>30</SU> <E T="03">See</E> 7 U.S.C. 6(c)(1); 17 CFR 50.51.</P>
+        </FTNT>
+        <HD SOURCE="HD2">D. <E T="03">Compliance With Eligibility Requirements</E>
+        </HD>
+        <P>Section 302 of TRIPRA identifies the types of non-cleared swaps or non-cleared security-based swaps with counterparties that are excluded from the margin requirements of the joint final rule by referring to specific sections of the Commodity Exchange Act and the Securities Exchange Act. These provisions, in turn, set forth clearing exceptions and exemptions for these counterparties. To qualify for such exceptions and exemptions, the counterparty must, in addition to falling within the class or type of entity exempted or excepted by the respective statutory provisions, also be entering into the swap or security-based swap to hedge or mitigate commercial risk, and must report to the applicable Commission (in a manner set forth by the applicable Commission) how it generally meets its financial obligations associated with entering into non-cleared swaps or non-cleared security-based swaps.<SU>31</SU>
+          <FTREF/>
+        </P>
+        <FTNT>
+          <P>
+            <SU>31</SU> 7 U.S.C. 2(h)(7)(A); 17 CFR 50.50(b); 15 U.S.C. 3C(g)(4). Other provisions of the Commodity Exchange Act and the Securities Exchange Act separately impose additional governance requirements on an entity that elects a clearing exemption and that is an issuer of securities registered under section 12 of, or that is required to file reports under section 15(d) of, the Securities Exchange Act of 1934. 7 U.S.C. 2(j); 15 U.S.C. 3C(i).</P>
+        </FTNT>
+        <HD SOURCE="HD3">Swaps and Security-Based Swaps Required to be Cleared</HD>
+        <P>For swaps that the CFTC has determined are required to be cleared, the CFTC has adopted regulations that establish requirements by which an eligible entity may elect its option not to clear that type of swap and comply with the related substantive hedging and reporting requirements.<SU>32</SU>
+          <FTREF/> For such a swap, compliance with the CFTC regulatory requirements for a swap subject to clearing will provide the covered swap entity with sufficient information about the eligible entity and the swap to establish the swap is also exempt from the margin requirements of the joint final rule.<SU>33</SU>
+          <FTREF/> The Agencies believe that whenever a covered swap entity transacts in a swap with an eligible entity that uses the clearing exemption for that swap in compliance with these CFTC requirements, the covered swap entity needs no additional information from the eligible entity to proceed with that swap pursuant to the final rule's exemption from the margin requirements of the joint final rule.</P>
+        <FTNT>
+          <P>
+            <SU>32</SU> 17 CFR 50.50(b), 50.51(c), 50.51. In addition to providing reporting requirements, these CFTC rules further define the entities that are eligible for exceptions and exemptions from the clearing requirements and define when a swap is used to hedge or mitigate commercial risk.</P>
+        </FTNT>
+        <FTNT>
+          <P>
+
+            <SU>33</SU> Whenever a qualifying non-clearing entity has elected its option to not clear a swap that the CFTC has determined should be cleared, the entity's eligibility as well as its compliance with the associated hedging and reporting requirements must be demonstrated either: (1) In an annual filing by the entity reporting to an appropriate Swap Data Repository (SDR) or, if no registered SDR is available to receive the information, to the CFTC, which will be applicable to all such swaps entered into by the entity for 365 days following the date of such filing; or (2) on a swap-by-swap basis through a report filed by the eligible entity or the covered swap entity with the applicable SDR or, if no registered SDR is available to receive the information, the CFTC. The rule requires that the reporting counterparty have a reasonable basis to believe that the electing counterparty is an eligible entity that meets the associated hedging and reporting requirements. <E T="03">See</E> 17 CFR 50.50(b)(2)-(3) and 50.51(c).</P>
+        </FTNT>
+        <P>With respect to security-based swaps, the SEC has not yet made determinations requiring any security-based swap to be cleared, and has not yet adopted final rules related to how eligibility and compliance with the associated substantive requirements can be documented.<SU>34</SU>
+          <FTREF/> For a security-based swap subject to clearing, compliance with the SEC regulatory requirements, once finalized, will provide the covered swap entity with sufficient information about the eligible entity and the security-based swap to establish that the security-based swap is also exempt from the margin requirements of the joint final rule. Until such time as determinations are finalized by the SEC, the Agencies expect that covered swap entities will take appropriate steps to establish a reasonable belief that the entity is of a type eligible for the exemption and is using the security-based swap to hedge or mitigate commercial risk, as described below for other non-cleared swaps and non-cleared security-based swaps.</P>
+        <FTNT>
+          <P>
+            <SU>34</SU> In December 2010, the SEC proposed reporting requirements for a counterparty exercising an exception from clearing, which would require the entity to report to a security-based SDR that it is an eligible entity and: that the swap is being used to hedge or mitigate commercial risk; how it generally meets its financial obligations associated with entering into non-cleared security-based swaps, and, if a registered issuer of securities, whether a committee of the board has reviewed and approved the decision to enter into security-based swaps subject to the clearing exception. 75 FR 79992 (December 21, 2010).</P>
+        </FTNT>
+        <HD SOURCE="HD3">Swaps and Security-Based Swaps Not Required To Be Cleared</HD>
+
+        <P>There are also cases where a covered swap entity may enter into a non-cleared swap or non-cleared security-based swap with an eligible entity that the CFTC or SEC, respectively, does not require to be cleared. For swaps that are not subject to a CFTC or SEC clearing requirement, the Agencies expect that covered swap entities will take appropriate steps to establish a reasonable belief that the counterparty is an entity eligible for the exemption and is using the swap to hedge or <PRTPAGE P="50610"/>mitigate commercial risk.<SU>35</SU>
+          <FTREF/> The final rule does not prescribe any specific procedure or standard in this regard, and instead leaves covered swap entities the flexibility to collect information specifically on these points, take cognizance of information they already have about their counterparties and their non-cleared swap and non-cleared security-based swap transactions, or a combination of both. The Agencies believe it would be reasonable for a covered swap entity to rely in good faith on reasonable representations of its counterparty in making these assessments.<SU>36</SU>
+          <FTREF/>
+        </P>
+        <FTNT>
+          <P>
+            <SU>35</SU> As noted above, this category of non-cleared swaps includes all non-cleared security-based swaps during the interim until the SEC adopts final regulations requiring clearing of security-based swaps and associated exemptions from clearing.</P>
+        </FTNT>
+        <FTNT>
+          <P>
+            <SU>36</SU> <E T="03">See</E> the Agencies' joint final rule at 80 FR 74858 (November 30, 2015), discussing covered swap entities' reliance in good faith on reasonable representations of a counterparty as to whether the counterparty is a financial end user with a material swaps exposure; <E T="03">see also</E> 17 CFR 50.50(b)(2)-(3) and 50.51(c).</P>
+        </FTNT>
+        <P>In addition to the entity type requirements and the hedging requirements specified in the statutory clearing exceptions and exemptions referenced under section 302 of TRIPRA, there are requirements for reporting to the relevant Commission, in the manner set forth by the Commission, when the clearing exceptions and exemptions are elected. The Agencies expect covered swap entities subject to the joint final rule to comply with any reporting requirements that the relevant Commission may impose on covered swap entities in order to permit the use of the margin exemptions pursuant to section 302 of TRIPRA.</P>
+        <HD SOURCE="HD1">IV. Effective Date</HD>
+        <P>The Riegle Community Development and Regulatory Improvement Act of 1994 (the “RCDRIA”) requires that the OCC, the Board, and the FDIC, in determining the effective date and administrative compliance requirements of new regulations that impose additional reporting, disclosure, or other requirements on insured depository institutions, consider, consistent with principles of safety and soundness and the public interest, any administrative burdens that such regulations would place on depository institutions, including small depository institutions, and customers of depository institutions, as well as the benefits of such regulations.<SU>37</SU>
+          <FTREF/> In addition, new regulations by the OCC, the Board, or the FDIC that impose additional reporting, disclosures, or other new requirements on insured depository institutions generally must take effect on the first day of a calendar quarter that begins on or after the date on which the regulations are published in final form.<SU>38</SU>
+          <FTREF/> Accordingly, this final rule, which adopts the interim final rule without change, will be effective on October 1, 2016 as required under the RCDRIA.</P>
+        <FTNT>
+          <P>
+            <SU>37</SU> 12 U.S.C. 4802(a).</P>
+        </FTNT>
+        <FTNT>
+          <P>
+            <SU>38</SU> 12 U.S.C. 4802(b).</P>
+        </FTNT>
+        <HD SOURCE="HD1">V. Administrative Law Matters</HD>
+        <HD SOURCE="HD2">
+          <E T="03">A.</E> Solicitation of Comments on Use of Plain Language</HD>
+        <P>Section 722 of the Gramm-Leach-Bliley Act, Public Law 106-102, sec. 722, 113 Stat. 1338, 1471 (Nov. 12, 1999), requires the OCC, Board and FDIC to use plain language in all proposed and final rules published after January 1, 2000. The OCC, Board and FDIC sought to present the final rule in a simple and straightforward manner and did not receive any comments on the use of plain language.</P>
+        <HD SOURCE="HD2">B. <E T="03">Paperwork Reduction Act Analysis</E>
+        </HD>
+        <P>Certain provisions of the final rule contain “collection of information” requirements within the meaning of the Paperwork Reduction Act (“PRA”) of 1995  (44 U.S.C. 3501-3521). In accordance with the requirements of the PRA, the Agencies may not conduct or sponsor, and the respondent is not required to respond to, an information collection unless it displays a currently valid Office of Management and Budget (OMB) control number. The OMB control number for the OCC is 1557-0335, the FDIC is 3064-0204, and the Board is 7100-0364. The information collection requirements contained in this final rulemaking have been submitted to OMB for review and approval by the OCC and FDIC under section 3507(d) of the PRA and § 1320.11 of OMB's implementing regulations (5 CFR part 1320). The Board reviewed the final rule under the authority delegated to the Board by OMB. The Agencies received no comments on the PRA.</P>
+        <P>The final rule contains requirements subject to the PRA. The reporting requirements are found in § _.1(d). The final rule implements statutory language that requires certain swaps of certain counterparties to qualify for a statutory exemption or exception from clearing in order to not be subject to the initial and variation margin requirements of the joint final rule.</P>
+        <HD SOURCE="HD1">Proposed Information Collection</HD>
+        <P>
+          <E T="03">Title of Information Collection:</E> Reporting and Recordkeeping Requirements Associated with Margin and Capital Requirements for Covered Swap Entities.</P>
+        <P>
+          <E T="03">Frequency of Response:</E> Annual, daily, and event-generated.</P>
+        <P>
+          <E T="03">Affected Public:</E> The affected public of the OCC, FDIC, and Board is assigned generally in accordance with the entities covered by the scope and authority section of their respective final rule. Businesses or other for-profit.</P>
+        <P>
+          <E T="03">Respondents:</E>
+        </P>
+        <P>
+          <E T="03">OCC:</E> Any national bank or a subsidiary thereof, Federal savings association or a subsidiary thereof, or Federal branch or agency of a foreign bank that is registered as a swap dealer, major swap participant, security-based swap dealer, or major security-based swap participant.</P>
+        <P>
+          <E T="03">FDIC:</E> Any FDIC-insured state-chartered bank that is not a member of the Federal Reserve System or FDIC-insured state-chartered savings association that is registered as a swap dealer, major swap participant, security-based swap dealer, or major security-based swap participant.</P>
+        <P>
+          <E T="03">Board:</E> Any state member bank (as defined in 12 CFR 208.2(g)), bank holding company (as defined in 12 U.S.C. 1841), savings and loan holding company (as defined in 12 U.S.C. 1467a), foreign banking organization (as defined in 12 CFR 211.21(o)), foreign bank that does not operate an insured branch, state branch or state agency of a foreign bank (as defined in 12 U.S.C. 3101(b)(11) and (12)), or Edge or agreement corporation (as defined in 12 CFR 211.1(c)(2) and (3)) that is registered as a swap dealer, major swap participant, security-based swap dealer, or major security-based swap participant.</P>
+        <P>
+          <E T="03">Abstract:</E> This final rule implements Title III of the Terrorism Risk Insurance Program Reauthorization Act of 2015 (“TRIPRA”), which exempts from the Agencies' swap margin rules non-cleared swaps and non-cleared security-based swaps in which a counterparty qualifies for an exemption or exception from clearing under the Dodd-Frank Act. This final rule is a companion rule to the joint final rule adopted by the Agencies to implement section 731 and 764 of the Dodd-Frank Act.</P>
+        <HD SOURCE="HD2">Reporting Requirements</HD>
+
+        <P>The final rule implements statutory language that requires certain swaps and security-based swaps of certain counterparties to qualify for a statutory exemption or exception from clearing in order to not be subject to the initial and variation margin requirements of the joint final rule. The reporting requirements are found in § __.1(d) pursuant to cross-references to other <PRTPAGE P="50611"/>statutory provisions that set forth the conditions for an exemption from clearing. For example, TRIPRA provides that the initial and variation margin requirements of the joint final rule shall not apply to a non-cleared swap or non-cleared security-based swap in which a counterparty qualifies for an exception under section 2(h)(7)(A) of the Commodity Exchange Act or section 3C(g)(1) of the Securities Exchange Act, which includes certain reporting requirements established by the CFTC or the SEC.<SU>39</SU>
+          <FTREF/> Certain other counterparties that are exempt from clearing pursuant to other provisions are also required to meet these reporting requirements to notify the CFTC or the SEC.<SU>40</SU>
+          <FTREF/> Thus, in certain cases, the statutory exemption from clearing requires a notification to the CFTC or SEC. These counterparties may be required to meet the same notification requirements that are required for an exception or exemption from clearing in order to qualify for an exception or exemption pursuant to § __.1(d) from the initial and variation margin requirements established by the Agencies under sections 731 and 764 of the Dodd-Frank Act. Since this final rule serves to implement exemptions and exceptions by reference to existing statutory provisions, § __.1(d) imposes new reporting requirements that are required under the relevant statutory provisions.</P>
+        <FTNT>
+          <P>
+            <SU>39</SU> <E T="03">See, e.g.,</E> 17 CFR 50.50(b).</P>
+        </FTNT>
+        <FTNT>
+          <P>
+
+            <SU>40</SU> For example, certain exempt cooperatives must meet these reporting requirements to qualify for an exemption from clearing. <E T="03">See</E> 17 CFR 50.51(c). Similarly, exempt treasury affiliates also must be an affiliate of a person that qualifies for an exception from clearing that notifies the CFTC or SEC how it generally meets its financial obligations associated with entering into non-cleared swaps or non-cleared security-based swaps. <E T="03">See</E> 7 U.S.C. 2(h)(7)(D); 15 U.S.C. 78c-3(g)(4).</P>
+        </FTNT>
+        <P>
+          <E T="03">Estimated Burden per Response:</E> § _.1(d)—1 hour.</P>
+        <P>
+          <E T="03">Annual Frequency:</E> 1,000.</P>
+        <HD SOURCE="HD3">OCC</HD>
+        <P>
+          <E T="03">Number of respondents:</E> 20. </P>
+        <P>
+          <E T="03">Total estimated annual burden:</E> 20,000 hours.</P>
+        <HD SOURCE="HD3">FDIC <SU>41</SU>
+        </HD>
+        <P>
+          <E T="03">Number<FTREF/> of respondents:</E> 1. </P>
+        <P>
+          <E T="03">Total estimated annual burden:</E> 1,000 hours.</P>
+        <FTNT>
+          <P>
+            <SU>41</SU> The FDIC had initially estimated that three of its institutions might register as a swap dealer, major swap participant, security-based swap dealer or major security-based swap participant but no state non-member bank nor any state savings association has so registered, so FDIC is reducing its estimate to one as a placeholder for its information collection.</P>
+        </FTNT>
+        <HD SOURCE="HD3">Board</HD>
+        <P>
+          <E T="03">Number of respondents:</E> 50.</P>
+        <P>
+          <E T="03">Proposed revisions only estimated annual burden:</E> 50,000 hours. </P>
+        <P>
+          <E T="03">Total estimated annual burden:</E> 86,964 hours.</P>
+        <P>
+          <E T="03">FCA:</E> The FCA has determined that the final rule does not involve a collection of information pursuant to the Paperwork Reduction Act for Farm Credit System institutions because Farm Credit System institutions are Federally chartered instrumentalities of the United States and instrumentalities of the United States are specifically excepted from the definition of “collection of information” contained in 44 U.S.C. 3502(3).</P>
+        <P>
+          <E T="03">FHFA:</E> With respect to any regulated entity as defined in section 1303(20) of the Federal Housing Enterprises Financial Safety and Soundness Act of 1992, as amended (12 U.S.C. 4502(20)), the final rule does not contain any collection of information that requires the approval of the OMB under the PRA.</P>
+        <HD SOURCE="HD2">C. <E T="03">Regulatory Flexibility Act Analysis</E>
+        </HD>
+        <P>
+          <E T="03">Board:</E> An initial regulatory flexibility analysis, in accordance with the Regulatory Flexibility Act (5 U.S.C. 601 <E T="03">et seq.</E>) (“RFA”),<SU>42</SU>
+          <FTREF/> was included in the interim final rule. In the initial regulatory flexibility analysis, the Board requested comments on all aspects of the initial regulatory flexibility analysis, and, in particular, comments on its conclusion that the interim final rule would not have a significant economic impact on a substantial number of small entities. The Board also requested comments on any significant alternatives to the interim final rule that would minimize the impact of the rule on small entities. The Board has since considered the potential impact of this final rule on small entities in accordance with section 604 of the RFA and has prepared the following final regulatory flexibility analysis. Based on the Board's analysis, and for the reasons stated below, the Board believes that the final rule will not have a significant economic impact on a substantial number of small entities.</P>
+        <FTNT>
+          <P>
+            <SU>42</SU> <E T="03">See</E> 5 U.S.C. 601 <E T="03">et seq.</E>
+          </P>
+        </FTNT>
+        <P>1. <E T="03">Statement of the need for, and objectives of, the final rule.</E> As explained in detail above, this final rule implements section 302 of TRIPRA, which provides that initial and variation margin requirements will not apply to specified non-cleared swaps or non-cleared security-based swaps of certain counterparties (to a covered swap entity). The reasons and justification for the final rule are described above in the <E T="02">SUPPLEMENTARY INFORMATION</E>.</P>
+        <P>2. <E T="03">Summary of the significant issues raised by public comment on the Board's initial analysis, the Board's assessment of such issues, and a statement of any changes made as a result of such comments.</E>The Board did not receive comments specifically on the initial regulatory flexibility analysis contained in the interim final rule, but the Agencies did receive comments on other aspects of the rule. A full discussion of all comments received by the Agencies with respect to this rule is contained in the <E T="02">SUPPLEMENTARY INFORMATION</E>, above.</P>
+        <P>3. <E T="03">Small entities affected by the final rule.</E>This final rule may have an effect on the following types of small entities: (i) Covered swap entities that are subject to the joint final rule's capital and margin requirements; and (ii) certain counterparties (<E T="03">e.g.,</E> non-financial end users and certain other small financial counterparties) that engage in swaps or security-based swaps with covered swap entities.<SU>43</SU>
+          <FTREF/>
+        </P>
+        <FTNT>
+          <P>
+
+            <SU>43</SU> The Board notes that the RFA does not require the Board to consider the impact of the final rule, including its indirect economic effects, on small entities that are not subject to the requirements of the final rule. <E T="03">See e.g., In Mid-Tex Electric Cooperative</E> v. <E T="03">FERC,</E> 773 F.2d 327 (D.C. Cir. 1985); <E T="03">United Distribution Cos.</E> v. <E T="03">FERC,</E> 88 F.3d 1105, 1170 (D.C. Cir. 1996); <E T="03">Cement Kiln Recycling Coalition</E> v. <E T="03">EPA,</E> 255 F.3d 855 (D.C. Cir. 2001).</P>
+        </FTNT>
+        <P>Under Small Business Administration (the “SBA”) regulations, the finance and insurance sector includes commercial banking, savings institutions, credit unions, other depository credit intermediation and credit card issuing entities (“financial institutions”), which generally are considered “small” if they have assets of $550 million or less.<SU>44</SU>
+          <FTREF/> Covered swap entities would be considered financial institutions for purposes of the RFA in accordance with SBA regulations. The Board does not expect that any covered swap entity is likely to be a small financial institution, because a small financial institution is unlikely to engage in the level of swap activity that would require it to register as a swap dealer or major swap participant.<SU>45</SU>
+          <FTREF/> None of the currently <PRTPAGE P="50612"/>registered covered swap entities are small entities. The final rule would have an indirect effect on certain counterparties to non-cleared swaps and non-cleared security-based swaps. Many of these counterparties would be considered “small” under the SBA's regulations.<SU>46</SU>
+          <FTREF/> However, the effect of TRIPRA and the final rule will be to exempt many of the non-cleared swaps and non-cleared security-based swaps of these counterparties from the margin requirements of the Agencies' joint final rule.</P>
+        <FTNT>
+          <P>
+            <SU>44</SU> <E T="03">See</E> 13 CFR 121.201 (effective December 2, 2014); <E T="03">see also</E> 13 CFR 121.103(a)(6) (noting factors that the SBA considers in determining whether an entity qualifies as a small business, including receipts, employees, and other measures of its domestic and foreign affiliates).</P>
+        </FTNT>
+        <FTNT>
+          <P>
+
+            <SU>45</SU> The CFTC has published a list of provisionally registered swap dealers (as of February 9, 2016) and provisionally registered major swap participants (as of March 1, 2013) that does not include any small financial institutions. <E T="03">See http://www.cftc.gov/LawRegulation/DoddFrankAct/registerswapdealer</E> and <E T="03">http://www.cftc.gov/LawRegulation/DoddFrankAct/registermajorswappart.</E> The SEC has not provided a similar list since it only recently adopted rules to provide for the registration of security-based swap dealers and major security-based swap participants. <E T="03">See</E> 80 FR 48963 (August 14, 2015); 17 CFR parts 240 and 249.</P>
+        </FTNT>
+        <FTNT>
+          <P>
+            <SU>46</SU> <E T="03">See</E> 13 CFR 121.201. In addition to small financial institutions with assets of $550 million or less, swap counterparties could also include other small entities defined in regulations issued by the SBA, including firms within the “Securities, Commodity Contracts, and Other Financial Investments and Related Activities” sector with assets of $38.5 million or less and “Funds, Trusts and Other Financial Vehicles” with assets of $32.5 million or less.</P>
+        </FTNT>
+        <P>4. <E T="03">Projected reporting, recordkeeping and other compliance requirements of the final rule.</E> As described above, this final rule implements statutory language that requires certain swaps of certain counterparties to qualify for a statutory exemption or exception from the applicable clearing requirements in order to not be subject to the initial and variation margin requirements of the joint final rule. The reporting requirements are found in § _.1(d) of this final rule pursuant to cross-references to other statutory provisions that set forth the conditions for an exemption or exception from clearing. In certain cases, the statutory exemption from clearing and related regulations may require a counterparty to report information, such as how it meets its swaps obligations, to the CFTC or SEC. These counterparties may be required to meet the same notification requirements that are required for an exception or exemption from the relevant CFTC and SEC regulations. Other than this potential overlap of reporting obligations of this final rule and the relevant CFTC and SEC regulations, the Board is not aware of any other Federal rules that duplicate, overlap, or conflict with this final rule. In light of the exemptions provided for the non-cleared swaps and non-cleared security-based swaps of many small entities, the Board does not believe that the final rule would have a significant economic impact on a substantial number of small entity counterparties.</P>
+        <P>5. <E T="03">Significant alternatives to the final rule.</E> Since the final rule was required by TRIPRA, the Board does not believe that there are any significant alternatives to the rule which would accomplish the stated objectives of the applicable statute.</P>
+        <P>In light of the foregoing, the Board does not believe that this final rule would have a significant economic impact on a substantial number of small entities.</P>
+        <P>
+          <E T="03">FDIC:</E> The RFA requires an agency, in connection with a notice of final rulemaking, to prepare a Final Regulatory Flexibility Act analysis describing the impact of the rule on small entities (defined by the SBA for purposes of the RFA to include banking entities with total assets of $550 million or less) or to certify that the final rule will not have a significant economic impact on a substantial number of small entities.</P>
+        <P>Using SBA's size standards, as of June 30, 2015, the FDIC supervised 3,357 small entities. The FDIC does not expect any small entity that it supervises is likely to be a covered swap entity because such entities are unlikely to engage in the level of swap activity that would require them to register as a swap entity. Because TRIPRA excludes non-cleared swaps entered into for hedging purposes by a financial institution with total assets of $10 billion or less from the requirement of the final rule, the FDIC expects that when a covered swap entity transactions non-cleared swaps with a small entity supervised by the FDIC, and such swaps are used to hedge the small entity's commercial risk, those swaps will not be subject to the final rule. The FDIC does not expect any small entity that it supervises will engage in non-cleared swaps for purposes other than hedging. Therefore, the FDIC does not believe that the interim final rule results in a significant economic impact on a substantial number of small entities under its supervisory jurisdiction.</P>
+        <P>The FDIC certifies that the interim final rule does not have a significant economic impact on a substantial number of small FDIC-supervised institutions.</P>
+        <P>
+          <E T="03">OCC:</E> The Regulatory Flexibility Act (RFA) <SU>47</SU>
+          <FTREF/> generally requires an agency that is issuing a proposed rule to prepare and make available for public comment an initial regulatory flexibility analysis that describes the impact of the proposed rule on small entities. The RFA does not apply to a rulemaking where a general notice of proposed rulemaking is not required.<SU>48</SU>
+          <FTREF/> For the reasons described above in the Supplementary Information, the OCC has previously determined that it was unnecessary to publish a notice of proposed rulemaking for this final rule. Accordingly, the RFA's requirements relating to an initial and final regulatory flexibility analysis do not apply.</P>
+        <FTNT>
+          <P>
+            <SU>47</SU> <E T="03">See</E> 5 U.S.C. 601 <E T="03">et seq.</E>
+          </P>
+        </FTNT>
+        <FTNT>
+          <P>
+            <SU>48</SU> <E T="03">See</E> 5 U.S.C. 603 and 604.</P>
+        </FTNT>
+        <P>
+          <E T="03">FCA:</E> Pursuant to section 605(b) of the Regulatory Flexibility Act, the FCA hereby certifies that the final rule will not have a significant economic impact on a substantial number of small entities. Each of the banks in the Farm Credit System, considered together with its affiliated associations, has assets and annual income in excess of the amounts that would qualify them as small entities. Nor does the Federal Agricultural Mortgage Corporation meet the definition of a “small entity.” Therefore, Farm Credit System institutions are not “small entities” as defined in the Regulatory Flexibility Act.</P>
+        <P>
+          <E T="03">FHFA:</E> FHFA certifies that the final rule will not have a significant economic impact on a substantial number of small entities, since none of FHFA's regulated entities comes within the meaning of a “small entity” as defined in the Regulatory Flexibility Act (<E T="03">see</E> 5 U.S.C. 601(6)), and the final rule will not substantially affect any business that its regulated entities might conduct with any such small entity.</P>
+        <LSTSUB>
+          <HD SOURCE="HED">List of Subjects</HD>
+          <CFR>12 CFR Part 45</CFR>
+          <P>Administrative practice and procedure, Capital, Margin requirements, National Banks, Federal Savings Associations, Reporting and recordkeeping requirements, Risk.</P>
+          <CFR>12 CFR Part 237</CFR>
+          <P>Administrative practice and procedure, Banks and banking, Capital, Foreign banking, Holding companies, Margin requirements, Reporting and recordkeeping requirements, Risk.</P>
+          <CFR>12 CFR Part 349</CFR>
+          <P>Administrative practice and procedure, Banks, Holding companies, Capital, Margin requirements, Reporting and recordkeeping requirements, Savings associations Risk.</P>
+          <CFR>12 CFR Part 624</CFR>
+          <P>Accounting, Agriculture, Banks, Banking, Capital, Cooperatives, Credit, Margin requirements, Reporting and recordkeeping requirements, Risk, Rural areas, Swaps.</P>
+          <CFR>12 CFR Part 1221</CFR>
+          <P>Government-sponsored enterprises, Mortgages, Securities.</P>
+        </LSTSUB>
+        <PRTPAGE P="50613"/>
+        <HD SOURCE="HD1">Department of the Treasury</HD>
+        <HD SOURCE="HD1">Office of the Comptroller of the Currency</HD>
+        <HD SOURCE="HD1">12 CFR Chapter I</HD>
+        <REGTEXT PART="45" TITLE="12">
+          <PART>
+            <HD SOURCE="HED">PART 45—MARGIN AND CAPITAL REQUIREMENTS FOR COVERED SWAP ENTITIES</HD>
+          </PART>
+          <AMDPAR>Accordingly, the interim final rule amending 12 CFR part 45, which was published at 80 FR 74916 on November 30, 2015, is adopted as a final rule without change.</AMDPAR>
+        </REGTEXT>
+        <REGTEXT PART="237" TITLE="12">
+          <HD SOURCE="HD1">Board of Governors of the Federal Reserve System</HD>
+          <HD SOURCE="HD1">12 CFR Chapter II</HD>
+          <PART>
+            <HD SOURCE="HED">PART 237—SWAPS MARGIN AND SWAPS PUSH-OUT</HD>
+            <SUBPART>
+              <HD SOURCE="HED">Subpart A—Margin and Capital Requirements for Covered Swap Entities</HD>
+            </SUBPART>
+          </PART>
+          <AMDPAR>Accordingly, the interim final rule amending 12 CFR part 237, subpart A which was published at 80 FR 74916 on November 30, 2015, is adopted as a final rule without change.</AMDPAR>
+        </REGTEXT>
+        <REGTEXT PART="349" TITLE="12">
+          <HD SOURCE="HD1">Federal Deposit Insurance Corporation</HD>
+          <HD SOURCE="HD1">12 CFR Chapter III</HD>
+          <PART>
+            <HD SOURCE="HED">PART 349—DERIVATIVES</HD>
+          </PART>
+          <AMDPAR>Accordingly, the interim final rule amending 12 CFR part 349 which was published at 80 FR 74916 on November 30, 2015, is adopted as a final rule without change.</AMDPAR>
+        </REGTEXT>
+        <REGTEXT PART="624" TITLE="12">
+          <HD SOURCE="HD1">Farm Credit Administration</HD>
+          <HD SOURCE="HD1">12 CFR Chapter VI</HD>
+          <AMDPAR>Accordingly, the interim final rule amending 12 CFR part 624 which was published at 80 FR 74916 on November 30, 2015, is adopted as a final rule without change.</AMDPAR>
+        </REGTEXT>
+        <REGTEXT PART="1221" TITLE="12">
+          <HD SOURCE="HD1">Federal Housing Finance Agency</HD>
+          <HD SOURCE="HD1">Chapter XII—Federal Housing Finance Agency</HD>
+          <SUBPART>
+            <HD SOURCE="HED">Subchapter B—Entity Regulations</HD>
+          </SUBPART>
+          <PART>
+            <HD SOURCE="HED">PART 1221—MARGIN AND CAPITAL REQUIREMENTS FOR COVERED SWAP ENTITIES</HD>
+          </PART>
+          <AMDPAR>Accordingly, the interim final rule amending 12 CFR part 1221 which was published at 80 FR 74916 on November 30, 2015, is adopted as a final rule without change.</AMDPAR>
+        </REGTEXT>
+        <SIG>
+          <DATED>Dated: June 21, 2016.</DATED>
+          <NAME>Thomas J. Curry,</NAME>
+          <TITLE>Comptroller of the Currency.</TITLE>
+          
+          <P>By order of the Board of Governors of the Federal Reserve System, July 26, 2016.</P>
+          
+          <NAME>Robert deV. Frierson,</NAME>
+          <TITLE>Secretary of the Board.</TITLE>
+          <DATED>Dated at Washington, DC, this 21 of June 2016.</DATED>
+          
+          <P>By order of the Board of Directors.</P>
+          
+          <FP>Federal Deposit Insurance Corporation.</FP>
+          
+          <NAME>Robert E. Feldman,</NAME>
+          <TITLE>Executive Secretary.</TITLE>
+          <DATED>Dated: June 22, 2016.</DATED>
+          <NAME>Dale L. Aultman,</NAME>
+          <TITLE> Secretary, Farm Credit Administration Board. </TITLE>
+          <DATED>Dated: June 27, 2016.</DATED>
+          <NAME>Melvin L. Watt,</NAME>
+          <TITLE>Director, Federal Housing Finance Agency.</TITLE>
+        </SIG>
+      </SUPLINF>
+      <FRDOC>[FR Doc. 2016-18193 Filed 8-1-16; 8:45 am]</FRDOC>
+      <BILCOD>BILLING CODE 4810-33-P; 8070-01-P; 6705-01-P; 6714-01-P; 6210-01-P; 4810-33-P</BILCOD>
+    </RULE>
