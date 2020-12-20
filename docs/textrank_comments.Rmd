@@ -76,18 +76,6 @@ load(here::here("data", "CFPB-2016-0025-coded.Rdata"))
 coded %<>% mutate(hand_selected_summary = paste(ask, ask1, ask2, ask3, sep = "...") %>% str_remove_all("\\...NA")) 
 ```
 
-```{r filter, include = FALSE, eval = FALSE}
-#Filter out NA asks
- # d <- asksData %>%
- #   filter(! is.na(ask)) 
-  
-#FIXME read in txt files
-# comments <-  map(.x = d$document_id %>% unique(),
-#                  read_sheet ) 
-#   
-# comment <- read_sheet("https://docs.google.com/document/d/1qtW-HhPFGbp167CjC9zRRkPViqKaNZhnJ6LoYFTA_LY/edit")
-```
-
 
 Get file paths comment texts.
 
@@ -114,7 +102,49 @@ d <- comments %>%
 
 d %<>% head() #FIXME just working with a few comments for now
 ```
-  
+
+Clean comment texts.
+
+```{r summarize}
+# remove some common things. This can be generalized with info from data
+# comment_header <- c("Docket No. CFP Consumer Financial Protection Bureau G Street, NW. Washington, DC")
+# 
+# comment_footer <- c("Sincerely,|Signature|Print Name|Address|City|State|Docket No\\. CFP|Zip|Email|Date")
+# 
+# agency_address <- c("Dear Consumer Financial Protection Bureau CFPB")
+
+clean_string <- . %>% 
+  str_c(collapse = " ") %>% 
+  # make sure sentences are ended
+  str_replace_all("\\t|\\\n", " ") %>% 
+  str_remove_all("<|>") %>%
+  str_remove_all("[0-9]\\..*\\.") %>%
+  #str_replace_all("\\.([A-z])", ". \\1") %>%
+  # remvove numbers and specials (keep only text and basic punctuation)
+  str_remove_all("\\\\") %>% 
+  str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;<>]", " ") %>% 
+  #str_remove_all("\\'") %>%
+  str_squish() %>%
+  str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
+  str_replace_all(" , ", " ") %>% 
+  # double commas  
+  #str_replace_all("\\, \\, ", ", ") %>% 
+  # double periods 
+  #str_replace_all("\\. \\. ", ". ") %>% 
+  # one character after a period 
+  str_replace_all("\\. .\\. ", ". ") %>% 
+  # remove white space
+  str_squish() %>% 
+  #str_remove_all(comment_header) %>%
+  #str_remove_all("pagebreak|<pagebreak>") %>% # Devin's OCR method adds this 
+  #str_remove_all(comment_footer) %>%
+  #str_remove_all(agency_address) %>%
+  #str_replace_all("\\.*", " ") %>% 
+  #str_remove_all("www.magnifymoney.com|magnifymoney") %>%
+  # str_replace_all(" \\,", ", ") %>%
+  str_replace_all(" \\.", ". ") %>%
+  str_squish() 
+```
 
 
 ```{r testing, include = FALSE, eval = FALSE}
@@ -132,47 +162,6 @@ d$text %>% kablebox()
 ```
 
 
-Clean comment texts.
-
-```{r summarize}
-# remove some common things. This can be generalized with info from data
-comment_header <- c("Docket No. CFP Consumer Financial Protection Bureau G Street, NW. Washington, DC")
-
-comment_footer <- c("Sincerely,|Signature|Print Name|Address|City|State|Docket No\\. CFP|Zip|Email|Date")
-
-agency_address <- c("Dear Consumer Financial Protection Bureau CFPB")
-
-clean_string <- . %>% 
-  str_c(collapse = " ") %>% 
-  # make sure sentences are ended
-  str_replace_all("\\t|\\\n", " ") %>% 
-  str_remove_all("<|>") %>%
-  #str_replace_all("\\.([A-z])", ". \\1") %>%
-  # remvove numbers and specials (keep only text and basic punctuation)
-  str_remove_all("\\\\") %>% 
-  str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;<>]", " ") %>% 
-  str_squish() %>%
-  str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
-  str_replace_all(" , ", " ") %>% 
-  # double commas  
-  #str_replace_all("\\, \\, ", ", ") %>% 
-  # double periods 
-  #str_replace_all("\\. \\. ", ". ") %>% 
-  # one character after a period 
-  str_replace_all("\\. .\\. ", ". ") %>% 
-  # remove white space
-  str_squish() %>% 
-  str_remove_all(comment_header) %>%
-  str_remove_all("pagebreak|<pagebreak>") %>% # Devin's OCR method adds this 
-  str_remove_all(comment_footer) %>%
-  str_remove_all(agency_address) %>%
-  #str_replace_all("\\.*", " ") %>% 
-  str_remove_all("www.magnifymoney.com|magnifymoney") %>%
-  # str_replace_all(" \\,", ", ") %>%
-  str_replace_all(" \\.", ". ") %>%
-  str_squish() 
-```
-
 Summarize comments.
 
 ```{r}
@@ -180,6 +169,9 @@ Summarize comments.
 # data <- d
 # document_ids = d$document_id[1]
 # max_sentences = 100
+
+
+agency_text <- c("cfpb|CFPB|Consumer Financial Protection Bureau")
 
 summarizeText <- function(document_ids, data, max_sentences) {
   
@@ -200,10 +192,16 @@ summarizeText <- function(document_ids, data, max_sentences) {
   # select max sentences to summarize per section
   sentences %<>% filter(textrank_id <= max_sentences)
   
+  
+  sentences %>%
+    anti_join(agency_text, copy = TRUE, by = character())
+  
   # textrank needs a dictionary of words
   words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
     distinct() %>% 
     anti_join(tidytext::stop_words)
+  
+  
   
   # textRank fails if you feed it only one sentence
   if(nrow(sentences) > 1){
