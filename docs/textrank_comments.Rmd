@@ -100,7 +100,7 @@ d <- comments %>%
   # select comments that have been hand coded
   filter(document_id %in% coded$document_id)
 
-d %<>% head() #FIXME just working with a few comments for now
+#d %<>% head() #FIXME just working with a few comments for now
 ```
 
 Clean comment texts.
@@ -117,32 +117,32 @@ clean_string <- . %>%
   str_c(collapse = " ") %>% 
   # make sure sentences are ended
   str_replace_all("\\t|\\\n", " ") %>% 
-  str_remove_all("<|>") %>%
-  str_remove_all("[0-9]\\..*\\.") %>%
-  #str_replace_all("\\.([A-z])", ". \\1") %>%
-  # remvove numbers and specials (keep only text and basic punctuation)
-  str_remove_all("\\\\") %>% 
-  str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;<>]", " ") %>% 
-  #str_remove_all("\\'") %>%
-  str_squish() %>%
-  str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
-  str_replace_all(" , ", " ") %>% 
-  # double commas  
-  #str_replace_all("\\, \\, ", ", ") %>% 
-  # double periods 
-  #str_replace_all("\\. \\. ", ". ") %>% 
-  # one character after a period 
-  str_replace_all("\\. .\\. ", ". ") %>% 
-  # remove white space
-  str_squish() %>% 
-  #str_remove_all(comment_header) %>%
-  #str_remove_all("pagebreak|<pagebreak>") %>% # Devin's OCR method adds this 
-  #str_remove_all(comment_footer) %>%
-  #str_remove_all(agency_address) %>%
-  #str_replace_all("\\.*", " ") %>% 
-  #str_remove_all("www.magnifymoney.com|magnifymoney") %>%
-  # str_replace_all(" \\,", ", ") %>%
-  str_replace_all(" \\.", ". ") %>%
+   str_remove_all("<|>") %>%
+   str_remove_all("^[0-9](?!\\.)") %>%
+   ##str_replace_all("\\.([A-z])", ". \\1") %>%
+   # remvove numbers and specials (keep only text and basic punctuation)
+   str_remove_all("\\\\") %>% 
+   str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;<>]", " ") %>% 
+   #str_remove_all("\\'") %>%
+   str_squish() %>%
+   str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
+   str_replace_all(" , ", " ") %>% 
+   # double commas  
+   #str_replace_all("\\, \\, ", ", ") %>% 
+   # double periods 
+   #str_replace_all("\\. \\. ", ". ") %>% 
+   # one character after a period 
+   str_replace_all("\\. .\\. ", ". ") %>% 
+   # remove white space
+   str_squish() %>% 
+   #str_remove_all(comment_header) %>%
+   str_remove_all("pagebreak|<pagebreak>") %>% # Devin's OCR method adds this 
+   #str_remove_all(comment_footer) %>%
+   #str_remove_all(agency_address) %>%
+   #str_replace_all("\\.*", " ") %>% 
+   #str_remove_all("www.magnifymoney.com|magnifymoney") %>%
+   # str_replace_all(" \\,", ", ") %>%
+   str_replace_all(" \\.", ". ") %>%
   str_squish() 
 ```
 
@@ -157,6 +157,10 @@ d$text <- map_chr(d$path, read_comment)
 
 # inspect
 d
+
+problem <- d %>%
+  filter(document_id == "CFPB-2016-0025-186600") %>%
+  select(text)
 
 d$text %>% kablebox()
 ```
@@ -268,6 +272,9 @@ comment_summary %>%
   # join with coded data 
   left_join(coded) %>% 
   select(org_name, textrank_summary, hand_selected_summary, comment_url)  %>% kablebox()
+
+
+
 ```
 
 
