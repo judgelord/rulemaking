@@ -158,9 +158,6 @@ d$text <- map_chr(d$path, read_comment)
 # inspect
 d
 
-problem <- d %>%
-  filter(document_id == "CFPB-2016-0025-186600") %>%
-  select(text)
 
 d$text %>% kablebox()
 ```
@@ -272,7 +269,6 @@ comment_summary %>%
   # join with coded data 
   left_join(coded) %>% 
   select(org_name, textrank_summary, hand_selected_summary, comment_url)  %>% kablebox()
-
 
 
 ```
