@@ -117,7 +117,9 @@ clean_string <- . %>%
   str_c(collapse = " ") %>% 
   # make sure sentences are ended
   str_replace_all("\\t|\\\n", " ") %>% 
+  #str_remove_all(" ?(f|ht)(tp)(s?)(://)(.*)[.|/](.*)") %>%
    str_remove_all("<|>") %>%
+  #str_replace_all("\\s+", " ") %>%
    str_remove_all("^[0-9](?!\\.)") %>%
    ##str_replace_all("\\.([A-z])", ". \\1") %>%
    # remvove numbers and specials (keep only text and basic punctuation)
@@ -148,6 +150,8 @@ clean_string <- . %>%
 
 
 ```{r testing, include = FALSE, eval = FALSE}
+
+
 read_comment <- . %>%
   read_lines() %>%
   clean_string() 
@@ -179,7 +183,7 @@ Summarize comments.
 # max_sentences = 100
 
 
-agency_text <- c("cfpb|CFPB|Consumer Financial Protection Bureau")
+agency_text <- c("cfpb", "CFPB", "Consumer Financial Protection Bureau")
 
 summarizeText <- function(document_ids, data, max_sentences) {
   
@@ -200,15 +204,13 @@ summarizeText <- function(document_ids, data, max_sentences) {
   # select max sentences to summarize per section
   sentences %<>% filter(textrank_id <= max_sentences)
   
-  
-  sentences %>%
-    anti_join(agency_text, copy = TRUE, by = character())
+  #sentences %<>% anti_join(agency_text, copy = TRUE, by = character())
   
   # textrank needs a dictionary of words
   words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
     distinct() %>% 
     anti_join(tidytext::stop_words)
-  
+     
   
   
   # textRank fails if you feed it only one sentence
@@ -276,6 +278,7 @@ comment_summary %>%
   # join with coded data 
   left_join(coded) %>% 
   select(org_name, textrank_summary, hand_selected_summary, comment_url)  %>% kablebox()
+
 
 
 ```
