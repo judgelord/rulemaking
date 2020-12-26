@@ -160,6 +160,13 @@ d
 
 
 d$text %>% kablebox()
+
+coded %>%
+  filter(document_id %in% coded$document_id) %>%
+  filter(document_id %in% d$document_id == FALSE) %>%
+  select(document_id, comment_url) %>%
+  kablebox()
+  
 ```
 
 
