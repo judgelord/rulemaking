@@ -165,6 +165,7 @@ d
 
 d$text %>% kablebox()
 
+#Missing files
 coded %>%
   filter(document_id %in% coded$document_id) %>%
   filter(document_id %in% d$document_id == FALSE) %>%
