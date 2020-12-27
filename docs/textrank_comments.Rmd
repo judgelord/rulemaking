@@ -184,7 +184,9 @@ Summarize comments.
 # max_sentences = 100
 
 
-agency_text <- c("cfpb", "CFPB", "Consumer Financial Protection Bureau")
+#agency_text <- c("cfpb", "CFPB", "Payday, Vehicle Title, and Certain High-Cost Installment Loans")
+
+#data <- d
 
 summarizeText <- function(document_ids, data, max_sentences) {
   
@@ -192,7 +194,7 @@ summarizeText <- function(document_ids, data, max_sentences) {
   data %<>% filter(document_id == document_ids) 
   
   # load and clean text
-  data$text <-  data$path %>% read_lines() %>% clean_string()
+  #data$text <-  data$path %>% read_lines() %>% clean_string()
   
   sentences <- data %>%
     select(text) %>%
@@ -210,7 +212,8 @@ summarizeText <- function(document_ids, data, max_sentences) {
   # textrank needs a dictionary of words
   words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
     distinct() %>% 
-    anti_join(tidytext::stop_words)
+     anti_join(tidytext::stop_words) #%<>% 
+    # anti_join(agency_text, copy = TRUE, by = character()) #Creates bad summaries
      
   
   
