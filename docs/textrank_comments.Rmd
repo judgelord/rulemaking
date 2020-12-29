@@ -188,16 +188,11 @@ Summarize comments.
 
 #data <- d
 
-summarizeText <- function(document_ids, data, max_sentences) {
+summarizeText <- function(text, max_sentences) {
   
-  # select document(s) provided in function input
-  data %<>% filter(document_id == document_ids) 
-  
-  # load and clean text
-  #data$text <-  data$path %>% read_lines() %>% clean_string()
+  data <- tibble(text = text)
   
   sentences <- data %>%
-    select(text) %>%
     unnest_sentences(output = sentences, input = text) %>%
     distinct() %>%
     mutate(textrank_id = row_number()) %>% 
@@ -248,9 +243,8 @@ summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
    ) 
 
   # summarize, map summary function to each unique section
-  text_summary <-  map(.x = data$document_id %>% unique() ,
-                       .f = summarizeText, 
-                       data = data, 
+  text_summary <-  map(.x = data$text,
+                       .f = summarizeText,
                        max_sentences = max_sentences) 
   
   # extract top n_sentences
