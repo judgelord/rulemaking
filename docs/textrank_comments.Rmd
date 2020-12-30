@@ -179,16 +179,21 @@ Summarize comments.
 
 ```{r}
 # # for testing 
-# data <- d
+ data <- d
 # document_ids = d$document_id[1]
 # max_sentences = 100
+
+custom_stop_words <- tibble( words = c("cfpb", "CFPB", "Payday, Vehicle Title, and Certain High-Cost Installment Loans")) %>%
+  mutate(words = words)%>%
+  unnest_tokens(output = sentences, input = words) %>%
+  distinct()
 
 
 #agency_text <- c("cfpb", "CFPB", "Payday, Vehicle Title, and Certain High-Cost Installment Loans")
 
 #data <- d
 
-summarizeText <- function(text, max_sentences) {
+summarizeText <- function(text, max_sentences, custom_stop_words) {
   
   data <- tibble(text = text)
   
@@ -207,7 +212,8 @@ summarizeText <- function(text, max_sentences) {
   # textrank needs a dictionary of words
   words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
     distinct() %>% 
-     anti_join(tidytext::stop_words) #%<>% 
+     anti_join(tidytext::stop_words) %>% 
+    anti_join(custom_stop_words, by = character())
     # anti_join(agency_text, copy = TRUE, by = character()) #Creates bad summaries
      
   
@@ -232,7 +238,7 @@ summarizeText <- function(text, max_sentences) {
 }
 
 
-summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
+summarize_comments <- function(data, n_sentences = 2, max_sentences = 100, custom_stop_words) {
   
 
   # not cleaning data here either; should we? I think it is better to do it in the above function so it is done on one comment at a time.
@@ -245,7 +251,8 @@ summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
   # summarize, map summary function to each unique section
   text_summary <-  map(.x = data$text,
                        .f = summarizeText,
-                       max_sentences = max_sentences) 
+                       max_sentences = max_sentences,
+                       custom_stop_words = custom_stop_words) 
   
   # extract top n_sentences
   pull_sentences <- . %>% 
@@ -265,7 +272,7 @@ summarize_comments <- function(data, n_sentences = 2, max_sentences = 100) {
 
 
 
-comment_summary <- summarize_comments(d, n_sentences = 3, max_sentences = 50 )
+comment_summary <- summarize_comments(d, n_sentences = 3, max_sentences = 50, custom_stop_words )
 ```
 
 Compare to hand-coded key sentences.
