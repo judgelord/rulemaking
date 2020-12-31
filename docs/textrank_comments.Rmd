@@ -46,7 +46,7 @@ library(ggplot2); theme_set(theme_bw())
   
 kablebox <- . %>%  knitr::kable() %>% 
   kable_styling() %>% 
-  scroll_box(height = "400px")
+  scroll_box(height = "500px")
 ```
 
 `summarize_comment` is a wrapper for `textrank_sentences` that returns a summary for each comment. It takes three inputs:
@@ -146,11 +146,6 @@ clean_string <- . %>%
    # str_replace_all(" \\,", ", ") %>%
    str_replace_all(" \\.", ". ") %>%
   str_squish() 
-```
-
-
-```{r testing, include = FALSE, eval = FALSE}
-
 
 read_comment <- . %>%
   read_lines() %>%
@@ -158,6 +153,13 @@ read_comment <- . %>%
 
 # map read
 d$text <- map_chr(d$path, read_comment)
+```
+
+
+```{r testing, include = FALSE, eval = FALSE}
+
+
+
 
 # inspect
 d
@@ -179,25 +181,21 @@ Summarize comments.
 
 ```{r}
 # # for testing 
- data <- d
+# data <- d
 # document_ids = d$document_id[1]
 # max_sentences = 100
 
-custom_stop_words <- tibble( words = c("cfpb", "CFPB", "Payday, Vehicle Title, and Certain High-Cost Installment Loans")) %>%
+# A dataframe of custom stop words, formatted like tidytext::stop_words
+custom_stop_words <- tibble( 
+  words = c("cfpb", "CFPB", "Payday, Vehicle Title, and Certain High-Cost Installment Loans")) %>%
   mutate(words = words)%>%
-  unnest_tokens(output = sentences, input = words) %>%
+  unnest_tokens(output = word, input = words) %>%
   distinct()
 
 
-#agency_text <- c("cfpb", "CFPB", "Payday, Vehicle Title, and Certain High-Cost Installment Loans")
-
-#data <- d
-
 summarizeText <- function(text, max_sentences, custom_stop_words) {
-  
-  data <- tibble(text = text)
-  
-  sentences <- data %>%
+
+  sentences <- tibble(text = text) %>%
     unnest_sentences(output = sentences, input = text) %>%
     distinct() %>%
     mutate(textrank_id = row_number()) %>% 
@@ -212,12 +210,9 @@ summarizeText <- function(text, max_sentences, custom_stop_words) {
   # textrank needs a dictionary of words
   words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
     distinct() %>% 
-     anti_join(tidytext::stop_words) %>% 
-    anti_join(custom_stop_words, by = character())
-    # anti_join(agency_text, copy = TRUE, by = character()) #Creates bad summaries
+    anti_join(tidytext::stop_words) %>% 
+    anti_join(custom_stop_words)
      
-  
-  
   # textRank fails if you feed it only one sentence
   if(nrow(sentences) > 1){
     out <- textrank::textrank_sentences(data = sentences,
@@ -238,18 +233,13 @@ summarizeText <- function(text, max_sentences, custom_stop_words) {
 }
 
 
-summarize_comments <- function(data, n_sentences = 2, max_sentences = 100, custom_stop_words) {
+summarize_comments <- function(text, n_sentences = 2, max_sentences = 100, custom_stop_words) {
   
 
   # not cleaning data here either; should we? I think it is better to do it in the above function so it is done on one comment at a time.
-  # but we can (must) create document_id here if we want to feed in data with just path (not relying on text or doc names)
-  data %<>%  mutate( document_id = path %>%
-            str_remove(".*/")  %>%
-            str_remove("-[0-9]*\\..*") 
-   ) 
 
   # summarize, map summary function to each unique section
-  text_summary <-  map(.x = data$text,
+  text_summary <-  map(.x = text,
                        .f = summarizeText,
                        max_sentences = max_sentences,
                        custom_stop_words = custom_stop_words) 
@@ -263,29 +253,30 @@ summarize_comments <- function(data, n_sentences = 2, max_sentences = 100, custo
     str_c(collapse = " ")
   
   # add n_sentences pulled from textrank output to data
-  data$summary <- text_summary %>%
+  summary <- text_summary %>%
       #FIXME when this fails, it should default to the first sentence of the section. 
       map_chr(possibly(pull_sentences, otherwise = " ") ) 
   
-  return(data)
+  return(summary)
 }
 
 
 
-comment_summary <- summarize_comments(d, n_sentences = 3, max_sentences = 50, custom_stop_words )
+comment_summary <- summarize_comments(d$text, 
+                                      n_sentences = 3, 
+                                      max_sentences = 50, 
+                                      custom_stop_words = custom_stop_words)
 ```
 
 Compare to hand-coded key sentences.
 
 ```{r}
-comment_summary %>% 
-  rename(textrank_summary = summary) %>%
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
   # join with coded data 
   left_join(coded) %>% 
+  # a table comparing textrank vs hand coded
   select(org_name, textrank_summary, hand_selected_summary, comment_url)  %>% kablebox()
-
-
-
 ```
 
 
