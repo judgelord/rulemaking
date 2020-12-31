@@ -107,6 +107,8 @@ Clean comment texts.
 
 ```{r summarize}
 # remove some common things. This can be generalized with info from data
+
+# These should go in custom_stop_words, not here; this is valid text.
 # comment_header <- c("Docket No. CFP Consumer Financial Protection Bureau G Street, NW. Washington, DC")
 # 
 # comment_footer <- c("Sincerely,|Signature|Print Name|Address|City|State|Docket No\\. CFP|Zip|Email|Date")
@@ -115,16 +117,17 @@ Clean comment texts.
 
 clean_string <- . %>% 
   str_c(collapse = " ") %>% 
-  # make sure sentences are ended
+  # remove tab and line breaks
   str_replace_all("\\t|\\\n", " ") %>% 
-  #str_remove_all(" ?(f|ht)(tp)(s?)(://)(.*)[.|/](.*)") %>%
-   str_remove_all("<|>") %>%
+  # remove web addresses
+  #str_remove_all(" ?(f|ht)(tp)(s?)(://)([A-z]*)[.|/](.*)") %>%
   #str_replace_all("\\s+", " ") %>%
-   str_remove_all("^[0-9](?!\\.)") %>%
+   str_remove_all("^[0-9](?!\\.)") %>% #FIXME are not numbers removed below
+  # add missing spaces after periods
    ##str_replace_all("\\.([A-z])", ". \\1") %>%
    # remvove numbers and specials (keep only text and basic punctuation)
-   str_remove_all("\\\\") %>% 
-   str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;<>]", " ") %>% 
+   str_remove_all("\\\\") %>% # ARE THESE NOT REMOVED IN THE NEXT LINE?
+   str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;'<>]", " ") %>% #WHY ARE WE KEEPING < and >?
    #str_remove_all("\\'") %>%
    str_squish() %>%
    str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
@@ -139,12 +142,13 @@ clean_string <- . %>%
    str_squish() %>% 
    #str_remove_all(comment_header) %>%
    str_remove_all("pagebreak|<pagebreak>") %>% # Devin's OCR method adds this 
-   #str_remove_all(comment_footer) %>%
-   #str_remove_all(agency_address) %>%
-   #str_replace_all("\\.*", " ") %>% 
-   #str_remove_all("www.magnifymoney.com|magnifymoney") %>%
+  # remove repeated periods
+   #str_replace_all("\\.*", ". ") %>% 
+  # remove web addresses
+   # str_remove_all("www\\.[A-z]*\\.(com|org|net|gov)") %>%
    # str_replace_all(" \\,", ", ") %>%
    str_replace_all(" \\.", ". ") %>%
+  str_replace_all(" '", "'") %>%
   str_squish() 
 
 read_comment <- . %>%
@@ -157,13 +161,8 @@ d$text <- map_chr(d$path, read_comment)
 
 
 ```{r testing, include = FALSE, eval = FALSE}
-
-
-
-
 # inspect
 d
-
 
 d$text %>% kablebox()
 
@@ -181,8 +180,7 @@ Summarize comments.
 
 ```{r}
 # # for testing 
-# data <- d
-# document_ids = d$document_id[1]
+# text <- d$text[1]
 # max_sentences = 100
 
 # A dataframe of custom stop words, formatted like tidytext::stop_words
@@ -212,6 +210,9 @@ summarizeText <- function(text, max_sentences, custom_stop_words) {
     distinct() %>% 
     anti_join(tidytext::stop_words) %>% 
     anti_join(custom_stop_words)
+  
+  # inspect 
+  count(words, word, sort = T) %>% filter(n>2) %>% pull(word)
      
   # textRank fails if you feed it only one sentence
   if(nrow(sentences) > 1){
@@ -249,7 +250,10 @@ summarize_comments <- function(text, n_sentences = 2, max_sentences = 100, custo
     .$sentences %>% 
     pull(sentence) %>% 
     .[1:n_sentences] %>% 
-    str_to_sentence() %>%  
+    str_to_sentence() %>%  #FIXME should define a custom function to fix sentence case with some common fixes like:
+    str_replace_all(" i ", " I ") %>% 
+    str_replace_all(" u\\.s\\. ", " U.S. ") %>% 
+    str_replace_all("nprm", "NPRM") %>% 
     str_c(collapse = " ")
   
   # add n_sentences pulled from textrank output to data
@@ -276,7 +280,7 @@ d %>%
   # join with coded data 
   left_join(coded) %>% 
   # a table comparing textrank vs hand coded
-  select(org_name, textrank_summary, hand_selected_summary, comment_url)  %>% kablebox()
+  select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% kablebox()
 ```
 
 
