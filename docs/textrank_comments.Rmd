@@ -119,18 +119,18 @@ clean_string <- . %>%
   str_c(collapse = " ") %>% 
   # remove tab and line breaks
   str_replace_all("\\t|\\\n", " ") %>% 
-  # remove web addresses
   #str_remove_all(" ?(f|ht)(tp)(s?)(://)([A-z]*)[.|/](.*)") %>%
   #str_replace_all("\\s+", " ") %>%
-   str_remove_all("^[0-9](?!\\.)") %>% #FIXME are not numbers removed below
+   #str_remove_all("^[0-9](?!\\.)") %>% #FIXME are not numbers removed below
   # add missing spaces after periods
    ##str_replace_all("\\.([A-z])", ". \\1") %>%
    # remvove numbers and specials (keep only text and basic punctuation)
-   str_remove_all("\\\\") %>% # ARE THESE NOT REMOVED IN THE NEXT LINE?
-   str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;'<>]", " ") %>% #WHY ARE WE KEEPING < and >?
+   #str_remove_all("\\\\") %>% # ARE THESE NOT REMOVED IN THE NEXT LINE?
+   str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;\\']", " ") %>% #WHY ARE WE KEEPING < and >?
+  str_remove_all("\\[|\\]") %>%
    #str_remove_all("\\'") %>%
    str_squish() %>%
-   str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
+   #str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
    str_replace_all(" , ", " ") %>% 
    # double commas  
    #str_replace_all("\\, \\, ", ", ") %>% 
@@ -139,16 +139,22 @@ clean_string <- . %>%
    # one character after a period 
    str_replace_all("\\. .\\. ", ". ") %>% 
    # remove white space
-   str_squish() %>% 
+   #str_squish() %>% 
    #str_remove_all(comment_header) %>%
-   str_remove_all("pagebreak|<pagebreak>") %>% # Devin's OCR method adds this 
+   str_remove_all("pagebreak") %>% # Devin's OCR method adds this 
   # remove repeated periods
    #str_replace_all("\\.*", ". ") %>% 
-  # remove web addresses
-   # str_remove_all("www\\.[A-z]*\\.(com|org|net|gov)") %>%
    # str_replace_all(" \\,", ", ") %>%
    str_replace_all(" \\.", ". ") %>%
-  str_replace_all(" '", "'") %>%
+  #remove space in 's
+  str_replace_all(" \\'s ", "\\'s ") %>%
+  #str_replace_all(" '", "'") %>%
+   # remove web addresses
+  str_remove_all("www\\.[A-z]*\\.(com|org|net|gov|pdf)") %>%
+  str_remove_all("http:www\\.[A-z]*\\.(com|org|net|gov|pdf)") %>%
+  str_remove_all("files\\.[A-z]*\\.(com|org|net|gov|pdf)") %>%
+  #Removes duplicated puncuation
+  str_replace_all("([[:punct:]])\\1+", "\\1") %>%
   str_squish() 
 
 read_comment <- . %>%
@@ -162,7 +168,7 @@ d$text <- map_chr(d$path, read_comment)
 
 ```{r testing, include = FALSE, eval = FALSE}
 # inspect
-d
+d$text[10]
 
 d$text %>% kablebox()
 
@@ -180,16 +186,18 @@ Summarize comments.
 
 ```{r}
 # # for testing 
-# text <- d$text[1]
-# max_sentences = 100
+# text <- d$text[10]
+#   max_sentences = 100
 
 # A dataframe of custom stop words, formatted like tidytext::stop_words
 custom_stop_words <- tibble( 
   words = c("cfpb", "CFPB", "Payday, Vehicle Title, and Certain High-Cost Installment Loans")) %>%
+  # words = c("cfpb", "CFPB", "Payday, Vehicle Title, and Certain High-Cost Installment Loans", "Consumer Financial Protection Bureau")) %>%
   mutate(words = words)%>%
   unnest_tokens(output = word, input = words) %>%
   distinct()
 
+#agency_name <- c("Consumer Financial Protection Bureau")
 
 summarizeText <- function(text, max_sentences, custom_stop_words) {
 
@@ -199,6 +207,9 @@ summarizeText <- function(text, max_sentences, custom_stop_words) {
     mutate(textrank_id = row_number()) %>% 
     # textrank requires columns in order
     select(textrank_id, sentences)
+  
+  # sentences %<>%
+  #   mutate(sentences = str_remove_all(sentences, "Consumer Financial Protection Bureau"))
   
   # select max sentences to summarize per section
   sentences %<>% filter(textrank_id <= max_sentences)
