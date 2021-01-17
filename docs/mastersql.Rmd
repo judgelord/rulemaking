@@ -66,19 +66,19 @@ dbListTables(con)
 ```
 
 ```{r, eval=FALSE}
-action <- dbGetQuery(con, "SELECT * FROM rules")
+action <- dbGetQuery(con, "SELECT * FROM actions")
 ```
 
 Where the SQL query to get NPRM and Final Rule data for a docket is: 
 
-```{sql, connection=con, output.var = "rule"}
-SELECT * FROM actions
+```{sql, connection=con, output.var = "action"}
+SELECT * FROM actions WHERE agency_acronym = 'CFPB'
 ```
 
 ```{r, echo=FALSE}
 # rule[1,] %>% mutate_all(as.character) %>% pivot_longer(everything()) %>% kable(format= "pipe")
 
-rule %>% kablebox()
+action %>% kablebox()
 ```
 
 Likewise, the SQL query to get comments on a docket is
@@ -88,7 +88,7 @@ SELECT * FROM comments WHERE docket_id = 'CFPB-2018-0023'
 ```
 
 ```{r, echo=FALSE}
-# comments %>% 
-#   mutate(comment_text = str_sub(comment_text, 1, 140) %>% str_c("...") ) %>% 
-#   kablebox()
+  comments %>% 
+    #mutate(comment_text = str_sub(comment_text, 1, 140) %>% str_c("...") ) %>% 
+    kablebox()
 ```
