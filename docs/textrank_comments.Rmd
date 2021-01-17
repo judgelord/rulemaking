@@ -83,6 +83,17 @@ Get file paths comment texts.
 # file paths for comments 
 agency <- "CFPB"
 docket <- "CFPB-2016-0025"
+
+# A dataframe of custom stop words, formatted like tidytext::stop_words
+custom_stop_words <- tibble( 
+  words = c("cfpb", "payday, vehicle title, and certain high-cost installment loans")) %>%
+
+  mutate(words = words)%>%
+  unnest_tokens(output = word, input = words) %>%
+  distinct()
+
+agency_name <- c("consumer financial protection bureau")
+
 # get txt file names from a directory, here called “comment_text”
 comments <- tibble( path = list.files( here::here('comment_text', agency, docket), 
                                        full.names = T) ) %>% 
@@ -189,17 +200,7 @@ Summarize comments.
  # text <- d$text[2]
  #   max_sentences = 100
 
-# A dataframe of custom stop words, formatted like tidytext::stop_words
-custom_stop_words <- tibble( 
-  words = c("cfpb", "CFPB", "Payday, Vehicle Title, and Certain High-Cost Installment Loans")) %>%
-  # words = c("cfpb", "CFPB", "Payday, Vehicle Title, and Certain High-Cost Installment Loans", "Consumer Financial Protection Bureau")) %>%
-  mutate(words = words)%>%
-  unnest_tokens(output = word, input = words) %>%
-  distinct()
-
-#agency_name <- c("Consumer Financial Protection Bureau")
-
-summarizeText <- function(text, max_sentences, custom_stop_words) {
+summarizeText <- function(text, max_sentences, custom_stop_words, agency_name) {
 
   sentences <- tibble(text = text) %>%
     unnest_sentences(output = sentences, input = text) %>%
@@ -209,7 +210,7 @@ summarizeText <- function(text, max_sentences, custom_stop_words) {
     select(textrank_id, sentences)
   
    sentences %<>%
-     mutate(sentences = str_remove_all(sentences, "consumer financial protection bureau"))
+     mutate(sentences = str_remove_all(sentences, agency_name))
   
   # select max sentences to summarize per section
   sentences %<>% filter(textrank_id <= max_sentences)
@@ -245,7 +246,7 @@ summarizeText <- function(text, max_sentences, custom_stop_words) {
 }
 
 
-summarize_comments <- function(text, n_sentences = 2, max_sentences = 100, custom_stop_words) {
+summarize_comments <- function(text, n_sentences = 2, max_sentences = 100, custom_stop_words, agency_name) {
   
 
   # not cleaning data here either; should we? I think it is better to do it in the above function so it is done on one comment at a time.
@@ -254,7 +255,8 @@ summarize_comments <- function(text, n_sentences = 2, max_sentences = 100, custo
   text_summary <-  map(.x = text,
                        .f = summarizeText,
                        max_sentences = max_sentences,
-                       custom_stop_words = custom_stop_words) 
+                       custom_stop_words = custom_stop_words,
+                       agency_name = agency_name) 
   
   # extract top n_sentences
   pull_sentences <- . %>% 
@@ -280,7 +282,8 @@ summarize_comments <- function(text, n_sentences = 2, max_sentences = 100, custo
 comment_summary <- summarize_comments(d$text, 
                                       n_sentences = 3, 
                                       max_sentences = 50, 
-                                      custom_stop_words = custom_stop_words)
+                                      custom_stop_words = custom_stop_words,
+                                      agency_name = agency_name)
 ```
 
 Compare to hand-coded key sentences.
