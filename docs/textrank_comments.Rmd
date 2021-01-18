@@ -142,7 +142,8 @@ clean_string <- . %>%
    #str_remove_all("\\'") %>%
    str_squish() %>%
    #str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
-   str_replace_all(" , ", " ") %>% 
+   str_replace_all(" , ", " ") %>%
+  str_replace_all("_", " ") %>%
    # double commas  
    #str_replace_all("\\, \\, ", ", ") %>% 
    # double periods 
@@ -197,8 +198,8 @@ Summarize comments.
 
 ```{r}
 # # for testing 
- # text <- d$text[2]
- #   max_sentences = 100
+ # text <- d$text[4]
+ #    max_sentences = 100
 
 summarizeText <- function(text, max_sentences, custom_stop_words, agency_name) {
 
@@ -298,12 +299,46 @@ d %>%
 ```
 
 
+```{r investigate}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  # join with coded data 
+  left_join(coded) %>% 
+  # a table comparing textrank vs hand coded
+  select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% 
+  filter(org_name == "Ballard Spahr") %>%
+  kablebox()
 
 
+```
+
+Textrank is capturing split words as important. Once this is fixed in the loading of text files this could change the summaries with more words being captured by textrank
+
+```{r spliceSentences}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  # join with coded data 
+  left_join(coded) %>% 
+  # a table comparing textrank vs hand coded
+  select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% 
+  filter(org_name == "The Independent Finance Association of Illinois") %>%
+  kablebox()
+  
+```
 
 
+Textrank is capturing state names
+```{r stateNames}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  # join with coded data 
+  left_join(coded) %>% 
+  # a table comparing textrank vs hand coded
+  select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% 
+  filter(org_name == "State Attorney Generals") %>%
+  kablebox()
 
-
+```
 
 
 
