@@ -50,7 +50,7 @@ kablebox <- . %>%  knitr::kable() %>%
 
 # About 
 
-This database contains metadata on over 200,000 dockets and 80,000,000 public comments. It has two tables, `rules` and `comments` corresponding to how documents are organized and identified on regulations.gov (comments are also known as "public submission" documents).
+This database contains metadata on over 200,000 dockets and 80,000,000 public comments. It has two tables, `actions` and `comments` corresponding to how documents are organized and identified on regulations.gov (comments are also known as "public submission" documents).
 
 # Instructions
 
@@ -69,7 +69,7 @@ dbListTables(con)
 action <- dbGetQuery(con, "SELECT * FROM actions")
 ```
 
-Where the SQL query to get NPRM and Final Rule data for a docket is: 
+Where the SQL query to get NPRM and Final Rule data for a agency is: 
 
 ```{sql, connection=con, output.var = "action"}
 SELECT * FROM actions WHERE agency_acronym = 'CFPB'
@@ -84,11 +84,13 @@ action %>% kablebox()
 Likewise, the SQL query to get comments on a docket is
 
 ```{sql, connection = con, output.var = "comments", cache=TRUE}
-SELECT * FROM comments WHERE docket_id = 'CFPB-2018-0023'
+SELECT * FROM comments WHERE docket_ID = 'CFPB-2016-0025'
 ```
 
+Mutate comment_text is pulling error, 'comment_text' not found
 ```{r, echo=FALSE}
   comments %>% 
+  head() %>%
     #mutate(comment_text = str_sub(comment_text, 1, 140) %>% str_c("...") ) %>% 
     kablebox()
 ```
