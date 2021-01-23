@@ -126,7 +126,7 @@ Clean comment texts.
 # 
 # agency_address <- c("Dear Consumer Financial Protection Bureau CFPB")
 
-clean_string <- . %>% 
+clean_comments <- . %>% 
   str_c(collapse = " ") %>% 
   # remove tab and line breaks
   str_replace_all("\\t|\\\n", " ") %>% 
@@ -171,7 +171,7 @@ clean_string <- . %>%
 
 read_comment <- . %>%
   read_lines() %>%
-  clean_string() 
+  clean_comments() 
 
 # map read
 d$text <- map_chr(d$path, read_comment)
@@ -210,9 +210,9 @@ summarizeText <- function(text, max_sentences, custom_stop_words, agency_name) {
     # textrank requires columns in order
     select(textrank_id, sentences)
   
-   sentences %<>%
+     sentences %<>%
      mutate(sentences = str_remove_all(sentences, agency_name))
-  
+   # 
   # select max sentences to summarize per section
   sentences %<>% filter(textrank_id <= max_sentences)
   
@@ -287,6 +287,8 @@ comment_summary <- summarize_comments(d$text,
                                       agency_name = agency_name)
 ```
 
+
+
 Compare to hand-coded key sentences.
 
 ```{r}
@@ -297,6 +299,50 @@ d %>%
   # a table comparing textrank vs hand coded
   select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% kablebox()
 ```
+
+
+Function removes agency name from Textrank. This doesn't impact every summary but the ones below are changed and generally the better summary is the one with the removed agency name. 
+
+
+#Summary changes with and without agency name:
+
+##Organization: Idaho Financial Services Association Inc
+
+With agency name:
+Ifsa and its members to express serious concerns about the consumer financial protection bureau s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Including optional voluntary protection products as part of the proposed rule s trigger treats voluntary protection products as percent profit to the lender and of zero value to the consumer.
+
+Without Agency:
+The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Ifsa and its members to express serious concerns about the s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. One option available to an ifsa member to avoid coming within the covered longer term loan status is to stop making optional voluntary protection products available to many of their borrowers since the borrowers choice to purchase any voluntary protection products may trigger the total cost of credit.
+
+
+##Organization: The Chippewa Cree Tribe of the Rocky Boys Reservation
+
+With Agency:
+Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis. Because of all these deficiencies, the bureau should rescind the proposed rule entirely.
+
+Without Agency:
+Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. Jackson on behalf of the chippewa cree tribe of the rocky boy s reservation tribe I submit this public comment to express the tribe s views of the proposed regulations from the cfpb or bureau regarding small dollar lending proposed rule. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis.
+
+
+##Organization: Ballard Spahr
+
+With Agency: 
+The bureau ' s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. The proposed rule was published by the consumer financial protection bureau cfpb or ' bureau in fed. I the proposed rule.
+
+Without Agency:
+The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. I the proposed rule. Monica jackson october page executive summary consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to add ress other serious financia l needs.
+
+
+##Organization: Katten Muchin Rosenman LLP
+
+With Agency:
+Jackson the comments set forth below are provided in connection with the payday, vehicle title and certain high cost installment loans proposal set forth by the consumer financial protection bureau cfpb or bureau in the federal register on july the proposal. Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb's statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. Dfa o.
+
+
+Without Agency:
+Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. See dfa l c l. Dfa I a.
+
+
 
 
 ```{r investigate}
