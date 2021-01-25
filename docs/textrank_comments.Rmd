@@ -85,8 +85,9 @@ agency <- "CFPB"
 docket <- "CFPB-2016-0025"
 
 # A dataframe of custom stop words, formatted like tidytext::stop_words
+# If form letters need to be summariezed standard headings should be removed (docket no., email, etc.)
 custom_stop_words <- tibble( 
-  words = c("cfpb", "payday, vehicle title, and certain high-cost installment loans")) %>%
+  words = c("cfpb", "payday, vehicle title, and certain high-cost installment loans")) %>% # ignore case?
 
   mutate(words = words)%>%
   unnest_tokens(output = word, input = words) %>%
@@ -120,6 +121,7 @@ Clean comment texts.
 # remove some common things. This can be generalized with info from data
 
 # These should go in custom_stop_words, not here; this is valid text.
+# Only needed if we are capturing summaries for form letters
 # comment_header <- c("Docket No. CFP Consumer Financial Protection Bureau G Street, NW. Washington, DC")
 # 
 # comment_footer <- c("Sincerely,|Signature|Print Name|Address|City|State|Docket No\\. CFP|Zip|Email|Date")
@@ -131,38 +133,36 @@ clean_comments <- . %>%
   # remove tab and line breaks
   str_replace_all("\\t|\\\n", " ") %>% 
   #str_remove_all(" ?(f|ht)(tp)(s?)(://)([A-z]*)[.|/](.*)") %>%
-  #str_replace_all("\\s+", " ") %>%
-   #str_remove_all("^[0-9](?!\\.)") %>% #FIXME are not numbers removed below
+  #str_replace_all("\\s+", " ") %>% # removed by str_squish()
+  #str_remove_all("^[0-9](?!\\.)") %>% #FIXME are not numbers removed below
   # add missing spaces after periods
-   ##str_replace_all("\\.([A-z])", ". \\1") %>%
-   # remvove numbers and specials (keep only text and basic punctuation)
-   #str_remove_all("\\\\") %>% # ARE THESE NOT REMOVED IN THE NEXT LINE?
-   str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;\\']", " ") %>% #WHY ARE WE KEEPING < and >?
+  str_replace_all("\\.([A-z])", ". \\1") %>%
+  # remvove numbers and specials (keep only text and basic punctuation)
+  str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;\\']", " ") %>% 
   str_remove_all("\\[|\\]") %>%
-   #str_remove_all("\\'") %>%
-   str_squish() %>%
-   #str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
-   str_replace_all(" , ", " ") %>%
+  #str_remove_all("\\'") %>%
+  str_squish() %>%
+  #str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
+  str_replace_all(" , ", " ") %>%
   str_replace_all("_", " ") %>%
-   # double commas  
-   #str_replace_all("\\, \\, ", ", ") %>% 
-   # double periods 
-   #str_replace_all("\\. \\. ", ". ") %>% 
-   # one character after a period 
-   str_replace_all("\\. .\\. ", ". ") %>% 
-   # remove white space
-   #str_squish() %>% 
-   #str_remove_all(comment_header) %>%
-   str_remove_all("pagebreak") %>% # Devin's OCR method adds this 
+  # double commas  
+  #str_replace_all("\\, \\, ", ", ") %>% 
+  # double periods 
+  #str_replace_all("\\. \\. ", ". ") %>% 
+  # one character after a period 
+  str_replace_all("\\. \\. \\. ", ". ") %>% 
+  # remove white space
+  str_squish() %>% 
+  str_remove_all("pagebreak") %>% # Devin's OCR method adds this 
   # remove repeated periods
-   #str_replace_all("\\.*", ". ") %>% 
-   # str_replace_all(" \\,", ", ") %>%
-   str_replace_all(" \\.", ". ") %>%
+  #str_replace_all("\\.*", ". ") %>% #removed below
+  # str_replace_all(" \\,", ", ") %>%
+  str_replace_all(" \\.", ". ") %>%
   #remove space in 's
   str_replace_all(" \\'s ", "\\'s ") %>%
-  #str_replace_all(" '", "'") %>%
-   # remove web addresses
-  # str_remove_all("www\\.[A-z]*\\.(com|org|net|gov|pdf)") %>%
+  #str_replace_all(" '", "'") %>% # we want to keep "'"
+  # remove web addresses, wont capture urls with punctuation ("." or "_") in the middle
+  # str_remove_all("www\\.[A-z]*\\.(com|org|net|gov|pdf)") %>%  # does not currently impact textrank, uncomment if urls start to skew summary
   # str_remove_all("http:www\\.[A-z]*\\.(com|org|net|gov|pdf)") %>%
   # str_remove_all("files\\.[A-z]*\\.(com|org|net|gov|pdf)") %>%
   #Removes duplicated puncuation
@@ -197,9 +197,9 @@ coded %>%
 Summarize comments.
 
 ```{r}
-# # for testing 
- # text <- d$text[4]
- #    max_sentences = 100
+# for testing 
+# text <- d$text[4]
+# max_sentences = 100
 
 summarizeText <- function(text, max_sentences, custom_stop_words, agency_name) {
 
@@ -210,19 +210,19 @@ summarizeText <- function(text, max_sentences, custom_stop_words, agency_name) {
     # textrank requires columns in order
     select(textrank_id, sentences)
   
-     sentences %<>%
-     mutate(sentences = str_remove_all(sentences, agency_name))
-   # 
+  # remove agency name string from textrank dictionary
+  sentences %<>%
+    mutate(sentences = str_remove_all(sentences, agency_name))
+   
   # select max sentences to summarize per section
   sentences %<>% filter(textrank_id <= max_sentences)
   
-  #sentences %<>% anti_join(agency_text, copy = TRUE, by = character())
   
   # textrank needs a dictionary of words
   words <- unnest_tokens(sentences, output = word, input = 'sentences') %>% 
     distinct() %>% 
     anti_join(tidytext::stop_words) %>% 
-    anti_join(custom_stop_words)
+    anti_join(custom_stop_words) # remove custom stop words from textrank
   
   # inspect 
   count(words, word, sort = T) %>% filter(n>2) %>% pull(word)
@@ -304,9 +304,9 @@ d %>%
 Function removes agency name from Textrank. This doesn't impact every summary but the ones below are changed and generally the better summary is the one with the removed agency name. 
 
 
-#Summary changes with and without agency name:
+# Summary changes with and without agency name:
 
-##Organization: Idaho Financial Services Association Inc
+## Organization: Idaho Financial Services Association Inc
 
 With agency name:
 Ifsa and its members to express serious concerns about the consumer financial protection bureau s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Including optional voluntary protection products as part of the proposed rule s trigger treats voluntary protection products as percent profit to the lender and of zero value to the consumer.
@@ -315,7 +315,7 @@ Without Agency:
 The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Ifsa and its members to express serious concerns about the s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. One option available to an ifsa member to avoid coming within the covered longer term loan status is to stop making optional voluntary protection products available to many of their borrowers since the borrowers choice to purchase any voluntary protection products may trigger the total cost of credit.
 
 
-##Organization: The Chippewa Cree Tribe of the Rocky Boys Reservation
+## Organization: The Chippewa Cree Tribe of the Rocky Boys Reservation
 
 With Agency:
 Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis. Because of all these deficiencies, the bureau should rescind the proposed rule entirely.
@@ -324,7 +324,7 @@ Without Agency:
 Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. Jackson on behalf of the chippewa cree tribe of the rocky boy s reservation tribe I submit this public comment to express the tribe s views of the proposed regulations from the cfpb or bureau regarding small dollar lending proposed rule. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis.
 
 
-##Organization: Ballard Spahr
+## Organization: Ballard Spahr
 
 With Agency: 
 The bureau ' s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. The proposed rule was published by the consumer financial protection bureau cfpb or ' bureau in fed. I the proposed rule.
@@ -333,7 +333,7 @@ Without Agency:
 The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. I the proposed rule. Monica jackson october page executive summary consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to add ress other serious financia l needs.
 
 
-##Organization: Katten Muchin Rosenman LLP
+## Organization: Katten Muchin Rosenman LLP
 
 With Agency:
 Jackson the comments set forth below are provided in connection with the payday, vehicle title and certain high cost installment loans proposal set forth by the consumer financial protection bureau cfpb or bureau in the federal register on july the proposal. Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb's statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. Dfa o.
@@ -373,7 +373,7 @@ d %>%
 ```
 
 
-Textrank is capturing state names
+Textrank is capturing state names & Summary has output from footnote that is not captured by textrank
 ```{r stateNames}
 d %>% 
   mutate(textrank_summary = comment_summary) %>%
@@ -385,8 +385,6 @@ d %>%
   kablebox()
 
 ```
-
-
 
 
 
