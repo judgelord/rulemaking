@@ -1,0 +1,125 @@
+---
+title: "BLM Rule Comment Summary"
+author: "Maggie Nead"
+date: "1/25/2021"
+output: html_document
+---
+
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = TRUE, 
+                      fig.width=8.5, 
+                      split = T,
+                      fig.align = 'center', 
+                      fig.path='figs/',
+                      warning=FALSE, 
+                      message=FALSE)
+
+
+library(tidyverse)
+library(magrittr)
+library(tidytext)
+library(xml2)
+library(knitr)
+library(kableExtra)
+
+library(ggplot2); theme_set(theme_bw())
+  options(
+    ggplot2.continuous.color = "viridis",
+    ggplot2.continuous.fill = "viridis"
+  )
+  scale_color_discrete <- function(...)
+    scale_color_viridis_d(..., direction = -1)
+  scale_fill_discrete <- function(...)
+    scale_fill_viridis_d(..., direction = -1)
+  
+  
+kablebox <- . %>%  knitr::kable() %>% 
+  kable_styling() %>% 
+  scroll_box(height = "500px")
+```
+
+## To summarize rule comments start by loading in the functions
+
+
+```{r functions}
+# load text cleaning function 
+source(here::here("functions", "clean_comments.R"))
+
+# load text summarize function 
+source(here::here("functions", "summarizeText.R")) # gives textrank ditionary of words from comments
+
+
+# load comment summarize function 
+source(here::here("functions", "summarize_comments.R")) # ranks sentences and gives top ranked sentence back
+```
+
+
+Change file paths to search for agency and docket
+
+Change custom stop words with agency acronym and rule title
+
+Add agency name to variable
+```{r data}
+# file paths for comments 
+agency <- "BLM"
+docket <- "BLM-2013-0002"
+
+# A dataframe of custom stop words, formatted like tidytext::stop_words
+# If form letters need to be summariezed standard headings should be removed (docket no., email, etc.)
+custom_stop_words <- tibble( 
+  words = c("cfpb", "payday, vehicle title, and certain high-cost installment loans")) %>% # ignore case?
+
+  mutate(words = words)%>%
+  unnest_tokens(output = word, input = words) %>%
+  distinct()
+
+agency_name <- c("consumer financial protection bureau")
+
+# get txt file names from a directory, here called “comment_text”
+comments <- tibble( path = list.files( here::here('comment_text', agency, docket), 
+                                       full.names = T) ) %>% 
+  filter( str_detect(path, "txt") )
+
+# in SQL, CFPB file names are regs_dot_gov_document_id, shortened to document_id for now
+comments %<>% 
+  mutate( document_id = path %>%
+            str_remove(".*/")  %>%
+            str_remove("-[0-9]*\\..*") 
+   ) 
+
+
+d <- comments %>% 
+  # select comments that have been hand coded
+  filter(document_id %in% coded$document_id)
+```
+
+```{r readComment}
+read_comment <- . %>%
+  read_lines() %>%
+  clean_comments() 
+
+# map read
+d$text <- map_chr(d$path, read_comment)
+
+```
+
+
+```{r summarize}
+comment_summary <- summarize_comments(d$text, 
+                                      n_sentences = 3, 
+                                      max_sentences = 50, 
+                                      custom_stop_words = custom_stop_words,
+                                      agency_name = agency_name)
+```
+
+
+```{r}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  # a table comparing textrank vs hand coded
+  select(textrank_summary)  %>% kablebox()
+```
+
+
