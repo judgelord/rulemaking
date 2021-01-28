@@ -94,3 +94,10 @@ Mutate comment_text is pulling error, 'comment_text' not found
     #mutate(comment_text = str_sub(comment_text, 1, 140) %>% str_c("...") ) %>% 
     kablebox()
 ```
+
+
+```{sql, connection = con, output.var = "action" }
+
+SELECT COUNT(title) FROM actions
+
+```
