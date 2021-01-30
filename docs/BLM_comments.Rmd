@@ -69,13 +69,13 @@ docket <- "BLM-2013-0002"
 # A dataframe of custom stop words, formatted like tidytext::stop_words
 # If form letters need to be summariezed standard headings should be removed (docket no., email, etc.)
 custom_stop_words <- tibble( 
-  words = c("cfpb", "payday, vehicle title, and certain high-cost installment loans")) %>% # ignore case?
+  words = c("blm", "BLM")) %>% # ignore case?
 
   mutate(words = words)%>%
   unnest_tokens(output = word, input = words) %>%
   distinct()
 
-agency_name <- c("consumer financial protection bureau")
+agency_name <- c("bureau of land management")
 
 # get txt file names from a directory, here called “comment_text”
 comments <- tibble( path = list.files( here::here('comment_text', agency, docket), 
@@ -90,9 +90,9 @@ comments %<>%
    ) 
 
 
-d <- comments %>% 
-  # select comments that have been hand coded
-  filter(document_id %in% coded$document_id)
+ d <- comments #%>% 
+#   # select comments that have been hand coded # No hand coded comments yet
+#   filter(document_id %in% coded$document_id)
 ```
 
 ```{r readComment}
