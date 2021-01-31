@@ -68,6 +68,8 @@ function maps `summarizeText()` onto each each comment and then extracts the top
 
 # Instructions
 
+Load functions
+
 ```{r functions}
 # load text cleaning function 
 source(here::here("functions", "clean_comments.R"))
@@ -83,9 +85,9 @@ source(here::here("functions", "summarize_comments.R")) # ranks sentences and gi
 
 Change file paths to search for agency and docket
 
-Change custom stop words with agency acronym and rule title
+Change **custom_stop_words** and **agency_name** with agency acronym, rule title, and agency name
 
-Add agency name to variable
+
 ```{r data}
 # file paths for comments 
 agency <- "BLM"
@@ -120,6 +122,8 @@ comments %<>%
 #   filter(document_id %in% coded$document_id)
 ```
 
+Read in comment and run `clean_comments()` and map onto **text**
+
 ```{r readComment}
 read_comment <- . %>%
   read_lines() %>%
@@ -131,6 +135,8 @@ d$text <- map_chr(d$path, read_comment)
 ```
 
 
+Run `summarize_comments()`
+
 ```{r summarize}
 comment_summary <- summarize_comments(d$text, 
                                       n_sentences = 3, 
@@ -139,6 +145,7 @@ comment_summary <- summarize_comments(d$text,
                                       agency_name = agency_name)
 ```
 
+Create table
 
 ```{r}
 d %>% 
