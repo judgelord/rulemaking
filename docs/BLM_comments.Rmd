@@ -1,8 +1,17 @@
 ---
 title: "BLM Rule Comment Summary"
-author: "Maggie Nead"
-date: "1/25/2021"
-output: html_document
+subtitle: 
+output:
+    # pdf_document:
+    #   toc: true
+    #   keep_tex: true
+    html_document:
+      highlight: zenburn
+      #toc: true
+      # toc_float: true
+      code_folding: hide
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -69,7 +78,7 @@ docket <- "BLM-2013-0002"
 # A dataframe of custom stop words, formatted like tidytext::stop_words
 # If form letters need to be summariezed standard headings should be removed (docket no., email, etc.)
 custom_stop_words <- tibble( 
-  words = c("blm", "BLM")) %>% # ignore case?
+  words = c("blm", "BLM", "Oil and Gas Hydraulic Fracturing on Federal and Indian Lands")) %>% # ignore case?
 
   mutate(words = words)%>%
   unnest_tokens(output = word, input = words) %>%
@@ -119,7 +128,37 @@ comment_summary <- summarize_comments(d$text,
 d %>% 
   mutate(textrank_summary = comment_summary) %>%
   # a table comparing textrank vs hand coded
-  select(textrank_summary)  %>% kablebox()
+  select(document_id, textrank_summary)  %>% kablebox()
 ```
 
 
+
+## Textrank has a hard time with form letters and captures names and titles
+```{r}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  filter(document_id == c("BLM-2013-0002-5231","BLM-2013-0002-0036", "BLM-2013-0002-5667")) %>%
+  # a table comparing textrank vs hand coded
+  select(document_id, textrank_summary)  %>% kablebox()
+```
+
+## Comments with two column formatting in the txt file lead to summaries like this:
+
+```{r}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  filter(document_id == "BLM-2013-0002-0036") %>%
+  # a table comparing textrank vs hand coded
+  select(document_id, textrank_summary)  %>% kablebox()
+```
+
+
+## Huh??
+
+```{r}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  filter(document_id == "BLM-2013-0002-5193") %>%
+  # a table comparing textrank vs hand coded
+  select(document_id, textrank_summary)  %>% kablebox()
+```
