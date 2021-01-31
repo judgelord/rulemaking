@@ -100,11 +100,9 @@ Mutate comment_text is pulling error, 'comment_text' not found
 ```
 
 
-Count the number of actions per agency
+### Count the number of actions per agency
 
 ```{r }
-
-
 agency <- dbGetQuery(con, "
    SELECT agency_acronym, COUNT(agency_acronym) AS count FROM actions
    GROUP BY agency_acronym
@@ -112,4 +110,81 @@ agency <- dbGetQuery(con, "
 
  agency %>%
    kablebox()
+ 
 ```
+
+### Count the number of comments per agency
+
+```{r }
+comments <- dbGetQuery(con, "
+   SELECT agency_acronym, COUNT(agency_acronym) AS count FROM comments
+   GROUP BY agency_acronym
+")
+
+ comments %>%
+   kablebox()
+ 
+```
+
+
+### Count the number of comments for each docket ID
+
+
+```{r }
+comments <- dbGetQuery(con, "
+   SELECT docket_id, COUNT(docket_id) AS count FROM comments
+   GROUP BY docket_id
+")
+
+ comments %>%
+   kablebox()
+ 
+```
+
+
+### Number of comments for each docket ID in CFPB
+
+```{r }
+comments <- dbGetQuery(con, "
+   SELECT docket_id, COUNT(docket_id) AS count FROM comments
+   WHERE agency_acronym = 'CFPB'
+   GROUP BY docket_id
+")
+
+ comments %>%
+   kablebox()
+ 
+```
+
+### Count the number of titles
+
+```{r }
+comments <- dbGetQuery(con, "
+   SELECT title, COUNT(title) AS count FROM actions
+   GROUP BY title
+")
+
+ comments %>%
+   kablebox()
+ 
+```
+
+
+### Count the number of titles in CFPB
+
+
+```{r }
+comments <- dbGetQuery(con, "
+   SELECT title, COUNT(title) AS count FROM actions
+   WHERE agency_acronym = 'CFPB'
+   GROUP BY title
+")
+
+ comments %>%
+   kablebox()
+ 
+```
+
+
+
+
