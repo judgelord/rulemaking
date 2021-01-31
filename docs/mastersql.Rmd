@@ -32,6 +32,7 @@ library(xml2)
 library(knitr)
 library(kableExtra)
 
+
 library(ggplot2); theme_set(theme_bw())
   options(
     ggplot2.continuous.color = "viridis",
@@ -59,6 +60,7 @@ With **R**:
 ```{r}
 library(DBI)
 library(RSQLite)
+library(sqldf)
 
 con <- DBI::dbConnect(RSQLite::SQLite(), here::here("db", "master.sqlite"))
 
@@ -87,7 +89,9 @@ Likewise, the SQL query to get comments on a docket is
 SELECT * FROM comments WHERE docket_ID = 'CFPB-2016-0025'
 ```
 
+
 Mutate comment_text is pulling error, 'comment_text' not found
+
 ```{r, echo=FALSE}
   comments %>% 
   head() %>%
@@ -96,8 +100,16 @@ Mutate comment_text is pulling error, 'comment_text' not found
 ```
 
 
-```{sql, connection = con, output.var = "action" }
+Count the number of actions per agency
 
-SELECT COUNT(title) FROM actions
+```{r }
 
+
+agency <- dbGetQuery(con, "
+   SELECT agency_acronym, COUNT(agency_acronym) AS count FROM actions
+   GROUP BY agency_acronym
+")
+
+ agency %>%
+   kablebox()
 ```
