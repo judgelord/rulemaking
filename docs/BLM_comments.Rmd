@@ -49,8 +49,24 @@ kablebox <- . %>%  knitr::kable() %>%
   scroll_box(height = "500px")
 ```
 
-## To summarize rule comments start by loading in the functions
+# About   
+  
+  This file summarizes individual comments for agency rules. To do this it uses three functions; `clean_comments()`, `summarizeText()`, and `summarize_comments()`.  
+  
+  `clean_comments()` takes in a string of text and cleans it. It is run on each comment provided.  
+  
+  `summarizeText()` takes in text, max_sentences, custom_stop_words, and agency_name  
+  *text* is the string of text for each comment  
+  *max_sentences* is a numerical value for the max number of sentences textrank will pull in and summarize  
+  *custom_stop_words* is a vector of words to be removed from the dictionary of words in textrank  
+  *agency_name* name of the agency to be removed from textrank as a string
+function removes custom_stop_words, agency_name, and stop_words from textrank and then uses textrank to rank the sentences by importance.  
 
+`summarize_comments()` takes in text, n_sentences, max_sentences, custom_stop_words, and agency_name  
+*n_sentences* is the number of sentences to use for the summary  
+function maps `summarizeText()` onto each each comment and then extracts the top *n_sentences*
+
+# Instructions
 
 ```{r functions}
 # load text cleaning function 
@@ -131,7 +147,7 @@ d %>%
   select(document_id, textrank_summary)  %>% kablebox()
 ```
 
-
+# Ongoing issues
 
 ## Textrank has a hard time with form letters and captures names and titles
 ```{r}
