@@ -436,59 +436,60 @@ summary {
 <span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>    out <span class="ot">&lt;-</span> textrank<span class="sc">::</span><span class="fu">textrank_sentences</span>(<span class="at">data =</span> sentences,</span>
 <span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">terminology =</span> words)</span>
 <span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    <span class="co"># arrange by textrank </span></span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    out<span class="sc">$</span>sentences <span class="sc">%&lt;&gt;%</span> <span class="fu">arrange</span>(<span class="sc">-</span>textrank)</span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>    <span class="co"># so we format the unranked sentences data frame as an alternative</span></span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>    out <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">sentences =</span> <span class="fu">as.data.frame</span>(sentences))</span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>  <span class="co">#out %&gt;%   knitr::kable() </span></span>
-<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
-<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># arrange by textrank </span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>    out<span class="sc">$</span>sentences <span class="sc">%&lt;&gt;%</span> <span class="fu">arrange</span>(<span class="sc">-</span>textrank)</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    <span class="co"># so we format the unranked sentences data frame as an alternative</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>    out <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">sentences =</span> <span class="fu">as.data.frame</span>(sentences))</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>  <span class="co">#out %&gt;%   knitr::kable() </span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>summarize_comments <span class="ot">&lt;-</span> <span class="cf">function</span>(text, <span class="at">n_sentences =</span> <span class="dv">2</span>, <span class="at">max_sentences =</span> <span class="dv">100</span>, custom_stop_words, agency_name) {</span>
-<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>  <span class="co"># not cleaning data here either; should we? I think it is better to do it in the above function so it is done on one comment at a time.</span></span>
-<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>  <span class="co"># summarize, map summary function to each unique section</span></span>
-<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>  text_summary <span class="ot">&lt;-</span>  <span class="fu">map</span>(<span class="at">.x =</span> text,</span>
-<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>                       <span class="at">.f =</span> summarizeText,</span>
-<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>                       <span class="at">max_sentences =</span> max_sentences,</span>
-<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>                       <span class="at">custom_stop_words =</span> custom_stop_words,</span>
-<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>                       <span class="at">agency_name =</span> agency_name) </span>
-<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>  <span class="co"># extract top n_sentences</span></span>
-<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>  pull_sentences <span class="ot">&lt;-</span> . <span class="sc">%&gt;%</span> </span>
-<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>    .<span class="sc">$</span>sentences <span class="sc">%&gt;%</span> </span>
-<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pull</span>(sentence) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>    .[<span class="dv">1</span><span class="sc">:</span>n_sentences] <span class="sc">%&gt;%</span> </span>
-<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_to_sentence</span>() <span class="sc">%&gt;%</span>  <span class="co">#FIXME should define a custom function to fix sentence case with some common fixes like:</span></span>
-<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_replace_all</span>(<span class="st">&quot; i &quot;</span>, <span class="st">&quot; I &quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_replace_all</span>(<span class="st">&quot; u</span><span class="sc">\\</span><span class="st">.s</span><span class="sc">\\</span><span class="st">. &quot;</span>, <span class="st">&quot; U.S. &quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_replace_all</span>(<span class="st">&quot;nprm&quot;</span>, <span class="st">&quot;NPRM&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_c</span>(<span class="at">collapse =</span> <span class="st">&quot; &quot;</span>)</span>
-<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add n_sentences pulled from textrank output to data</span></span>
-<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>  summary <span class="ot">&lt;-</span> text_summary <span class="sc">%&gt;%</span></span>
-<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>      <span class="co">#FIXME when this fails, it should default to the first sentence of the section. </span></span>
-<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>      <span class="fu">map_chr</span>(<span class="fu">possibly</span>(pull_sentences, <span class="at">otherwise =</span> <span class="st">&quot; &quot;</span>) ) </span>
-<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(summary)</span>
-<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>summarize_comments <span class="ot">&lt;-</span> <span class="cf">function</span>(text, <span class="at">n_sentences =</span> <span class="dv">2</span>, <span class="at">max_sentences =</span> <span class="dv">100</span>, custom_stop_words, agency_name) {</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>  <span class="co"># not cleaning data here either; should we? I think it is better to do it in the above function so it is done on one comment at a time.</span></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>  <span class="co"># summarize, map summary function to each unique section</span></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>  text_summary <span class="ot">&lt;-</span>  <span class="fu">map</span>(<span class="at">.x =</span> text,</span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>                       <span class="at">.f =</span> summarizeText,</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>                       <span class="at">max_sentences =</span> max_sentences,</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>                       <span class="at">custom_stop_words =</span> custom_stop_words,</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>                       <span class="at">agency_name =</span> agency_name) </span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>  <span class="co"># extract top n_sentences</span></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>  pull_sentences <span class="ot">&lt;-</span> . <span class="sc">%&gt;%</span> </span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>    .<span class="sc">$</span>sentences <span class="sc">%&gt;%</span> </span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pull</span>(sentence) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>    .[<span class="dv">1</span><span class="sc">:</span>n_sentences] <span class="sc">%&gt;%</span> </span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_to_sentence</span>() <span class="sc">%&gt;%</span>  <span class="co">#FIXME should define a custom function to fix sentence case with some common fixes like:</span></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_replace_all</span>(<span class="st">&quot; i &quot;</span>, <span class="st">&quot; I &quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_replace_all</span>(<span class="st">&quot; u</span><span class="sc">\\</span><span class="st">.s</span><span class="sc">\\</span><span class="st">. &quot;</span>, <span class="st">&quot; U.S. &quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_replace_all</span>(<span class="st">&quot;nprm&quot;</span>, <span class="st">&quot;NPRM&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_c</span>(<span class="at">collapse =</span> <span class="st">&quot; &quot;</span>)</span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add n_sentences pulled from textrank output to data</span></span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>  summary <span class="ot">&lt;-</span> text_summary <span class="sc">%&gt;%</span></span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>      <span class="co">#FIXME when this fails, it should default to the first sentence of the section. </span></span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>      <span class="fu">map_chr</span>(<span class="fu">possibly</span>(pull_sentences, <span class="at">otherwise =</span> <span class="st">&quot; &quot;</span>) ) </span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(summary)</span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a>comment_summary <span class="ot">&lt;-</span> <span class="fu">summarize_comments</span>(d<span class="sc">$</span>text, </span>
-<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">n_sentences =</span> <span class="dv">3</span>, </span>
-<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">max_sentences =</span> <span class="dv">50</span>, </span>
-<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">custom_stop_words =</span> custom_stop_words,</span>
-<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">agency_name =</span> agency_name)</span></code></pre></div>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a>comment_summary <span class="ot">&lt;-</span> <span class="fu">summarize_comments</span>(d<span class="sc">$</span>text, </span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">n_sentences =</span> <span class="dv">3</span>, </span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">max_sentences =</span> <span class="dv">50</span>, </span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">custom_stop_words =</span> custom_stop_words,</span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">agency_name =</span> agency_name)</span></code></pre></div>
 <p>Compare to hand-coded key sentences.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>d <span class="sc">%&gt;%</span> </span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">textrank_summary =</span> comment_summary) <span class="sc">%&gt;%</span></span>
@@ -935,7 +936,7 @@ comment_txt
 Ballard Spahr
 </td>
 <td style="text-align:left;">
-The bureau s own analysis shows that its proposed rule will have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. The bureau projects that revenues from short term loans covered by the proposed rule and the availability of credit will decline by to. Monica jackson october page executivesu y consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to address other serious financial needs.
+The bureau projects that revenues from short term loans covered by the proposed rule and the availability of credit will decline by to. The bureau’s own analysis shows that its proposed rule will have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. Monica jackson october page executivesu y consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to address other serious financial needs.
 </td>
 <td style="text-align:left;">
 requests that the Bureau withdraw the Proposed Rule in its entirety
@@ -952,7 +953,7 @@ requests that the Bureau withdraw the Proposed Rule in its entirety
 Ballard Spahr
 </td>
 <td style="text-align:left;">
-The bureau s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. The proposed rule was published by the consumer financial protection bureau cfpb or bureau in fed. I the proposed rule.
+The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. I the proposed rule. Monica jackson october page executive summary consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to add ress other serious financia l needs.
 </td>
 <td style="text-align:left;">
 respectfully requests that the Bureau withdraw the Proposed Rule in its entirety due to the Bureau’s failure to demonstrate a reasonable basis for its determination that the acts and practices sought to be addressed by the Proposed Rule are “unfair” or “abusive” within the meaning of Section I 03 I of the Dodd-Frank Act and due to its failure to conduct an adequate cost-benefit analysis, as required by Section I 022(b)(2)(A)
@@ -1003,7 +1004,7 @@ comment_txt
 The Independent Finance Association of Illinois
 </td>
 <td style="text-align:left;">
-Payday and vehicle tide lenders are not the same as traditional installment lenders and the rule shoul d focus on them and not the industry that has served consu mers well for decades and decades.. j d; executive direc tor, indep enden t finance association of illinois As an association we have represented traditional installment lenders for over fifty years and some of our members have been providing affordable, accessible credit to consumers for over eighty years. As an example, with substantial input from the ifai and similar trade group s, the illinois attorney gener al and consu mer groups the consu mer installment loan act was substantially amended in to stop payday lenders from using a hybrid installment loan produ ct with a balloon payment feature as a way of perpetuating the life of their payday products while still offering illinois consumers affordable small dollar credit. &lt;pagebreak&gt; the resulting law has worked extremely well.
+Payday and vehicle tide lenders are not the same as traditional installment lenders and the rule shoul d focus on them and not the industry that has served consu mers well for decades and decades. . j d; executive direc tor, indep enden t finance association of illinois As an example, with substantial input from the ifai and similar trade group s, the illinois attorney gener al and consu mer groups the consu mer installment loan act was substantially amended in to stop payday lenders from using a hybrid installment loan produ ct with a balloon payment feature as a way of perpetuating the life of their payday products while still offering illinois consumers affordable small dollar credit. As an association we have represented traditional installment lenders for over fifty years and some of our members have been providing affordable, accessible credit to consumers for over eighty years.
 </td>
 <td style="text-align:left;">
 withdraw the Rule in its entirety or remove installment lenders from its coverage
@@ -1054,7 +1055,7 @@ comment_txt
 State Attorney Generals
 </td>
 <td style="text-align:left;">
-Since the bureau cannot set interest rates for loans, it is crucial to preserve the right of states to do so as usury caps are, in fact, the single most effective way of ending the harms of payday and other high interest consumer lending. See, generally, consumer financial protection bureau, online payday loan payments apr. available at http files.consumerfinance.gov f _cfpb_online payday loan payments.pdf; consumer financial protection bureau, cfpb data point payday lending, mar. available at http files.consumerfinance.gov f _cfpb_report_payday lending.pdf; cfpb payday loans and deposit advance products white paper. Lenders that are licensed by new york state cannot charge more than under new york s criminal usury laws.
+June hereinafter cfpb proposed payday lending rules, available at http files. consumerfinance. gov f documents rulemaking payday vehicle title certain high cost installment loans. pdf. Lenders that are licensed by new york state cannot charge more than under new york s criminal usury laws. Since the bureau cannot set interest rates for loans, it is crucial to preserve the right of states to do so as usury caps are, in fact, the single most effective way of ending the harms of payday and other high interest consumer lending.
 </td>
 <td style="text-align:left;">
 strongly encourage the Bureau to continue to emphasize that its Proposed Rules, if enacted, should not be used to undermine more stringent state protections and enforcement efforts
