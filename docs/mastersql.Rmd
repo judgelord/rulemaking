@@ -6,9 +6,9 @@ output:
     #   keep_tex: true
     html_document:
       highlight: zenburn
-      #toc: true
-      #toc_float: true
-      #code_folding: show
+      toc: true
+      toc_float: true
+      code_folding: show
 editor_options: 
   chunk_output_type: console
 ---
@@ -74,7 +74,7 @@ action <- dbGetQuery(con, "SELECT * FROM actions")
 
 ```
 
-## Number of Observations `r nrow(action)`
+## Actions in Database: `r nrow(action)`
 
 
 Where the SQL query to get NPRM and Final Rule data for a agency is: 
@@ -106,7 +106,6 @@ Mutate comment_text is pulling error, 'comment_text' not found
 ```
 
 
-### Count the number of actions per agency
 
 ```{r }
 agency <- dbGetQuery(con, "
@@ -114,6 +113,12 @@ agency <- dbGetQuery(con, "
    GROUP BY agency_acronym
 ")
 
+```
+
+## Agencies in Database: `r nrow(agency)`
+
+### Count the number of actions per agency
+```{r }
  agency %>%
    kablebox()
  
@@ -145,7 +150,7 @@ docketids <- dbGetQuery(con, "
  
 ```
 
-## Number of Docket IDs `r nrow(docketids)`
+## Docket IDs in Database: `r nrow(docketids)`
 ### Count the number of comments for each docket ID
 
 ```{r }
@@ -164,7 +169,7 @@ cfpb <- dbGetQuery(con, "
 
 ```
 
-## Number of docket IDs in CFPB `r nrow(cfpb)`
+## Docket IDs in CFPB: `r nrow(cfpb)`
 ### Number of comments for each docket ID in CFPB
 
 ```{r }
@@ -183,7 +188,7 @@ titles <- dbGetQuery(con, "
 
 ```
 
-## Total Number of Titles `r nrow(titles)`
+## Titles in Database: `r nrow(titles)`
 ### Count the number of titles
 ```{r }
 
@@ -204,7 +209,7 @@ titlescfpb <- dbGetQuery(con, "
 ")
 ```
 
-## Number of titles in CFPB `r nrow(titles)`
+## Titles in CFPB: `r nrow(titles)`
 ### Count the number of titles in CFPB
 
 ```{r }
