@@ -55,6 +55,8 @@ This database contains metadata on over 200,000 dockets and 80,000,000 public co
 
 # Instructions
 
+
+
 With **R**:
 
 ```{r}
@@ -67,9 +69,13 @@ con <- DBI::dbConnect(RSQLite::SQLite(), here::here("db", "master.sqlite"))
 dbListTables(con)
 ```
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 action <- dbGetQuery(con, "SELECT * FROM actions")
+
 ```
+
+## Number of Observations `r nrow(action)`
+
 
 Where the SQL query to get NPRM and Final Rule data for a agency is: 
 
@@ -127,60 +133,82 @@ comments <- dbGetQuery(con, "
 ```
 
 
-### Count the number of comments for each docket ID
 
 
 ```{r }
-comments <- dbGetQuery(con, "
+docketids <- dbGetQuery(con, "
    SELECT docket_id, COUNT(docket_id) AS count FROM comments
    GROUP BY docket_id
 ")
 
- comments %>%
-   kablebox()
+
  
 ```
 
+## Number of Docket IDs `r nrow(docketids)`
+### Count the number of comments for each docket ID
 
+```{r }
+ docketids %>%
+   kablebox()
+```
+
+
+
+```{r }
+cfpb <- dbGetQuery(con, "
+   SELECT docket_id, COUNT(docket_id) AS count FROM comments
+   WHERE agency_acronym = 'CFPB'
+   GROUP BY docket_id
+")
+
+```
+
+## Number of docket IDs in CFPB `r nrow(cfpb)`
 ### Number of comments for each docket ID in CFPB
 
 ```{r }
-comments <- dbGetQuery(con, "
-   SELECT docket_id, COUNT(docket_id) AS count FROM comments
-   WHERE agency_acronym = 'CFPB'
-   GROUP BY docket_id
-")
-
- comments %>%
+ cfpb %>%
    kablebox()
  
 ```
 
-### Count the number of titles
+
 
 ```{r }
-comments <- dbGetQuery(con, "
+titles <- dbGetQuery(con, "
    SELECT title, COUNT(title) AS count FROM actions
    GROUP BY title
 ")
 
- comments %>%
+```
+
+## Total Number of Titles `r nrow(titles)`
+### Count the number of titles
+```{r }
+
+ titles %>%
    kablebox()
  
 ```
 
 
+
+
+
+```{r }
+titlescfpb <- dbGetQuery(con, "
+   SELECT title, COUNT(title) AS count FROM actions
+   WHERE agency_acronym = 'CFPB'
+   GROUP BY title
+")
+```
+
+## Number of titles in CFPB `r nrow(titles)`
 ### Count the number of titles in CFPB
 
-
 ```{r }
-comments <- dbGetQuery(con, "
-   SELECT title, COUNT(title) AS count FROM actions
-   WHERE agency_acronym = 'CFPB'
-   GROUP BY title
-")
-
- comments %>%
+ titlescfpb %>%
    kablebox()
  
 ```
