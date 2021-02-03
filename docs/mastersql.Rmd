@@ -49,20 +49,15 @@ kablebox <- . %>%  knitr::kable() %>%
   scroll_box(height = "400px")
 ```
 
-# About 
 
-This database contains metadata on over 200,000 dockets and 80,000,000 public comments. It has two tables, `actions` and `comments` corresponding to how documents are organized and identified on regulations.gov (comments are also known as "public submission" documents).
-
-# Instructions
-
-
+This database contains metadata on Dodd-Frank regulatory actions and public comments. It has two tables, `actions` and `comments`.
 
 With **R**:
 
 ```{r}
 library(DBI)
 library(RSQLite)
-library(sqldf)
+#library(sqldf)
 
 con <- DBI::dbConnect(RSQLite::SQLite(), here::here("db", "master.sqlite"))
 
