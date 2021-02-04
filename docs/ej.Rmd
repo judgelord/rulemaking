@@ -1,0 +1,166 @@
+---
+title: "How to Query Devin's Regulations.gov SQL Database"
+subtitle: "" 
+author: "Devin Judge-Lord"
+output:
+    # pdf_document:
+    #   toc: true
+    #   keep_tex: true
+    html_document:
+      highlight: zenburn
+      #toc: true
+      #toc_float: true
+      #code_folding: show
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = FALSE, 
+                      fig.width=8.5, 
+                      split = T,
+                      fig.align = 'center', 
+                      fig.path='figs/',
+                      warning=FALSE, 
+                      message=FALSE)
+
+
+library(tidyverse)
+library(broom)
+library(magrittr)
+library(tidytext)
+library(knitr)
+library(kableExtra)
+
+library(ggplot2); theme_set(theme_bw())
+  options(
+    ggplot2.continuous.color = "viridis",
+    ggplot2.continuous.fill = "viridis"
+  )
+  scale_color_discrete <- function(...)
+    scale_color_viridis_d(..., direction = -1)
+  scale_fill_discrete <- function(...)
+    scale_fill_viridis_d(..., direction = -1)
+  
+  
+kablebox <- . %>% 
+  head(100) %>% 
+  knitr::kable(digits = 3) %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
+```
+
+```{r}
+library(DBI)
+library(RSQLite)
+#library(sqldf)
+
+con <- DBI::dbConnect(RSQLite::SQLite(), here::here("db", "regs_dot_gov.sqlite"))
+
+dbListTables(con)
+```
+
+```{sql, connection=con, output.var = "rules", eval = FALSE}
+SELECT * FROM rules WHERE document_type = 'Proposed Rule'
+```
+
+
+```{r}
+load(here::here("data", "ejPR.Rdata"))
+load(here::here("data", "ejFR.Rdata"))
+load(here::here("data", "ejcomments.Rdata"))
+load(here::here("data", "regs_dot_gov_actions.Rdata"))
+
+namingthings <- function(x){
+  names(x)  <- names(x) %>% 
+    str_replace_all("([A-Z])", "_\\1") %>% 
+    str_to_lower()
+  
+  x$allow_late_comment %<>% as.logical()
+  x$attachment_count %<>% as.integer()
+  x$comments %<>% as.integer()
+  x$open_for_comment %<>% as.logical()
+  
+  return(x)
+}
+
+ejFR %<>% namingthings()
+ejPR %<>% namingthings()
+ejcomments %<>% namingthings()
+
+regs_dot_gov_actions %<>% namingthings() %>% 
+  filter(!is.na(posted_date)) %>% 
+         # indicators for ej in various docs
+  mutate(ej_pr = docket_id %in% ejPR$docket_id,
+         ej_comment = docket_id %in% ejcomments$docket_id,
+         ej_fr = docket_id %in% ejFR$docket_id,
+         # indicator for president
+         Trump = posted_date > as.Date("2017-01-17"),
+         comments = number_of_comments_received) 
+
+# All proposed rules
+allPR <- regs_dot_gov_actions %>% 
+  # subset to final rules
+  filter(document_type == "Proposed Rule")
+
+# All final rules
+allFR <- regs_dot_gov_actions %>% 
+  # subset to final rules with an NPRM 
+  filter(document_type == "Rule") 
+```
+
+
+
+# Proposed rules that did not address EJ
+```{r}
+# Final Rules that where ej was not mentioned in the NPRM
+ejFR_PR <- allFR %>% 
+  filter(docket_id %in% allPR$docket_id,
+         !ej_pr)
+
+m_PR <- glm(ej_fr ~ ej_comment + 
+              comments + 
+              Trump,
+           data = ejFR_PR, 
+             family=binomial(link="logit"))
+
+tidy(m_PR) %>% kablebox()
+
+# A data frame of values at which to estimate probabilities:
+values <- ejFR_PR %>% 
+  expand(comments = c(min(comments),
+                                         mean(comments),
+                                         max(comments)), ej_comment,
+         Trump)
+
+predicted <- augment(m_PR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) 
+
+predicted %<>% 
+  mutate(Trump = ifelse(Trump, "Trump", "Obama"))
+
+# As a plot
+predicted %>% 
+  ggplot() + 
+  aes(x = ej_comment, y = .fitted, color = ej_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit) )  + 
+  coord_flip() +
+  facet_grid(Trump ~ comments) +
+  labs(y = 'Probability that "environmental justices" is added', 
+       x = "",
+       color =  '"environmental justice"\nraised by comments',
+       title = "Predicted change in Final Rules") + 
+  scale_color_discrete() + 
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+```
+
+
+# Proposed rules that did address EJ
+
