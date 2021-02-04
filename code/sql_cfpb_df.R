@@ -3,27 +3,106 @@ library(DBI)
 # install.packages("RSQLite")
 1
 library(RSQLite)
+library(tidyverse)
+library(magrittr)
 
 # Create RSQLite database
 con <- dbConnect(RSQLite::SQLite(), here::here("db", "regs_dot_gov.sqlite"))
 
 # fetch results:
-res <- dbSendQuery(con, "SELECT * FROM comments WHERE agency_acronym = 'CFPB'")
+comments_cfpb <- dbGetQuery(con, "SELECT * FROM comments WHERE agency_acronym = 'CFPB'")
 
-cfpb_comments <- dbFetch(res) %>% head()
+head(comments_cfpb)
+
 dbClearResult(res)
 
 # fetch results:
-res <- dbSendQuery(con, "SELECT * FROM rules WHERE agency_acronym = 'CFPB'")
+rules_cfpb <- dbGetQuery(con, "SELECT * FROM rules WHERE agency_acronym = 'CFPB'")
 
-cfpb_rules <- dbFetch(res) %>% head()
+head(rules_cfpb)
+
 dbClearResult(res)
 
 dbDisconnect(con)
 
+dockets <- rules_cfpb %>% select(docket_id, fr_document_id, comment_start_date) 
 
+dockets %>% count(docket_id,
+                  comment_start_date, 
+                  fr_document_id,
+                  sort = T) %>% head()
 
+nrow(dockets)
+dockets %>% distinct() %>% nrow()
 
+crosswalk <- comments_cfpb %>% left_join(dockets) %>% 
+  select(docket_id, fr_document_id, comment_start_date) %>% distinct()
+
+crosswalk %>% count(docket_id,
+                  comment_start_date, 
+                  fr_document_id,
+                  sort = T) %>% head()
+
+crosswalk %<>% left_join(dockets %>% select(-comment_start_date) %>% rename(fr2 = fr_document_id) %>% distinct() )
+
+crosswalk %<>% 
+  distinct() %>% 
+  mutate(fr_document_id = coalesce(fr_document_id, fr2)) %>%
+  select(-fr2) %>% 
+  filter(!is.na(fr_document_id)) %>% 
+  distinct()
+
+crosswalk %>% count(docket_id,
+                    comment_start_date, 
+                    fr_document_id,
+                    sort = T) %>% head()
+
+crosswalk %>% arrange(docket_id)
+
+crosswalk %<>% filter(!is.na(comment_start_date))
+
+comments_cfpb %<>% left_join(crosswalk)
+
+names(comments_cfpb)
+comments_cfpb %<>% select(fr_document_id,
+                          agency_acronym,
+                          rin,
+                          docket_id,
+                          docket_title,
+                          attachment_count,
+                          document_id,
+                          posted_date,
+                          submitter_name,
+                          comment_title = title,
+                          organization,
+                          #comment_url,
+                          #late_comment,
+                          comment_text
+                          ) %>% 
+  mutate(source = "regulations.gov",
+         comment_url = str_c("https://www.regulations.gov/document?D=", document_id)
+         )
+
+# rename to match 
+names(rules_cfpb)
+actions_cfpb <- rules_cfpb %>% 
+  select(fr_document_id,
+         fr_number,
+         #volume,
+         #start_page,
+         #page_length,
+         agency_acronym,
+         title,
+         #action_description_fr,
+         stage = document_type,
+         #stage_n,
+         #action,
+         #joint, 
+         #publication_date = posted_date,
+         #action_url,
+         reg_dot_gov_document_id = document_id,
+         rin,
+         docket_id)
 
 
 
@@ -33,8 +112,6 @@ dbDisconnect(con)
 
 ###################################################
 # Subset to Davis Polk Dodd-Frank rules 
-# load(here::here("data", "comment_metadata_CFPB.Rdata"))
-names(comments_cfpb)
 
 # Dodd-Frank rules from Davis Polk Data
 df <- read_csv(here::here("data", "dockets_to_scrape.csv"))
@@ -56,7 +133,7 @@ comments_cfpb_df %>%
 
 # dockets not in dockets to scrape
 comments_cfpb_df %>% 
-  filter(!docket_id %in% df_docekts) %>% 
+  filter(!docket_id %in% df_dockets) %>% 
   select(docket_id, rin) %>% 
   distinct() %>% knitr::kable()
 
@@ -87,48 +164,27 @@ unmatched %>%
 
 
 
-#FIXME MOVE TO ANOTHER SCRIPT 
-# join in fed reg from regs.gov
-load(here::here("data", "AllRegsGovRules.Rdata"))
 
-# Rename to fit https://docs.google.com/spreadsheets/d/1i8t_ZMAhjddg7cQz06Z057BqnNQEsC4Gur6p17Uz0i4/edit#gid=1357829693
-names(d)  <- names(d) %>% 
-  str_replace_all("([A-Z])", "_\\1") %>% 
-  str_to_lower()
+##########################
+# Actions table 
 
-# standardize fr_document_id
-regs_dot_gov_actions <- d %>% mutate_all(as.character) %>%
-  mutate(fr_document_id = fr_number %>%
-           str_replace_all(" - |- |- | -| FR, ISSUE |, ISSUE #|  NO\\. | FR, NO. |, NO\\. |\\. NO. |, NO\\.| NO\\. |\\. NO | NO | FR |FR|\\):|\\(|\\)", "-") %>% 
-           str_replace_all("E-", "E") %>% 
-           # extract fed reg vol pattern
-           str_extract("[0-9][0-9]+(-| |=)[0-9]+") %>%
-           # replace space with dash
-           str_replace(" |=", "-"),
-         fr_document_id2 = fr_number %>%
-           str_replace_all(" - |- |- | -| FR, ISSUE |, ISSUE #|  NO\\. | FR, NO. |, NO\\. |\\. NO. |, NO\\.| NO\\. |\\. NO | NO | FR |FR|\\):|\\(|\\)", "-") %>% 
-           # extract fed reg vol pattern
-           str_extract("(C|E|R|Z)[0-9]+(-| |=)[0-9]+") %>%
-           # replace space with dash
-           str_replace(" |=", "-") ) %>%
-  mutate(fr_document_id = coalesce(fr_document_id, fr_document_id2))
 
-regs_dot_gov_actions %<>% 
+actions_cfpb %<>% 
   mutate(fr_document_id_length = fr_document_id %>% nchar() ) 
 
-regs_dot_gov_actions %>% filter(is.na(fr_document_id), 
+actions_cfpb %>% filter(is.na(fr_document_id), 
                                 !is.na(fr_number)) %>% 
   select(fr_number) %>% filter(nchar(fr_number) > 5)
 
 # example fed reg ids
-regs_dot_gov_actions %>% arrange(-fr_document_id_length) %>% 
+actions_cfpb %>% arrange(-fr_document_id_length) %>% 
   group_by(fr_document_id_length) %>%
   add_count(name = "n_of_length") %>% 
   slice(1) %>%
   select(n_of_length, fr_document_id, fr_number) %>% knitr::kable()
 
 #FIXME edit document_number
-regs_dot_gov_actions %<>% mutate(fr_document_id = ifelse(str_detect(fr_document_id, "^[0-9]{4}-[0-9]{4}$"),
+actions_cfpb %<>% mutate(fr_document_id = ifelse(str_detect(fr_document_id, "^[0-9]{4}-[0-9]{4}$"),
                                                          fr_document_id %>% str_replace("-", "-0"),
                                                          fr_document_id)) 
 
@@ -142,7 +198,7 @@ df %>%
   select(n_of_length, document_number) %>% knitr::kable()
 
 df %>% #filter(str_detect(document_number, "-0")) %>% 
-  filter(!document_number %in% regs_dot_gov_actions$fr_document_id)
+  filter(!document_number %in% actions_cfpb$fr_document_id)
 
 #FIXME edit document_number
 # df %<>% mutate(document_number = ifelse(str_detect(document_number, "-[0-9]{4}$"),
@@ -150,17 +206,12 @@ df %>% #filter(str_detect(document_number, "-0")) %>%
 #                                        document_number)) 
 # 
 
-# save all actions
-save(regs_dot_gov_actions, file = here::here("data", "regs_dot_gov_actions.Rdata"))
-# /FIXME MOVE TO ANOTHER SCRIPT 
 
-actions_cfpb <- regs_dot_gov_actions %>%
-  filter(agency_acronym == "CFPB") 
 
 # check against Dodd-Frank dockets to scrape
 
 # merging on regulations.gov document id
-df_min <- df %>% select(document_id = 
+df_min <- df %>% select(reg_dot_gov_document_id = 
                           REG_DOT_GOV_DOCNO,
                         #fr_document_id = 
                         document_number) %>% 
@@ -174,7 +225,7 @@ df_min %>% left_join(actions_cfpb) %>%
 df_min %>% left_join(actions_cfpb) %>% 
   filter(!is.na(agency_acronym),
          fr_document_id != document_number)%>% 
-  select(docket_id, fr_document_id, document_number, document_id) %>% knitr::kable()
+  select(docket_id, fr_document_id, document_number, reg_dot_gov_document_id) %>% knitr::kable()
 
 
 
@@ -197,13 +248,14 @@ df_min %>% left_join(actions_cfpb) %>%
 # bad regs_gov docuemnt ID
 df_min %>% left_join(actions_cfpb) %>% 
   filter(!is.na(agency_acronym),
-         REG_DOT_GOV_DOCNO != document_id)%>% 
-  select(docket_id, fr_document_id, REG_DOT_GOV_DOCNO, document_id) %>% knitr::kable()
+         REG_DOT_GOV_DOCNO != reg_dot_gov_document_id)%>% 
+  select(docket_id, fr_document_id, REG_DOT_GOV_DOCNO, reg_dot_gov_document_id) %>% knitr::kable()
 
-# add actions to Dodd Frank dockets to scrape FR numbers
+
+# add actions to Dodd Frank dockets to scrape by FR numbers
 df_min %<>% left_join(actions_cfpb %>% 
-                        filter(number_of_comments_received >0,
-                               document_type == "Proposed Rule",
+                        filter(#number_of_comments_received >0,
+                               stage == "Proposed Rule",
                                !is.na(fr_document_id))) 
 
 df_min %<>% 
@@ -217,29 +269,24 @@ multiples <- df_min %>%
 
 actions_cfpb %>% 
   filter(docket_id %in% multiples$docket_id,
-         number_of_comments_received >0,
-         document_type == "Proposed Rule",
+         #number_of_comments_received >0,
+         stage == "Proposed Rule",
          !is.na(fr_document_id)) %>% 
   arrange(docket_id) %>%
-  select(docket_id, rin, fr_document_id, document_id, 
-         number_of_comments_received, comment_start_date, comment_due_date) %>%
+  select(docket_id, rin, fr_document_id, reg_dot_gov_document_id) %>%
+         #number_of_comments_received, comment_start_date, comment_due_date) %>%
   knitr::kable()
 
-names(comments_cfpb)
-comments_cfpb_df %>% 
-  filter(docket_id %in% multiples$docket_id) %>% 
-  select(docket_id, rin) %>% distinct()
 
 
 
-df_min %<>% 
-  select(fr_document_id, docket_id) %>% 
-  distinct()
 
-df_min %>% add_count(docket_id, sort = T)
 
-names(actions_cfpb)
-actions_cfpb %>% select(number_of_comments_received, comment_start_date)
+
+#### ???????? is this incomplete 
+
+
+
 names(comments_cfpb_df)
 # N
 comments_cfpb_df %>% 
@@ -249,26 +296,38 @@ comments_cfpb_df %>%
 # target N
 nrow(comments_cfpb_df)
 
-# save Rdata 
-save(comments_cfpb_df, file = here::here("data", "comment_metadata_CFPB_df.Rdata"))
+
+# Create RSQLite database
+con <- dbConnect(RSQLite::SQLite(), here::here("db", "comment_metadata_CFPB_df.sqlite"))
+
+# check 
+list.files("db")
+
+dbListTables(con)
+dbWriteTable(con, "comments", comments_cfpb_df, overwrite = T)
+dbListTables(con)
+dbDisconnect(con)
 
 
 # Create RSQLite database
-con <- dbConnect(RSQLite::SQLite(), here::here("data", "comment_metadata_CFPB_df.sqlite"))
+con <- dbConnect(RSQLite::SQLite(), here::here("db", "metadata_CFPB_df.sqlite"))
 
 # check 
-list.files("data")
+list.files("db")
 
 dbListTables(con)
-dbWriteTable(con, "comments_cfpb_df", comments_cfpb_df, overwrite = T)
+dbWriteTable(con, "comments", comments_cfpb_df, overwrite = T)
 dbListTables(con)
 
-dbListFields(con, "comments_cfpb_df")
-# dbReadTable(con, "comments_cfpb") # oops
+dbWriteTable(con, "actions", actions_cfpb %>% select(-fr_document_id_length, -fr_number), overwrite = T)
+dbListTables(con)
+
+
+dbListFields(con, "comments")
+dbListFields(con, "actions")
 
 # fetch results:
-res <- dbSendQuery(con, "SELECT * FROM comments_cfpb_df WHERE agency_acronym = 'CFPB'")
-
-dbFetch(res) %>% head()
+dbGetQuery(con, "SELECT * FROM actions WHERE docket_id = 'CFPB-2012-0029'") %>% head()
+dbGetQuery(con, "SELECT * FROM comments WHERE docket_id = 'CFPB-2012-0029'") %>% head()
 dbClearResult(res)
 dbDisconnect(con)
