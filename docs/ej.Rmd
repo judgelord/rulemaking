@@ -72,43 +72,54 @@ SELECT * FROM rules
 
 
 ```{r data, fig.height=11, cache=TRUE}
-load(here::here("data", "ejPR.Rdata"))
-load(here::here("data", "ejFR.Rdata"))
-load(here::here("data", "ejcomments.Rdata"))
+load(here::here("data", "ejPRnew.Rdata"))
+ejPR <- ejPRnew #FIXME 
+load(here::here("data", "ejFRnew.Rdata"))
+ejFR <- ejFRnew
+load(here::here("data", "ejcommentsnew.Rdata"))
+ejcomments <- ejcommentsnew
 load(here::here("data", "rules_metadata.Rdata"))
 # alternatively 
 #rules <- dbGetQuery(con, "SELECT * FROM rules")
 
+# unique
 ejPR %<>% 
-  mutate(summary = str_replace(summary, regex("<endeca_term>environmental</endeca_term> <endeca_term>justice</endeca_term>", ignore_case = T), "Environmental Justice")) %>% 
-  filter(str_detect(summary,"Environmental Justice"))
-
-
+  select(-page, #FIXME,
+         -open_for_comment,
+         -type, -document_type, -withdrawn, -links) %>% 
+  distinct()
 
 ejFR %<>% 
-  mutate(summary = str_replace(summary, regex("<endeca_term>environmental</endeca_term> <endeca_term>justice</endeca_term>", ignore_case = T), "Environmental Justice")) %>% 
-  filter(str_detect(summary,"Environmental Justice"))
+  select(-page, #FIXME
+         -open_for_comment,
+         -type, -document_type, -withdrawn, -links) %>% 
+  distinct()
 
 ejcomments %<>% 
-  mutate(summary = str_replace(summary, regex("<endeca_term>environmental</endeca_term> <endeca_term>justice</endeca_term>", ignore_case = T), "Environmental Justice")) %>% 
-  filter(str_detect(summary,"Environmental Justice")|str_detect(comment_text, regex("environmental justice", ignore_case = T)))
+  select(-lastpage, -type, -document_type, -withdrawn, -links) %>% 
+  distinct() 
+
+# summary vars
+ejcomments %<>%
+  mutate(docket_id = str_remove(id, "-[0-9]*$") ) 
 
 rules %<>% filter(document_type %in% c("Proposed Rule", "Rule"),
                     # drop rules before clinton
                   !is.na(posted_date),
                   posted_date > as.Date("1993-01-20"),
+                  # rulemaking dockets only
                   docket_type == "Rulemaking" ) 
 
 
 # make summary vars in main data
 rules %<>% 
-  # add ej comments and ej unique comment counts
-  left_join(ejcomments %>% 
-              group_by(docket_id) %>% 
-              summarise(ej_comments = sum(number_of_comments_received) ) ) %>%
+  # # add ej comments and ej unique comment counts #FIXME merge in counts from old data, find if new API has this
+  # left_join(ejcomments %>% 
+  #             group_by(docket_id) %>% 
+  #             summarise(ej_comments = sum(number_of_comments_received) ) ) %>%
   left_join(ejcomments %>% 
               count(docket_id, name = "ej_comments_unique") ) %>% 
-  mutate(ej_comments = replace_na(ej_comments, 0),
+  mutate(#ej_comments = replace_na(ej_comments, 0),
          ej_comments_unique = replace_na(ej_comments_unique, 0)) 
 
 # indicators for ej in various docket-level variables
@@ -126,12 +137,12 @@ rules %<>%
          year = str_sub(posted_date, 1,4),
          Year = str_sub(posted_date, 3,4),
          Year = str_c("`", Year),
-         agency = agency_acronym
+         agency = agency_id
          ) 
 
-rules %>% select(docket_id, 
+rules %<>% select(docket_id, 
                  docket_title, 
-                 ej_comments, 
+                 #ej_comments, 
                  ej_comments_unique, 
                  ej_pr, 
                  ej_comment, 
@@ -162,7 +173,7 @@ rules %>%
 rules %<>% 
   group_by(agency) %>% 
   mutate(agency_ej_rules = sum(ej_fr),
-         agency_ej_comments = sum(ej_comment),
+         agency_ej_comments = sum(ej_comments_unique),
          agency_ej_nprms = sum(ej_pr)) %>%
   ungroup() %>% 
   filter(agency_ej_rules > 0 | agency_ej_nprms > 0)
@@ -176,7 +187,7 @@ rules %>%
 
 # agencies that published at least 100 rules with ej comments
 rules %>% 
-  filter(agency_ej_comments > 100) %>% 
+  filter(agency_ej_comments > 100 | agency == "FEMA") %>% 
   ggplot() + 
   aes(x = year, fill = ej_fr) +
   facet_wrap("agency", scales = "free") +
@@ -239,11 +250,11 @@ allFR %>%
   filter(direct == "Draft Rule Published") %>% 
   mutate(ej_pr = ifelse(ej_pr, "EJ in Draft Rule", "EJ not in Draft Rule")) %>% 
   ggplot() + 
-  aes(x = posted_date, y = comments, color = ej_comment) + 
+  aes(x = Year, y = comments, color = ej_comment) + 
   geom_point(alpha = .5) + 
   facet_grid(ej_pr ~ president, scales = "free_x") + 
   scale_y_log10()  +
-  scale_x_date(date_labels = "%y") + 
+  #scale_x_date(date_labels = "%y") + 
   labs(x = "",
        y = "Number of Comments (log scale)",
        color = "Environmental\nJustice\nConcerns") + 
@@ -321,8 +332,8 @@ ejFR_PR %>%
 ```{r ej-m-PR-president}
 m_PR_president <- glm(ej_fr ~ ej_comment + 
               comments +
-                ej_comments + 
-                #ej_comments_unique +
+                #ej_comments + 
+                ej_comments_unique +
               president,
            data = ejFR_PR, 
              family=binomial(link="logit"))
@@ -332,7 +343,7 @@ tidy(m_PR_president) %>% kablebox()
 # A data frame of values at which to estimate probabilities:
 values <- ejFR_PR %>% 
   expand(ej_comment,
-         ej_comments = mean(ej_comments) %>% round(),
+         #ej_comments = mean(ej_comments) %>% round(),
          ej_comments_unique = mean(ej_comments_unique) %>% round(),
          comments = #c(min(comments),
                       mean(comments) %>% round(),
@@ -373,6 +384,7 @@ winrate <- ejFR_PR %>%
   group_by(ej_comment) %>% #FIXME make nice table with percents
   spread(ej_fr, n) %>% 
     mutate(`FALSE` = replace_na(`FALSE`, 0)) %>%
+  mutate(`TRUE` = replace_na(`TRUE`, 0)) %>%
   mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 ))
 
 winrate
@@ -390,7 +402,7 @@ ejFR_PR %>% count(agency, ej_comment, ej_fr)  %>%
       label = ifelse(ej_fr== ej_comment, percent, NA) %>% str_c("%") ) +
   geom_col() + 
   geom_text(aes(y = `TRUE`), vjust = 0) + 
-  facet_wrap("agency", scales = "free", ncol = 3)+ 
+  facet_wrap("agency", scales = "free")+ 
   labs(fill = "EJ in Final Rule") + 
   #theme_void() +
   theme(axis.ticks = element_blank(),
@@ -447,13 +459,16 @@ predicted %>%
         axis.ticks.y = element_blank())
 ```
 
-Agencies that have over 10 comments on proposed rules that did not mention environmental justice (i.e. agencies where at least some of the rules in this dataset saw comments) and 10 rules where comments raised EJ concerns (i.e. agencies where EJ is somewhat salient). 
+Agencies that have at least 300 comments on proposed rules that did not mention environmental justice (i.e. agencies where at least some of the rules in this dataset saw comments) and at least 3 rules where comments raised EJ concerns (i.e. agencies where EJ is somewhat salient). 
 
 ```{r ej-m-PR-agency-top10}
+ejFR_PR %>% group_by(agency) %>% count(agency, agency_ej_comments,sum(comments) )  %>%   kablebox()
+
+
 top <- ejFR_PR %>% 
   group_by(agency) %>% 
-  filter(sum(comments) > 10,
-         agency_ej_comments > 10) %>% 
+  filter(sum(comments) >=300,
+         agency_ej_comments >=3) %>% 
     ungroup() %>% 
     .$agency %>% 
     unique()
@@ -479,15 +494,15 @@ predicted %>%
 ```
 
 
-A more slective subset: Agencies that have over 100 comments on proposed rules that did not mention environmental justice (i.e. agencies where at least some of the rules in this dataset saw more than a few comments) and 100 rules where comments raised EJ concerns (i.e. agencies where EJ is somewhat salient). 
+A more slective subset: Agencies that have at least 500 comments on proposed rules that did not mention environmental justice (i.e. agencies where at least some of the rules in this dataset saw more than a few comments) and at least 50 rules where comments raised EJ concerns (i.e. agencies where EJ is somewhat salient). 
 
 ```{r ej-m-PR-agency-top100, fig.height=3}
+
 # slightly more selective, requiring 100 comments
 top <- ejFR_PR %>% 
   group_by(agency) %>% 
-  filter(sum(comments) > 10,
-         agency_ej_comments > 10) %>% 
-  count(agency, agency_ej_comments)  %>% 
+  filter(sum(comments) >=500,
+         agency_ej_comments >=50) %>% 
     ungroup() %>% 
     .$agency %>% 
     unique()
