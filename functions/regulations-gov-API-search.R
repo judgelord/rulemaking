@@ -253,7 +253,7 @@ return(d)
 search_keyword_page <- function(page, documenttype, keyword){
   
   # format (put in quotes and replace space with unicode)
-search <- str_c("&22", keyword, "&22") %>% str_replace(" ", "%2B")
+search <- str_c("%22", keyword, "%22") %>% str_replace(" ", "%2B")
 documenttype <- gsub(", ", "%2B", documenttype)
 rpp <- 1000
 page <- page*rpp
@@ -294,27 +294,39 @@ path <- paste0("/regulations/v3/documents?api_key=", api_key,
 # &api_key=DEMO_KEY
 
 
-search_keyword_page4 <- function(page, documenttype, keyword, lastModifiedDate = Sys.time() %>% str_remove(" [A-Z]")){
+search_keyword_page4 <- function(page = 1, 
+                                 documenttype = "Rule", 
+                                 keyword, 
+                                 lastModifiedDate = Sys.time() ){
   
-  # format (put in quotes and replace space with unicode)
-  search <- keword %>% #str_c("&%22", keyword, "%22") %>% 
+  
+  lastModifiedDate %<>% str_replace_all("[A-Z]", " ") %>%  str_squish()
+  
+  # format (replace space with unicode)
+  search <- #keyword %>% 
+    str_c("%22", keyword, "%22") %>% 
     str_replace(" ", "%2B")
   
-
   
-  path <- paste0("/v4/documents?",
-                 "page[number]=", page,
-                 "&page[size]=25", 
+  endpoint = ifelse(documenttype == "Public Submission", "comments", "documents")
+  
+  documentType = ifelse(documenttype == "Public Submission", "", "&filter[documentType]=documents")
+
+  path <- paste0("/v4/", endpoint,
+                 "?page[number]=", page,
+                 "&page[size]=250", 
+                 documentType,
                  #"&a=", agency,
-                 #"&sort=", order, 
-                 "&sort=", sortby, 
+                 "&sort=-lastModifiedDate,documentId",
                  "&filter[searchTerm]=", search,
-                 "&filter[lastModifiedDate][ge]=", lastModifiedDate,
+                 "&filter[lastModifiedDate][le]=", lastModifiedDate,
                  "&api_key=", api_key)
   
   # this works:
   # raw.result <- GET(url = "https://api.regulations.gov", 
   # path = "/v4/comments?filter[searchTerm]=environmental%2Bjustice&api_key=aynn8SLo5zdb2V0wqBKQwHQ5FmCLd2cIpWStzrZ0")
+  
+  str_c("https://api.regulations.gov", path)
   
   raw.result <- GET(url = "https://api.regulations.gov", path = path)
   
@@ -324,18 +336,22 @@ search_keyword_page4 <- function(page, documenttype, keyword, lastModifiedDate =
     mutate(id = content$data$id,
            type = content$data$type,
            links = content$data$links$self,
-      page = page)
+      lastpage = content$meta$lastPage)
   
-  if(content$meta$lastPage){
-    lastModifiedDate <-- content$data$attributes$lastModifiedDate %>% tail(1)
-    #lastModifiedDate <-- Sys.time() %>% str_remove(" [A-Z]")
-  } 
-    
-  }
+  #TODO loop this over batches of 5k documents
+  # if(content$meta$lastPage){
+  #   lastModifiedDate <-- content$data$attributes$lastModifiedDate %>% tail(1)
+  #   #lastModifiedDate <-- Sys.time() %>% str_remove(" [A-Z]")
+  # } 
   
   return(d)
 }
 
+d <- search_keyword_page4(keyword = "environmental justice",
+                          documenttype = "Public Submission",
+                          lastModifiedDate =  "2020-05-15 18:39:57")
+d$lastModifiedDate
+d$highlightedContent
 
 # d %<>% filter(
 #   !is.na(commentText)|
