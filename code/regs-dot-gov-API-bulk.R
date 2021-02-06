@@ -68,21 +68,31 @@ ejPR <- map_dfr(.x = c(1:10),
                 documenttype = "PR",
                 keyword = "environmental justice")
 
+ejPR %>%
+  filter(!is.na(postedDate)) %>%
+  arrange(postedDate) %>%
+  head() %>%
+  select(postedDate, page)
+
 # # up to 100k
-# ejPR100 <- map_dfr(.x = c(11:100),
-#                  .f = search_keyword_page,
-#                  documenttype = "FR",
-#                  keyword = "environmental justice")
+ejPR100 <- map_dfr(.x = c(11:100),
+                 .f = search_keyword_page,
+                 documenttype = "PR",
+                 keyword = "environmental justice")
 
 # # inspect
-# ejPR100 %>% 
-#   filter(!is.na(postedDate)) %>% 
-#   tail() %>% 
-#   .$postedDate
-# 
-# ejPR %<>% full_join(ejPR100)
+ejPR100 %>%
+  filter(!is.na(postedDate)) %>%
+  arrange(postedDate) %>%
+  head() %>%
+  select(postedDate, page)
+#
+ejPR %<>% full_join(ejPR100)
 
-save(ejPR, file = here::here("data", "ejPR.Rdata"))
+save(ejPR, file = here::here("data", 
+                             str_c("ejPR", 
+                                   Sys.Date(), 
+                                   ".Rdata")))
 
 ##################################
 # EJ Rules 
@@ -93,20 +103,34 @@ ejFR <- map_dfr(.x = c(1:10),
                       keyword = "environmental justice")
 
 # up to 100k
-ejFR100 <- map_dfr(.x = c(11:100),
+ejFR2 <- map_dfr(.x = c(60:100),
                  .f = search_keyword_page,
                  documenttype = "FR",
-                 keyword = "environmental justice")
+                 keyword = "Environmental Justice")
 
 # inspect
-ejFR100 %>% 
+ejFR2 %>% 
   filter(!is.na(postedDate)) %>% 
-  tail() %>% 
-  .$postedDate
+  arrange(postedDate) %>%
+  head() %>%
+  select(postedDate, page)
 
-ejFR %<>% full_join(ejFR100)
+ejFR2 %>% count(documentType)
 
-save(ejFR, file = here::here("data", "ejFR.Rdata"))
+ejFR %>% 
+  mutate(year = str_sub(postedDate, 1,4) %>% as.numeric()) %>% 
+  ggplot() + 
+  aes(x = year, fill = documentType) +
+  geom_bar()
+
+ejFR %<>% full_join(ejFR2)
+
+ejFR %>% filter(is.na(postedDate)) %>% count(docketId, message, sort= T)
+
+save(ejFR, file = here::here("data", 
+                             str_c("ejFR", 
+                                   Sys.Date(), 
+                                   ".Rdata")))
 
 
 
@@ -128,12 +152,24 @@ ej100 <- map_dfr(.x = c(11:100),
 # inspect
 ej100 %>% 
   filter(!is.na(postedDate)) %>% 
-  tail() %>% 
-  .$postedDate
+  arrange(postedDate) %>%
+  head() %>%
+  select(postedDate, page, documentId)
+
+ej100 %>% 
+  filter(!is.na(postedDate)) %>% 
+  mutate(year = str_sub(postedDate, 1,4) %>% as.numeric()) %>% 
+  ggplot() + 
+  aes(x = year, fill = documentType) +
+  geom_bar()
 
 ejcomments %<>% full_join(ej100)
 
-save(ejcomments, file = here::here("data", "ejcomments.Rdata"))
+save(ejcomments, 
+     file = here::here("data", 
+                       str_c("ejcomments", 
+                             Sys.Date(), 
+                             ".Rdata")))
 
 # # up to .5m if needed (but as of 2020, n = 41,591k)
 # ej500 <- map_dfr(.x = c(101:500),

@@ -52,6 +52,8 @@ kablebox <- . %>%
   scroll_box(height = "400px")
 ```
 
+# Data
+
 Replication data are available in SQL and Rdata at https://github.com/judgelord/rulemaking 
 
 ```{r}
@@ -69,37 +71,51 @@ SELECT * FROM rules
 ```
 
 
-```{r ej-rules, fig.height=11}
+```{r data, fig.height=11, cache=TRUE}
 load(here::here("data", "ejPR.Rdata"))
 load(here::here("data", "ejFR.Rdata"))
 load(here::here("data", "ejcomments.Rdata"))
 load(here::here("data", "rules_metadata.Rdata"))
 # alternatively 
-#regs_dot_gov_actions <- dbGetQuery(con, "SELECT * FROM rules")
+#rules <- dbGetQuery(con, "SELECT * FROM rules")
+
+ejPR %<>% 
+  mutate(summary = str_replace(summary, regex("<endeca_term>environmental</endeca_term> <endeca_term>justice</endeca_term>", ignore_case = T), "Environmental Justice")) %>% 
+  filter(str_detect(summary,"Environmental Justice"))
 
 
 
+ejFR %<>% 
+  mutate(summary = str_replace(summary, regex("<endeca_term>environmental</endeca_term> <endeca_term>justice</endeca_term>", ignore_case = T), "Environmental Justice")) %>% 
+  filter(str_detect(summary,"Environmental Justice"))
 
-# add vars for ej_comments + unique ej comments
 ejcomments %<>% 
-  group_by(docket_id) %>% 
-  mutate(ej_comments = sum(number_of_comments_received),
-         ej_comments_unique = n() ) 
+  mutate(summary = str_replace(summary, regex("<endeca_term>environmental</endeca_term> <endeca_term>justice</endeca_term>", ignore_case = T), "Environmental Justice")) %>% 
+  filter(str_detect(summary,"Environmental Justice")|str_detect(comment_text, regex("environmental justice", ignore_case = T)))
+
+rules %<>% filter(document_type %in% c("Proposed Rule", "Rule"),
+                    # drop rules before clinton
+                  !is.na(posted_date),
+                  posted_date > as.Date("1993-01-20"),
+                  docket_type == "Rulemaking" ) 
 
 
 # make summary vars in main data
 rules %<>% 
   # add ej comments and ej unique comment counts
   left_join(ejcomments %>% 
+              group_by(docket_id) %>% 
               summarise(ej_comments = sum(number_of_comments_received) ) ) %>%
   left_join(ejcomments %>% 
               count(docket_id, name = "ej_comments_unique") ) %>% 
   mutate(ej_comments = replace_na(ej_comments, 0),
-         ej_comments_unique = replace_na(ej_comments_unique, 0)) %>% 
-  # drop rules before clinton
-  filter(!is.na(posted_date),
-         posted_date > as.Date("1993-01-20") ) %>% 
-         # indicators for ej in various docs
+         ej_comments_unique = replace_na(ej_comments_unique, 0)) 
+
+# indicators for ej in various docket-level variables
+rules %<>% 
+  group_by(docket_id) %>% 
+  mutate(comments = sum(number_of_comments_received)) %>% 
+  ungroup() %>% 
   mutate(ej_pr = docket_id %in% ejPR$docket_id,
          ej_comment = docket_id %in% ejcomments$docket_id,
          ej_fr = docket_id %in% ejFR$docket_id,
@@ -110,9 +126,22 @@ rules %<>%
          year = str_sub(posted_date, 1,4),
          Year = str_sub(posted_date, 3,4),
          Year = str_c("`", Year),
-         comments = number_of_comments_received,
          agency = agency_acronym
-         ) %>% select(docket_id, docket_title, ej_comments, ej_comments_unique, ej_pr, ej_comment, ej_fr, president, year, posted_date, comments, agency, document_type, number_of_comments_received) %>% 
+         ) 
+
+rules %>% select(docket_id, 
+                 docket_title, 
+                 ej_comments, 
+                 ej_comments_unique, 
+                 ej_pr, 
+                 ej_comment, 
+                 ej_fr, 
+                 president, year, 
+                 comments, 
+                 agency, 
+                 document_type,
+                 year,
+                 Year) %>%
   distinct()
 
 # document type over time
@@ -121,14 +150,14 @@ rules %>%
   aes(x = year, fill = document_type) +
   geom_bar()
 
-
-
-# share of ej rules
+# document type over time
 rules %>% 
   ggplot() + 
-  aes(y = agency, fill = ej_fr) +
+  aes(x = year, fill = ej_fr) +
   geom_bar()
-  
+
+
+
 # filter to agencies that published at least one ej rule 
 rules %<>% 
   group_by(agency) %>% 
@@ -138,17 +167,19 @@ rules %<>%
   ungroup() %>% 
   filter(agency_ej_rules > 0 | agency_ej_nprms > 0)
 
-# agencies that published at least one ej rule
 rules %>% 
-   ggplot() + 
-  aes(y = agency, fill = ej_fr) +
+  ggplot() + 
+  aes(x = year, fill = ej_fr) +
+  facet_wrap("agency", scales = "free") +
   geom_bar()
+
 
 # agencies that published at least 100 rules with ej comments
 rules %>% 
   filter(agency_ej_comments > 100) %>% 
-   ggplot() + 
-  aes(y = agency, fill = ej_fr) +
+  ggplot() + 
+  aes(x = year, fill = ej_fr) +
+  facet_wrap("agency", scales = "free") +
   geom_bar()
 
 
@@ -454,8 +485,9 @@ A more slective subset: Agencies that have over 100 comments on proposed rules t
 # slightly more selective, requiring 100 comments
 top <- ejFR_PR %>% 
   group_by(agency) %>% 
-  filter(sum(comments) > 100,
-         agency_ej_comments > 100) %>% 
+  filter(sum(comments) > 10,
+         agency_ej_comments > 10) %>% 
+  count(agency, agency_ej_comments)  %>% 
     ungroup() %>% 
     .$agency %>% 
     unique()
@@ -481,4 +513,49 @@ predicted %>%
 ```
 
 
+### Example dockets
+```{r}
+
+top_dockets <- ejFR_PR %>%
+  filter(agency %in% c(top, "HUD", "FRA", "DHS", "DOJ", "ED", "DOS", "BIA", "USCBP", "OSHA", "RUS" ),
+         ej_fr, # ej added 
+         ej_comment) %>% # with ej comments  
+  select(docket_id, docket_title) %>% distinct() %>% pull(docket_id)
+
+rules %>% filter(docket_id %in% top_dockets) %>% select(docket_id, docket_title, document_type, comments, ej_comments) %>% arrange(docket_id) %>% kablebox()
+```
+
+### Example comments
+
+Excerpts from comments mentioning "environmental justice" on proposed rules that did not address environmental justice: 
+```{r}
+ejcomments %>% 
+  filter(docket_id %in% ejFR_PR$docket_id) %>% 
+  filter(str_detect(summary, "Environmental Justice")|str_detect(str_to_lower(comment_text), "environmental justice")) %>% 
+  mutate(comment_text = comment_text %>%  
+           str_extract(regex(".*environmental justice", ignore.case = T) ) ) %>% 
+  mutate(summary = coalesce(summary, comment_text) %>% str_sub(1,1000) ) %>% 
+  select(docket_id, summary) %>% kablebox()
+
+ejFR %>% 
+  filter(docket_id %in% ejFR_PR$docket_id) %>% 
+  select(docket_id, docket_title, summary) %>% kablebox()
+```
+
 # Proposed rules that did address EJ
+
+
+
+# Proposed rules that did not address EJ
+```{r}
+# Final Rules that where ej was mentioned in the NPRM
+ejFR_PR <- allFR %>% 
+  filter(docket_id %in% allPR$docket_id,
+         ej_pr)
+```
+
+
+
+
+
+

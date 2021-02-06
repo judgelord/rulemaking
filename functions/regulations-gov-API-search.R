@@ -199,7 +199,7 @@ search.keyword <- function(path) {
 
 # create path function for keyword searches, comment out things like agency or status
 search.keywords <- function(documenttype, keywords, n) {
-  keywords <- gsub(" ", "%2B", keywords)
+  keywords <- str_c("&22", keywords, "&22") %>% str_replace(" ", "%2B")
   documenttype <- gsub(", ", "%2B", documenttype)
   
   regs.gov.path <- function(documenttype, search){
@@ -252,8 +252,8 @@ return(d)
 
 search_keyword_page <- function(page, documenttype, keyword){
   
-  # format
-search <- gsub(" ", "%2B", keyword)
+  # format (put in quotes and replace space with unicode)
+search <- str_c("&22", keyword, "&22") %>% str_replace(" ", "%2B")
 documenttype <- gsub(", ", "%2B", documenttype)
 rpp <- 1000
 page <- page*rpp
@@ -278,7 +278,63 @@ path <- paste0("/regulations/v3/documents?api_key=", api_key,
   return(d)
 }
 
+# api v4
+# https://api.regulations.gov/v4/comments?filter[searchTerm]=water&api_key=DEMO_KEY
+# https://api.regulations.gov/v4/comments?filter[commentOnId]=09000064846eebaf
+# &page[size]=250
+# &page[number]=N
+# &sort=lastModifiedDate,documentId
+# &api_key=DEMO_KEY
 
+# https://api.regulations.gov/v4/comments?filter[commentOnId]=09000064846eebaf
+# &filter[lastModifiedDate][ge]=2020-08-10 11:58:52
+# &page[size]=250
+# &page[number]=N
+# &sort=lastModifiedDate,documentId
+# &api_key=DEMO_KEY
+
+
+search_keyword_page4 <- function(page, documenttype, keyword, lastModifiedDate = Sys.time() %>% str_remove(" [A-Z]")){
+  
+  # format (put in quotes and replace space with unicode)
+  search <- keword %>% #str_c("&%22", keyword, "%22") %>% 
+    str_replace(" ", "%2B")
+  
+
+  
+  path <- paste0("/v4/documents?",
+                 "page[number]=", page,
+                 "&page[size]=25", 
+                 #"&a=", agency,
+                 #"&sort=", order, 
+                 "&sort=", sortby, 
+                 "&filter[searchTerm]=", search,
+                 "&filter[lastModifiedDate][ge]=", lastModifiedDate,
+                 "&api_key=", api_key)
+  
+  # this works:
+  # raw.result <- GET(url = "https://api.regulations.gov", 
+  # path = "/v4/comments?filter[searchTerm]=environmental%2Bjustice&api_key=aynn8SLo5zdb2V0wqBKQwHQ5FmCLd2cIpWStzrZ0")
+  
+  raw.result <- GET(url = "https://api.regulations.gov", path = path)
+  
+  content <- fromJSON(rawToChar(raw.result$content))
+  
+  d <- content$data$attributes %>%  as_tibble()  %>%
+    mutate(id = content$data$id,
+           type = content$data$type,
+           links = content$data$links$self,
+      page = page)
+  
+  if(content$meta$lastPage){
+    lastModifiedDate <-- content$data$attributes$lastModifiedDate %>% tail(1)
+    #lastModifiedDate <-- Sys.time() %>% str_remove(" [A-Z]")
+  } 
+    
+  }
+  
+  return(d)
+}
 
 
 # d %<>% filter(
