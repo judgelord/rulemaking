@@ -179,7 +179,7 @@ rules %<>% select(docket_id,
 rules %>% 
   ggplot() + 
   aes(x = year, fill = document_type) +
-  geom_bar(alpha = .7) + 
+  geom_bar(alpha = .7, position = "dodge") + 
   labs(y  = "Number of Documents",
        x = "",
        fill = "") + 
@@ -193,11 +193,11 @@ rules %>%
 rules %>% 
   ggplot() + 
   aes(x = year, fill = ej_fr) +
-  geom_bar(alpha = .7) + 
+  geom_bar(alpha = .7, position = "dodge") + 
   labs(y  = "Final Rules",
        x = "Year",
        fill = "EJ Addressed\nin Final Rule") + 
-  theme(axis.text.x = element_text(angle = 45))
+  theme(axis.text.x = element_text(angle = 45, vjust = .5))
 
 
 
@@ -211,7 +211,7 @@ rules %<>%
   filter(agency_ej_rules > 0 | agency_ej_nprms > 0)
 ```
 
-# Agencies that pubished at least 1 rule addresssing EJ
+### Agencies that pubished at least 1 rule addressing EJ
 ```{r ej-data-agencies}
 rules %>% 
   ggplot() + 
@@ -225,7 +225,7 @@ rules %>%
        y = "")
 ```
 
-#### Agencies that published at least 100 rules with ej comments
+### Agencies that published at least 100 rules with ej comments
 
 ```{r ej-data-agencies100}
 breaks <-  c("`16", "`12",  "`08",  "`04", "`00", "`96", "`20")
@@ -265,7 +265,7 @@ allPR %>%
   count(Year, ej_pr, president) %>%
   ggplot() + 
   aes(x = Year, y = n, fill = ej_pr) + 
-  geom_col(alpha = .7) + 
+  geom_col(alpha = .7, position = "dodge") + 
   facet_grid(. ~ president, scales = "free") + 
   labs(x = "Year",
        y = "Number of Proposed Rules",
@@ -276,12 +276,12 @@ allPR %>%
 
 ## Final Rules by President
 
-```{r ej_fr-president, fig.height=4}
+```{r ej_fr-president, fig.height=4.5}
 allFR %>% 
   count(Year, ej_fr, direct, president) %>%
   ggplot() + 
   aes(x = Year, y = n, fill = ej_fr) + 
-  geom_col(alpha = .7) + 
+  geom_col(alpha = .7, position = "dodge") + 
   facet_grid(direct ~ president, scales = "free") + 
   labs(x = "Year",
        y = "Number of Final Rules",
@@ -329,7 +329,7 @@ allFR %>%
 
 ---
 
-# Proposed rules that did not address EJ
+# Proposed rules that **did not** address EJ
 
 ```{r}
 # Final Rules that where ej was not mentioned in the NPRM
@@ -340,7 +340,7 @@ ejFR_PR <- allFR %>%
 
 Percent where the final rule did address EJ
 
-```{r ej-PR-winrate, fig.width=5.5, fig.height=2}
+```{r ej-PR-winrate, fig.width=6, fig.height=2}
 winrate <- ejFR_PR %>% 
   count(ej_comment, ej_fr) %>% 
   group_by(ej_comment) %>% #FIXME make nice table with percents
@@ -363,9 +363,11 @@ ejFR_PR %>%
   geom_col(alpha = .7) + 
   geom_text(aes(y = mean)) + 
   facet_wrap("EJ_comment", scales = "free") + 
-  labs(fill = "EJ in Final Rule") + 
+  labs(fill = "EJ in Final Rule",
+       y = "Proposed Rules") + 
   theme_void() +
   theme(axis.text.y = element_text(),
+        axis.title.y = element_text(angle = 90),
         panel.grid.major.y = element_line(color = "grey"))
 ```
 
@@ -418,7 +420,7 @@ ejFR_PR %>%
 ### Predicted Probabilities by President
 
 
-With the median number of comments on Proposed Rules that did not address EJ, `r median(ejFR_PR$comments)`
+With the median number of comments on Proposed Rules that did not address EJ, `r median(ejFR_PR$comments)` comments:
 
 ```{r ej-m-PR-president-median, fig.width=5, fig.height=3.5}
 # A data frame of values at which to estimate probabilities:
@@ -457,12 +459,12 @@ predicted %>%
   theme(axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
         panel.grid.major.y = element_blank())+
-  ylim(0,1)
+  ylim(0,1) 
 ```
 
 ---
 
-With the **mean** number of comments on Proposed Rules that did not address EJ, `r mean(ejFR_PR$comments)`
+With the **mean** number of comments on Proposed Rules that did not address EJ, `r mean(ejFR_PR$comments) %>% round()` comments:
 
 ```{r ej-m-PR-president-mean, fig.width=5, fig.height=3.5}
 # A data frame of values at which to estimate probabilities:
@@ -495,7 +497,8 @@ predicted %>%
   facet_wrap("president", ncol = 1) +
   labs(y = 'Probability that "Environmental Justice"\nis Added to Final Rule', 
        x = "",
-       color =  '"Environmental Justice"\nRaised by Comments', shape =  '"Environmental Justice"\nRaised by Comments',
+       color =  '"Environmental Justice"\nRaised by Comments', 
+       shape =  '"Environmental Justice"\nRaised by Comments',
        title = "Predicted change in Final Rules") + 
   theme(axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
@@ -510,7 +513,7 @@ predicted %>%
 ```{r ej-m-PR-comments, fig.width=5, fig.height=2.5}
 # A data frame of values at which to estimate probabilities:
 values <- ejFR_PR %>% 
-  expand(comments =  c(0, 1, 10,100,1000,10000),
+  expand(comments =  c(1, 10,100,1000,10000),
          ej_comment,
          ej_comments_unique = median(ej_comments_unique) %>% round(),
          president = "Obama")
@@ -528,7 +531,10 @@ predicted <- augment(m_PR,
 predicted %>%
   filter(comments<10001) %>% 
   ggplot() + 
-  aes(x = factor(comments), y = .fitted, shape = EJ_comment,color = EJ_comment) + 
+  aes(x = factor(comments), 
+      y = .fitted, 
+      shape = EJ_comment,
+      color = EJ_comment) + 
   geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
                   ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
   geom_hline(yintercept = 0, linetype = 2) +
@@ -536,7 +542,8 @@ predicted %>%
   #facet_wrap("ej_comment", ncol = 1) +
   labs(y = 'Probability that "Environmental Justice"\nis Added to Final Rule', 
        x = "Number of Comments",
-       color =  '"Environmental Justice"\nRaised in Comments',
+       color = '"Environmental Justice"\nRaised by Comments',
+       shape = '"Environmental Justice"\nRaised by Comments',
        title = "Predicted Change in Final Rules")  
 ```
 
@@ -557,7 +564,9 @@ winrate <- ejFR_PR %>%
   ungroup() %>% 
   arrange(agency)
 
-winrate %>% kablebox()
+winrate %>% filter(ej_comment == F) %>% kablebox()
+
+winrate %>% filter(ej_comment == T) %>% kablebox()
 
 # winrate 
 ejFR_PR %>% count(agency, ej_comment, ej_fr)  %>% 
@@ -707,22 +716,128 @@ predicted %>%
 
 ## Example dockets
 
+Rules where the proposed rule did not address EJ but comments did an the Final Rule did.
+
+
+EPA-R09-OAR-2010-0120	Revisions to California State Implementation Plans: Imperial County Air Pollution Control District:
+>"EPA agrees it is important to consider environmental justice in our actions and we briefly addressed environmental justice principles in our proposal TSD. (171) ..." 
+
+BUT "Environmental Justice" does not appear in the PR, and THERE IS NO OTHER TECHNICAL SUPPORTING DOCUMENT ON REGULATIONS.GOV. FOOTNOTE 171 REFRENCES THE PROPOSED RULE.
+
+> This action will not have disproportionately high and adverse human health or environmental effects on minority, low-income or Tribal populations because it increases the level of environmental protection for all affected populations without having any disproportionately high and adverse human health or environmental effects on any population, including any minority or low-income population. Specially, EPA's limited approval and limited disapproval of Regulation VIII would have the affect of strengthening environmental requirements throughout ICAPCD, and would not relax environmental requirements in any area. Thus it promotes environmental justice by increasing the level of human health and environmental protection for an area where, **as the commenters note, relatively large portions of the population are low income and/or minority**."
+
+---
+
+EPA-R05-OAR-2007-0587	Final Approval of the Wisconsin NOx RACT Rules (NR 428)	
+> "The commenter also states that multi facility averaging threatens environmental justice."
+
+---
+
+EPA-R05-OAR-2010-0034	Final Approval of PM 2.5 Clean Data Determination for Saint Louis: 
+> "significant source of PM2.5 emissions in the Saint Louis area, and that the plant's operations raise environmental justice concerns. EPA reviewed air quality data throughout the Saint Louis area, including environmental justice areas."
+
+--
+
+
+EPA-HQ-OAR-2003-0048	National Emission Standards for Hazardous Air Pollutants: Plywood and Composite Wood Products	
+> The rule also does not involve special consideration of environmental justice related issues as required by E.O. 12898."
+
+---
+
+EPA-HQ-OAR-2004-0094	National Emission Standards for Hazardous Air Pollutants: General Provisions	Impacts
+> Comment: One commenter stated that EPA failed to comply with Executive Order 12898 on Environmental Justice. The commenter asserts that the amendments will adversely affect minority and low income communities around the sources.
+
+> Response: Executive Order 12898 establishes a Federal policy for incorporating environmental justice into Federal agency actions by directing agencies to identify and address, as appropriate, disproportionately high and adverse human health or environmental effects of their programs, policies and activities on minority and low-income populations. The EPA has considered the impact of the proposal on minority and low income populations. **We do not believe that these amendments will have any adverse effects** on emissions during periods of SSM. Therefore, there should not be any adverse impact **on minority and low income populations** as a result of these amendments. The amendments do not affect the underlying requirement to minimize emissions during SSM events. **Owners or operators are still required to develop SSM plans to address emissions** during these periods. They are required to report immediately when the plans are not followed and semiannually when the plans are followed and emission limitations are exceeded (or could have been in the case of malfunctions) and describe steps taken to minimize emissions. **The only difference from current regulations is that the source is not required to follow the plan**, especially when the situation may call for other action or when safety considerations override following the plan as written.
+
+---
+
+Enhancements to Emergency Preparedness Regulations	NRC-2008-0122
+
+> The NRC requested public comments on any environmental justice considerations that may be related to this rule and no comments were received.
+
+BUT, a [comment by Richard Webster & Manna Jo Greene on Behalf of Hudson River Sloop Clearwater, Inc.](https://beta.regulations.gov/comment/NRC-2008-0122-0088) did address EJ:
+
+> The rules and guidance are based on a fantasy world in which the terrain around nuclear power stations is perfectly flat, radiation plumes do not move up and down, the wind  blows at the same speed in a constant direction throughout an accident, and most people follow the instructions they are given about the need to evacuate.
+
+> Need for Site-Specific Analysis of Transport Dependent Populations:
+**The present guidance suggests that because 50% of residents would offer rides to those in need, approximately 50% of the transit dependent population in the EPZ would rideshare.** Criteria for Development of ETE Studies (April23, 2009) at 13. **This assumption fails to account for the likely separation of transit dependent environmental justice populations from more affluent populations. Furthermore, it takes no account of attitudes towards race and potential reluctance of whites to offer rides to African- Americans.** Instead of presuming that 50% of the transit dependent population will ride- share, the presumption should be that only a small percentage will rideshare unless the licensee can show that there are no geographical concentrations of transit dependent populations and that there is no racial or sociological bias with regard to ridesharing.
+
+> ...people would be foolish to follow the directions of first responders if they are based on totally unrealistic modeling. Indeed, it is doubtful whether people would follow instructions even if they were based on the best predictions possible. **The experiences during the hurricane Katrina also underline that it is even more doubtful whether the response planned for environmental justice communities would actually materialize.**
+
+---
+
+Atlantic Highly Migratory Species: Atlantic Shark Management Measures; Final Amendment 5b	NOAA-NMFS-2013-0070	
+
+> We received a total of 76 individual written comments on the proposed rule from fishermen, states, and other interested parties during the public comment period, including one comment from EarthJustice that included signatures from 19,716 individuals and another comment from Oceana that included signatures from 13,144 individuals.
+
+>The EPA submitted a comment recommending additional environmental justice information...and include in the EIS whether the proposed alternatives have any potential for disproportionate adverse impacts to minority and low-income populations. The EPA also recommended that the EIS include the approaches used to foster public participation by these populations and describe outreach conducted to all other communities that could be affected by the project, because rural communities may be among the most vulnerable to health risks associated with the project.
+
+> NMFS appreciates these recommendations from the EPA and has added additional information in the environmental justice discussion in Section 9.4 of the FEIS.
+
+Between the time of the proposed rule in 2013 and the final Rule and Final Environmental Impact Statement (FEIS) in 2017, 
+
+> Executive Order 12898 requires agencies to identify and address disproportionately high and adverse environmental effects of its regulations on minority and low-income populations. To determine whether environmental justice concerns exist, the demographics of the affected area should be examined to ascertain whether minority populations and low-income populations are present. If so, a determination must be made as to whether implementation of the alternatives may cause disproportionately high and adverse human health or environmental effects on these populations.
+Community profile information are available in the 2006 Consolidated HMS FMP (Chapter 9), a recent report by MRAG Americas, and Jepson (2008) titled “Updated Profiles for HMS Dependent Fishing Communities” (Appendix E of Amendment 2 to the 2006 Consolidated HMS FMP), and in the **2015** HMS SAFE Report. The MRAG report updated community profiles presented in the 2006 Consolidated HMS FMP, and provided new social impacts assessments for HMS fishing communities along the Atlantic and Gulf of Mexico coasts. The 2011 and 2012 SAFE Reports (NMFS 2011 and NMFS 2012) include updated census data for all coastal Atlantic states, and some selected communities that are known centers of HMS fishing, processing or dealer activity. Demographic data indicate that coastal counties with fishing
+9-9
+communities are variable in terms of social indicators like income, employment, and race and ethnic composition.
+The preferred alternatives were selected to minimize ecological and economic impacts and provide for the sustained participation of fishing communities. The preferred alternatives would not have any effects on human health nor are they expected to have any disproportionate social or economic effects on minority and low-income communities.
+
+They also cited research published in the same year as the draft rule:
+>Jepson and Colburn (2013) developed social indicators of vulnerability and resilience for 25 communities in the U.S. southeast and northeast regions selected for having a greater than average number of HMS permits associated with them.
+
+---
+
+Fisheries of the Exclusive Economic Zone Off Alaska: Chinook Salmon Bycatch Management in Bering Sea Pollock Fishery	NOAA-NMFS-2010-0032
+
+>Comment 79: NOAA has the responsibility to modify the Council's recommendations to fulfill Federal obligations under ANILCA, ESA, Pacific Salmon Treaty, Environmental Justice, and Federal responsibility to tribal governments. NOAA should fulfill these obligations by not implementing Amendment 91 and insisting on the smaller bycatch rates proposed and supported by the most directly impacted communities.
+
+>Response: NMFS has complied with all applicable laws, Executive Orders, and international obligations in approving and implementing Amendment 91, as documented in the EIS and ROD (see ADDRESSES).
+
+> Comment 96: Subsistence users of the Yukon River, the vast majority of whom are Alaska Native and have the lowest per capita income in the United States, are clearly bearing a disproportionately high adverse environmental impact under Amendment 91. Under the concept of Environmental Justice, why does Amendment 91 result in tribal subsistence users bearing virtually all of the consequences resulting from past, present, and future wasteful bycatch by the pollock fleet? This violates all measures of fairness and fails to satisfy any consideration of environmental justice. The pollock fleet can best afford to make sacrifices in order to accomplish meaningful reductions in Chinook salmon bycatch.
+
+> Response: NMFS acknowledges the comment. The EIS prepared for this action analyzes the environmental justice impacts of this action (see ADDRESSES).
+
+---
+
+EPA-R05-OAR-2020-0055
+Removal of Ohio Nuisance Provision (3745-15-07) final rule	
+
+>OAC 3745-15-07 [Ohio State Law] prohibits the “emission or escape into the open air from any source or sources whatsoever, of smoke, ashes, dust, dirt, grime, acids, fumes, gases, vapors, odors, or any other substances or combinations of substances, in such manner or in such amounts as to endanger the health, safety or welfare of the public, or cause unreasonable injury or damage to property.”
+
+> On March 23, 2020, EPA proposed, under the authority of section 110(k)(6) of the CAA, to remove Ohio's nuisance rule from the Ohio State Implementation Plan (SIP) because it does not have a reasonable connection to the attainment and maintenance of the national ambient air quality standard (NAAQS) and EPA erred in approving it as part of the Ohio SIP.
+
+> Comment 10: Commenters state that the NPRM would harm already vulnerable Ohioans by eliminating an important **environmental justice** tool. Commenters also raise concerns with the potential impact on other sensitive populations such as children, the elderly, and individuals with various health issues including respiratory illnesses.
+
+> Response: The purpose of this rulemaking action is to remove OAC 3745-15-07 from the Ohio SIP because it is not related to the implementation, maintenance, and enforcement of the NAAQS. This rulemaking action does not invalidate the Ohio law or affect its applicability to Ohio sources. **Facilities located in Ohio are still subject to the state nuisance rule.** EPA supports programs and activities that promote enforcement of health and environmental statutes in areas with minority populations and low-income populations and the protection of children, the elderly, and other vulnerable populations.
+
+
+
 ```{r}
 
 top_dockets <- ejFR_PR %>%
   filter(agency %in% c(top, "HUD", "FRA", "DHS", "DOJ", "ED", "DOS", "BIA", "USCBP", "OSHA", "RUS" ),
          ej_fr, # ej added 
          ej_comment) %>% # with ej comments  
-  select(docket_id, docket_title) %>% distinct() %>% pull(docket_id)
+  select(docket_id, docket_title) %>% 
+  distinct() %>% 
+  pull(docket_id)
 
-rules %>% filter(docket_id %in% top_dockets) %>% select(docket_id, docket_title, comments, ej_comments_unique) %>% distinct() %>%  arrange(docket_id) %>% kablebox()
+rules %>% 
+  filter(docket_id %in% top_dockets) %>% 
+  distinct(docket_id, docket_title, comments, ej_comments_unique) %>%  
+  distinct() %>% 
+  arrange(rev(docket_id)) %>% 
+  kablebox()
 
 
 
 # final rule text where the pr did not address ej
 ejFR %>% 
-  filter(docket_id %in% ejFR_PR$docket_id) %>% 
-  distinct(docket_id, title, summary) %>% kablebox()
+  filter(docket_id %in% ejFR_PR$docket_id,
+         docket_id %in% ejcomments$docket_id) %>% # EJ not in PR
+  distinct(docket_id, title, summary) %>% 
+  arrange(desc(docket_id)) %>% 
+  kablebox()
 ```
 
 ## Example comments
@@ -737,7 +852,7 @@ ejcomments %>%
 ---
 
 
-# Proposed rules that did address EJ
+# Proposed rules that **did** address EJ
 
 ```{r ej-data-ejPR}
 # Final Rules that where ej was mentioned in the NPRM
@@ -786,7 +901,7 @@ ejFRejPR %<>% filter(!is.na(change)) #TODO investigate NAs
 
 Percent where the final rule did change how it addressed EJ
 
-```{r ejejPR-winrate, fig.width=5, fig.height=2}
+```{r ejejPR-winrate, fig.width=6, fig.height=2}
 winrate <- ejFRejPR %>% 
   count(ej_comment, change) %>% 
   group_by(ej_comment) %>% #FIXME make nice table with percents
@@ -809,9 +924,11 @@ ejFRejPR %>%
   geom_col(alpha = .7) + 
   geom_text(aes(y = mean)) + 
   facet_wrap("EJ_comment", scales = "free") + 
-  labs(fill = "EJ section changed\nin Final Rule") + 
+  labs(fill = "EJ section changed\nin Final Rule",
+       y = "Proposed Rules") + 
   theme_void() +
   theme(axis.text.y = element_text(),
+        axis.title.y = element_text(angle = 90),
         panel.grid.major.y = element_line(color = "grey"))
 ```
 
@@ -866,7 +983,7 @@ ejFRejPR %>%
 
 With the median number of comments, `r median(ejFRejPR$comments)`
 
-```{r ej-mejPR-president-median,fig.width=6.5, fig.height=4}
+```{r ej-mejPR-president-median,fig.width=6.5, fig.height=3.5}
 # A data frame of values at which to estimate probabilities:
 values <- ejFRejPR %>% 
   expand(ej_comment,
@@ -954,7 +1071,7 @@ Change in EJ section of final rule by number of comments
 
 Percent of rules that change when there are more or less than 10 comments.
 
-```{r ejejPR-winrate-comments, fig.height=2, fig.width=5.5}
+```{r ejejPR-winrate-comments, fig.height=1.5, fig.width=5.5}
 winrate <- ejFRejPR %>% 
   mutate(comments10 = comments > 9) %>% 
   count(change, comments10) %>% 
@@ -983,12 +1100,14 @@ ejFRejPR %>%
        y = "")
 ```
 
+### Predicted Probabilities by Number of Comments
 
-Estimates across numbers of comments
+Estimates across numbers of comments recieved.
+
 ```{r ej-mejPR-comments, fig.height = 3, fig.width=6.5}
 # A data frame of values at which to estimate probabilities:
 values <- ejFRejPR %>% 
-  expand(comments = c(0,1,10,100,1000,10000) ,
+  expand(comments = c(1,10,100,1000,10000) ,
          ej_comment,
          ej_comments_unique = median(ej_comments_unique),
          president = "Obama")
@@ -1013,7 +1132,8 @@ predicted %>%
   #facet_wrap("ej_comment", ncol = 1) +
   labs(y = 'Probability of Change in How a Rule Addresses "Environmental Justice"', 
        x = "Number of Comments",
-       color =  '"Environmental Justice"\nRaised in Comments',
+       color =  '"Environmental Justice"\nRaised by Comments',
+       shape =  '"Environmental Justice"\nRaised by Comments',
        title = "Predicted change in Final Rules")  +
   ylim(0,1)
 ```
@@ -1181,11 +1301,14 @@ predicted %>%
 ```
 
 ## Example dockets
+
+Rules where the proposed rule did address EJ, the final addressed EJ, and Comments addressed EJ:
+
 ```{r}
 
 top_dockets <- ejFRejPR %>%
   filter(agency %in% c(top, "HUD", "FRA", "DHS", "DOJ", "ED", "DOS", "BIA", "USCBP", "OSHA", "RUS" ),
-         ej_fr, # ej added 
+         ej_fr, # ej in final
          ej_comment) %>% # with ej comments  
   select(docket_id, docket_title) %>% distinct() %>% pull(docket_id)
 
@@ -1194,9 +1317,11 @@ rules %>% filter(docket_id %in% top_dockets) %>% select(docket_id, docket_title,
 
 
 # final rule text where the pr did not address ej
-ejFR %>% 
-  filter(docket_id %in% ejFRejPR$docket_id) %>% 
-  select(docket_id, title, summary) %>% kablebox()
+ejFR %>%
+  filter(agency_id %in% c(top, "HUD", "FRA", "DHS", "DOJ", "ED", "DOS", "BIA", "USCBP", "OSHA", "RUS" )) %>%
+  filter(docket_id %in% ejFRejPR$docket_id, # ej_added
+         docket_id %in% ejcomments$docket_id) %>%  # ejcomments
+  distinct(docket_id, title, summary) %>% kablebox()
 ```
 
 ## Example comments
@@ -1206,8 +1331,15 @@ Excerpts from comments mentioning "environmental justice" on proposed rules that
 ```{r}
 ejcomments %>% 
   filter(docket_id %in% ejFRejPR$docket_id) %>% 
-  select(docket_id, title, summary) %>% kablebox()
+  distinct(docket_id, title, summary) %>% kablebox()
 ```
 
 ---
+
+# TODO
+
+- [ ] Classify responses to comment vs adding 12898 section (in most cases, they are adding a 12898 section)
+
+- [ ] Compare % in change in 12898 sections vs. rule text vs. response to comment
+
 
