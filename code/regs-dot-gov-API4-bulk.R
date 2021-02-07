@@ -189,7 +189,7 @@ ej2 %>%
 
 ej2 %>% 
   ggplot() + 
-  aes(x = postedDate, fill = documentType) +
+  aes(x = as.Date(postedDate), fill = documentType) +
   geom_bar()
 
 ejcomments %<>% full_join(ej2)
