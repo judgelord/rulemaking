@@ -93,7 +93,7 @@ custom_stop_words <- tibble(
   unnest_tokens(output = word, input = words) %>%
   distinct()
 
-agency_name <- c("consumer financial protection bureau")
+#agency_name <- c("consumer financial protection bureau")
 
 # get txt file names from a directory, here called “comment_text”
 comments <- tibble( path = list.files( here::here('comment_text', agency, docket), 
@@ -171,7 +171,7 @@ clean_comments <- . %>%
   str_replace_all("([[:punct:]])\\1+", "\\1") %>%
   str_squish() 
 
-read_comment <- . %>%
+read_comments <- . %>%
   read_lines() %>%
   clean_comments() 
 
@@ -250,7 +250,7 @@ summarizeText <- function(text, max_sentences, custom_stop_words, agency_name) {
 }
 
 
-summarize_comments <- function(text, n_sentences = 2, max_sentences = 100, custom_stop_words, agency_name) {
+summarize_comments <- function(text, n_sentences = 2, max_sentences = 100, custom_stop_words, agency_name = "") {
   
 
   # not cleaning data here either; should we? I think it is better to do it in the above function so it is done on one comment at a time.
@@ -397,4 +397,24 @@ d %>%
 
 # General Observations about Textrank
 
-Textrank tends to capture specifics instead of firm stances. The coded comment summaries tend to explain why an organization is in support or in opposition to a rule but will not usually spell out whether or not the comment supports or does not support. Generated summaries more accurately capture changes an organization would like to see to a rule instead of attitudes about the rule as a whole.
+Textrank tends to capture specifics instead of firm stances. The coded comment summaries tend to explain why an organization is in support or in opposition to a rule but will not usually spell out whether or not the comment supports or does not support. Generated summaries more accurately capture changes an organization would like to see to a rule instead of attitudes about the rule as a whole. The hand coded summary contains the ask and the generated summary contains and explanation of that ask.
+
+## Examples
+
+```{r obs}
+ d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  # join with coded data 
+  left_join(coded) %>% 
+  # a table comparing textrank vs hand coded
+  select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% 
+  filter(org_name == c("McIntyre & Lemon, PLLC", "The Independent Finance Association of Illinois", "Community Spirit Bank")) %>%
+  kablebox()
+
+```
+
+
+
+
+
+
