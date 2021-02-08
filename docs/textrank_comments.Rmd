@@ -17,7 +17,7 @@ editor_options:
 
 ```{r global.options, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, 
-                      cache = TRUE, 
+                      cache = FALSE, 
                       fig.width=8.5, 
                       split = T,
                       fig.align = 'center', 
@@ -132,6 +132,7 @@ clean_comments <- . %>%
   str_c(collapse = " ") %>% 
   # remove tab and line breaks
   str_replace_all("\\t|\\\n", " ") %>% 
+  str_replace_all("U\\.S\\.", "United States") %>% #Issues with cut of sentences due to period
   #str_remove_all(" ?(f|ht)(tp)(s?)(://)([A-z]*)[.|/](.*)") %>%
   #str_replace_all("\\s+", " ") %>% # removed by str_squish()
   #str_remove_all("^[0-9](?!\\.)") %>% #FIXME are not numbers removed below
@@ -140,6 +141,7 @@ clean_comments <- . %>%
   # remvove numbers and specials (keep only text and basic punctuation)
   str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;\\']", " ") %>% 
   str_remove_all("\\[|\\]") %>%
+  str_remove_all("§") %>%
   #str_remove_all("\\'") %>%
   str_squish() %>%
   #str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
@@ -232,6 +234,7 @@ summarizeText <- function(text, max_sentences, custom_stop_words, agency_name) {
     out <- textrank::textrank_sentences(data = sentences,
                                         terminology = words)
     
+    
     # arrange by textrank 
     out$sentences %<>% arrange(-textrank)
     
@@ -306,41 +309,46 @@ Function removes agency name from Textrank. This doesn't impact every summary bu
 
 # Summary changes with and without agency name:
 
+Typically this change swaps out one sentence in the summary. When agency name is removed this tends to run the risk of capturing headings. Each option has their pros and cons and each method produces some good summaries and some bad summaries.
+
+## Examples:
+
+
 ## Organization: Idaho Financial Services Association Inc
 
 With agency name:
 Ifsa and its members to express serious concerns about the consumer financial protection bureau s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Including optional voluntary protection products as part of the proposed rule s trigger treats voluntary protection products as percent profit to the lender and of zero value to the consumer.
 
 Without Agency:
-The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Ifsa and its members to express serious concerns about the s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. One option available to an ifsa member to avoid coming within the covered longer term loan status is to stop making optional voluntary protection products available to many of their borrowers since the borrowers choice to purchase any voluntary protection products may trigger the total cost of credit.
+The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Ifsa and its members to express serious concerns about the s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. Including optional voluntary protection products as part of the proposed rule s trigger treats voluntary protection products as percent profit to the lender and of zero value to the consumer.
 
 
 ## Organization: The Chippewa Cree Tribe of the Rocky Boys Reservation
 
 With Agency:
-Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis. Because of all these deficiencies, the bureau should rescind the proposed rule entirely.
+Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis. **Because of all these deficiencies, the bureau should rescind the proposed rule entirely.**
 
 Without Agency:
-Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. Jackson on behalf of the chippewa cree tribe of the rocky boy s reservation tribe I submit this public comment to express the tribe s views of the proposed regulations from the cfpb or bureau regarding small dollar lending proposed rule. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis.
+Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. **Jackson on behalf of the chippewa cree tribe of the rocky boy s reservation tribe I submit this public comment to express the tribe s views of the proposed regulations from the cfpb or bureau regarding small dollar lending proposed rule.** There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis.
 
 
 ## Organization: Ballard Spahr
 
 With Agency: 
-The bureau ' s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. The proposed rule was published by the consumer financial protection bureau cfpb or ' bureau in fed. I the proposed rule.
+The bureau ' s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. **The proposed rule was published by the consumer financial protection bureau cfpb or ' bureau in fed.** I the proposed rule.
 
 Without Agency:
-The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. I the proposed rule. Monica jackson october page executive summary consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to add ress other serious financia l needs.
+The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. I the proposed rule. **Monica jackson october page executive summary consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to add ress other serious financia l needs.**
 
 
 ## Organization: Katten Muchin Rosenman LLP
 
 With Agency:
-Jackson the comments set forth below are provided in connection with the payday, vehicle title and certain high cost installment loans proposal set forth by the consumer financial protection bureau cfpb or bureau in the federal register on july the proposal. Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb's statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. Dfa o.
+**Jackson the comments set forth below are provided in connection with the payday, vehicle title and certain high cost installment loans proposal set forth by the consumer financial protection bureau cfpb or bureau in the federal register on july the proposal.** Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb's statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. Dfa o.
 
 
 Without Agency:
-Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. See dfa l c l. Dfa I a.
+Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. **See dfa l c l. Dfa I a.**
 
 
 
@@ -387,4 +395,6 @@ d %>%
 ```
 
 
+# General Observations about Textrank
 
+Textrank tends to capture specifics instead of firm stances. The coded comment summaries tend to explain why an organization is in support or in opposition to a rule but will not usually spell out whether or not the comment supports or does not support. Generated summaries more accurately capture changes an organization would like to see to a rule instead of attitudes about the rule as a whole.
