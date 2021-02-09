@@ -357,49 +357,51 @@ summary {
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_c</span>(<span class="at">collapse =</span> <span class="st">&quot; &quot;</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove tab and line breaks</span></span>
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">t|</span><span class="sc">\\\n</span><span class="st">&quot;</span>, <span class="st">&quot; &quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_remove_all(&quot; ?(f|ht)(tp)(s?)(://)([A-z]*)[.|/](.*)&quot;) %&gt;%</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_replace_all(&quot;\\s+&quot;, &quot; &quot;) %&gt;% # removed by str_squish()</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_remove_all(&quot;^[0-9](?!\\.)&quot;) %&gt;% #FIXME are not numbers removed below</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add missing spaces after periods</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">.([A-z])&quot;</span>, <span class="st">&quot;. </span><span class="sc">\\</span><span class="st">1&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remvove numbers and specials (keep only text and basic punctuation)</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;[^[A-z] </span><span class="sc">\\</span><span class="st">.</span><span class="sc">\\</span><span class="st">,</span><span class="sc">\\</span><span class="st">?</span><span class="sc">\\</span><span class="st">!</span><span class="sc">\\</span><span class="st">;&amp;</span><span class="sc">\\</span><span class="st">;</span><span class="sc">\\</span><span class="st">&#39;]&quot;</span>, <span class="st">&quot; &quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_remove_all</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">[|</span><span class="sc">\\</span><span class="st">]&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_remove_all(&quot;\\&#39;&quot;) %&gt;%</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_squish</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_replace_all(&quot; (\\.|\\?|\\!||:|;)&quot;, &quot;\\1 &quot;) %&gt;%</span></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot; , &quot;</span>, <span class="st">&quot; &quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot; &quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># double commas  </span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_replace_all(&quot;\\, \\, &quot;, &quot;, &quot;) %&gt;% </span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># double periods </span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_replace_all(&quot;\\. \\. &quot;, &quot;. &quot;) %&gt;% </span></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># one character after a period </span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">. </span><span class="sc">\\</span><span class="st">. </span><span class="sc">\\</span><span class="st">. &quot;</span>, <span class="st">&quot;. &quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove white space</span></span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_squish</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_remove_all</span>(<span class="st">&quot;pagebreak&quot;</span>) <span class="sc">%&gt;%</span> <span class="co"># Devin&#39;s OCR method adds this </span></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove repeated periods</span></span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_replace_all(&quot;\\.*&quot;, &quot;. &quot;) %&gt;% #removed below</span></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>  <span class="co"># str_replace_all(&quot; \\,&quot;, &quot;, &quot;) %&gt;%</span></span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot; </span><span class="sc">\\</span><span class="st">.&quot;</span>, <span class="st">&quot;. &quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  <span class="co">#remove space in &#39;s</span></span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot; </span><span class="sc">\\</span><span class="st">&#39;s &quot;</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">&#39;s &quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_replace_all(&quot; &#39;&quot;, &quot;&#39;&quot;) %&gt;% # we want to keep &quot;&#39;&quot;</span></span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove web addresses, wont capture urls with punctuation (&quot;.&quot; or &quot;_&quot;) in the middle</span></span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>  <span class="co"># str_remove_all(&quot;www\\.[A-z]*\\.(com|org|net|gov|pdf)&quot;) %&gt;%  # does not currently impact textrank, uncomment if urls start to skew summary</span></span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>  <span class="co"># str_remove_all(&quot;http:www\\.[A-z]*\\.(com|org|net|gov|pdf)&quot;) %&gt;%</span></span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  <span class="co"># str_remove_all(&quot;files\\.[A-z]*\\.(com|org|net|gov|pdf)&quot;) %&gt;%</span></span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Removes duplicated puncuation</span></span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;([[:punct:]])</span><span class="sc">\\</span><span class="st">1+&quot;</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">1&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_squish</span>() </span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>read_comment <span class="ot">&lt;-</span> . <span class="sc">%&gt;%</span></span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_lines</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_comments</span>() </span>
-<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a><span class="co"># map read</span></span>
-<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>d<span class="sc">$</span>text <span class="ot">&lt;-</span> <span class="fu">map_chr</span>(d<span class="sc">$</span>path, read_comment)</span></code></pre></div>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;U</span><span class="sc">\\</span><span class="st">.S</span><span class="sc">\\</span><span class="st">.&quot;</span>, <span class="st">&quot;United States&quot;</span>) <span class="sc">%&gt;%</span> <span class="co">#Issues with cut of sentences due to period</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_remove_all(&quot; ?(f|ht)(tp)(s?)(://)([A-z]*)[.|/](.*)&quot;) %&gt;%</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_replace_all(&quot;\\s+&quot;, &quot; &quot;) %&gt;% # removed by str_squish()</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_remove_all(&quot;^[0-9](?!\\.)&quot;) %&gt;% #FIXME are not numbers removed below</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add missing spaces after periods</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">.([A-z])&quot;</span>, <span class="st">&quot;. </span><span class="sc">\\</span><span class="st">1&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remvove numbers and specials (keep only text and basic punctuation)</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;[^[A-z] </span><span class="sc">\\</span><span class="st">.</span><span class="sc">\\</span><span class="st">,</span><span class="sc">\\</span><span class="st">?</span><span class="sc">\\</span><span class="st">!</span><span class="sc">\\</span><span class="st">;&amp;</span><span class="sc">\\</span><span class="st">;</span><span class="sc">\\</span><span class="st">&#39;]&quot;</span>, <span class="st">&quot; &quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_remove_all</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">[|</span><span class="sc">\\</span><span class="st">]&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_remove_all</span>(<span class="st">&quot;§&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_remove_all(&quot;\\&#39;&quot;) %&gt;%</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_squish</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_replace_all(&quot; (\\.|\\?|\\!||:|;)&quot;, &quot;\\1 &quot;) %&gt;%</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot; , &quot;</span>, <span class="st">&quot; &quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot; &quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># double commas  </span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_replace_all(&quot;\\, \\, &quot;, &quot;, &quot;) %&gt;% </span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># double periods </span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_replace_all(&quot;\\. \\. &quot;, &quot;. &quot;) %&gt;% </span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># one character after a period </span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">. </span><span class="sc">\\</span><span class="st">. </span><span class="sc">\\</span><span class="st">. &quot;</span>, <span class="st">&quot;. &quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove white space</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_squish</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_remove_all</span>(<span class="st">&quot;pagebreak&quot;</span>) <span class="sc">%&gt;%</span> <span class="co"># Devin&#39;s OCR method adds this </span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove repeated periods</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_replace_all(&quot;\\.*&quot;, &quot;. &quot;) %&gt;% #removed below</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  <span class="co"># str_replace_all(&quot; \\,&quot;, &quot;, &quot;) %&gt;%</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot; </span><span class="sc">\\</span><span class="st">.&quot;</span>, <span class="st">&quot;. &quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>  <span class="co">#remove space in &#39;s</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot; </span><span class="sc">\\</span><span class="st">&#39;s &quot;</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">&#39;s &quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>  <span class="co">#str_replace_all(&quot; &#39;&quot;, &quot;&#39;&quot;) %&gt;% # we want to keep &quot;&#39;&quot;</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove web addresses, wont capture urls with punctuation (&quot;.&quot; or &quot;_&quot;) in the middle</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  <span class="co"># str_remove_all(&quot;www\\.[A-z]*\\.(com|org|net|gov|pdf)&quot;) %&gt;%  # does not currently impact textrank, uncomment if urls start to skew summary</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>  <span class="co"># str_remove_all(&quot;http:www\\.[A-z]*\\.(com|org|net|gov|pdf)&quot;) %&gt;%</span></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  <span class="co"># str_remove_all(&quot;files\\.[A-z]*\\.(com|org|net|gov|pdf)&quot;) %&gt;%</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Removes duplicated puncuation</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;([[:punct:]])</span><span class="sc">\\</span><span class="st">1+&quot;</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">1&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_squish</span>() </span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>read_comments <span class="ot">&lt;-</span> . <span class="sc">%&gt;%</span></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_lines</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_comments</span>() </span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a><span class="co"># map read</span></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>d<span class="sc">$</span>text <span class="ot">&lt;-</span> <span class="fu">map_chr</span>(d<span class="sc">$</span>path, read_comments)</span></code></pre></div>
 <p>Summarize comments.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># for testing </span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># text &lt;- d$text[4]</span></span>
@@ -452,7 +454,7 @@ summary {
 <span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>summarize_comments <span class="ot">&lt;-</span> <span class="cf">function</span>(text, <span class="at">n_sentences =</span> <span class="dv">2</span>, <span class="at">max_sentences =</span> <span class="dv">100</span>, custom_stop_words, agency_name) {</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>summarize_comments <span class="ot">&lt;-</span> <span class="cf">function</span>(text, <span class="at">n_sentences =</span> <span class="dv">2</span>, <span class="at">max_sentences =</span> <span class="dv">100</span>, custom_stop_words, <span class="at">agency_name =</span> <span class="st">&quot;&quot;</span>) {</span>
 <span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>  <span class="co"># not cleaning data here either; should we? I think it is better to do it in the above function so it is done on one comment at a time.</span></span>
@@ -796,7 +798,7 @@ The Tribe maintains that the Proposed Rule would not apply to the Tribe or to it
 Ad hoc group of law professors
 </td>
 <td style="text-align:left;">
-Accordingly, in order to make regulation of shorter term loans effective it is also necessary to regulate all small dollar consumer loans with leveraged payment mechanisms. New jersey avenue, nw, washington dc hotung fax adam. levitin law. georgetown. edu finally, rollover lending is consistent with a sweatbox model of lending in which the lender profits irrespective of whether the consumer repays the loan. The proposed rule is a well considered response to the serious consumer welfare problems presented by alternative lending products.
+Accordingly, in order to make regulation of shorter term loans effective it is also necessary to regulate all small dollar consumer loans with leveraged payment mechanisms. The proposed rule is a well considered response to the serious consumer welfare problems presented by alternative lending products. New jersey avenue, nw, washington dc hotung fax adam. levitin law. georgetown. edu finally, rollover lending is consistent with a sweatbox model of lending in which the lender profits irrespective of whether the consumer repays the loan.
 </td>
 <td style="text-align:left;">
 strongly support the CFPB’s efforts in this area…Likewise, the definition of “leveraged payment mechanism” in proposed 12 C.F.R. § 1041.3(c) should be expanded to cover loans in which the lender does not waive the ability to seek repayment through wage garnishment….Ability-to-Repay Requirement Should Apply to All Covered Loans, Without Exception…The Proposed Rule Needs to Be Strengthened to Protect Against Serial Flipping and Refinancing of Longer-Term Loans
@@ -864,7 +866,7 @@ The Proposal’s Requirement to Undertake a “Reasonable” Determination of an
 Tribal E-Commerce Coalition
 </td>
 <td style="text-align:left;">
-Tribal governments are not. Tribal governments are not parties to the u. Nor are tribal governments subsidiaries of state governments.
+Tribal governments are not parties to the united states constitution. Tribal governments are not. Nor are tribal governments subsidiaries of state governments.
 </td>
 <td style="text-align:left;">
 To avoid any ambiguity, the CFPB should expressly exempt all state and Tribal governments from its Final Rule….Forcing the industry to follow static rigid measures will eliminate innovation, creativity and incentives to be the best at identifying the ability and the willingness to repay.
@@ -882,25 +884,29 @@ To avoid any ambiguity, the CFPB should expressly exempt all state and Tribal go
 <p>Function removes agency name from Textrank. This doesn’t impact every summary but the ones below are changed and generally the better summary is the one with the removed agency name.</p>
 <div id="summary-changes-with-and-without-agency-name" class="section level1">
 <h1>Summary changes with and without agency name:</h1>
+<p>Typically this change swaps out one sentence in the summary. When agency name is removed this tends to run the risk of capturing headings. Each option has their pros and cons and each method produces some good summaries and some bad summaries.</p>
+<div id="examples" class="section level2">
+<h2>Examples:</h2>
+</div>
 <div id="organization-idaho-financial-services-association-inc" class="section level2">
 <h2>Organization: Idaho Financial Services Association Inc</h2>
 <p>With agency name: Ifsa and its members to express serious concerns about the consumer financial protection bureau s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Including optional voluntary protection products as part of the proposed rule s trigger treats voluntary protection products as percent profit to the lender and of zero value to the consumer.</p>
-<p>Without Agency: The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Ifsa and its members to express serious concerns about the s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. One option available to an ifsa member to avoid coming within the covered longer term loan status is to stop making optional voluntary protection products available to many of their borrowers since the borrowers choice to purchase any voluntary protection products may trigger the total cost of credit.</p>
+<p>Without Agency: The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Ifsa and its members to express serious concerns about the s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. Including optional voluntary protection products as part of the proposed rule s trigger treats voluntary protection products as percent profit to the lender and of zero value to the consumer.</p>
 </div>
 <div id="organization-the-chippewa-cree-tribe-of-the-rocky-boys-reservation" class="section level2">
 <h2>Organization: The Chippewa Cree Tribe of the Rocky Boys Reservation</h2>
-<p>With Agency: Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis. Because of all these deficiencies, the bureau should rescind the proposed rule entirely.</p>
-<p>Without Agency: Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. Jackson on behalf of the chippewa cree tribe of the rocky boy s reservation tribe I submit this public comment to express the tribe s views of the proposed regulations from the cfpb or bureau regarding small dollar lending proposed rule. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis.</p>
+<p>With Agency: Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis. <strong>Because of all these deficiencies, the bureau should rescind the proposed rule entirely.</strong></p>
+<p>Without Agency: Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. <strong>Jackson on behalf of the chippewa cree tribe of the rocky boy s reservation tribe I submit this public comment to express the tribe s views of the proposed regulations from the cfpb or bureau regarding small dollar lending proposed rule.</strong> There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis.</p>
 </div>
 <div id="organization-ballard-spahr" class="section level2">
 <h2>Organization: Ballard Spahr</h2>
-<p>With Agency: The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. The proposed rule was published by the consumer financial protection bureau cfpb or ’ bureau in fed. I the proposed rule.</p>
-<p>Without Agency: The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. I the proposed rule. Monica jackson october page executive summary consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to add ress other serious financia l needs.</p>
+<p>With Agency: The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. <strong>The proposed rule was published by the consumer financial protection bureau cfpb or ’ bureau in fed.</strong> I the proposed rule.</p>
+<p>Without Agency: The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. I the proposed rule. <strong>Monica jackson october page executive summary consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to add ress other serious financia l needs.</strong></p>
 </div>
 <div id="organization-katten-muchin-rosenman-llp" class="section level2">
 <h2>Organization: Katten Muchin Rosenman LLP</h2>
-<p>With Agency: Jackson the comments set forth below are provided in connection with the payday, vehicle title and certain high cost installment loans proposal set forth by the consumer financial protection bureau cfpb or bureau in the federal register on july the proposal. Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. Dfa o.</p>
-<p>Without Agency: Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. See dfa l c l. Dfa I a.</p>
+<p>With Agency: <strong>Jackson the comments set forth below are provided in connection with the payday, vehicle title and certain high cost installment loans proposal set forth by the consumer financial protection bureau cfpb or bureau in the federal register on july the proposal.</strong> Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. Dfa o.</p>
+<p>Without Agency: Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. <strong>See dfa l c l. Dfa I a.</strong></p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>d <span class="sc">%&gt;%</span> </span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">textrank_summary =</span> comment_summary) <span class="sc">%&gt;%</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># join with coded data </span></span>
@@ -1065,6 +1071,80 @@ strongly encourage the Bureau to continue to emphasize that its Proposed Rules, 
 </td>
 <td style="text-align:left;">
 <a href="https://ssc.wisc.edu/~judgelord/comment_text/CFPB/CFPB-2016-0025/CFPB-2016-0025-185164-1.txt" class="uri">https://ssc.wisc.edu/~judgelord/comment_text/CFPB/CFPB-2016-0025/CFPB-2016-0025-185164-1.txt</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="general-observations-about-textrank" class="section level1">
+<h1>General Observations about Textrank</h1>
+<p>Textrank tends to capture specifics instead of firm stances. The coded comment summaries tend to explain why an organization is in support or in opposition to a rule but will not usually spell out whether or not the comment supports or does not support. Generated summaries more accurately capture changes an organization would like to see to a rule instead of attitudes about the rule as a whole. The hand coded summary contains the ask and the generated summary contains and explanation of that ask.</p>
+<div id="examples-1" class="section level2">
+<h2>Examples</h2>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a> d <span class="sc">%&gt;%</span> </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">textrank_summary =</span> comment_summary) <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># join with coded data </span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(coded) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># a table comparing textrank vs hand coded</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  <span class="sc">%&gt;%</span> </span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(org_name <span class="sc">==</span> <span class="fu">c</span>(<span class="st">&quot;McIntyre &amp; Lemon, PLLC&quot;</span>, <span class="st">&quot;The Independent Finance Association of Illinois&quot;</span>, <span class="st">&quot;Community Spirit Bank&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kablebox</span>()</span></code></pre></div>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:500px; ">
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+org_name
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+textrank_summary
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+hand_selected_summary
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+comment_url
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+comment_txt
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+McIntyre &amp; Lemon, PLLC
+</td>
+<td style="text-align:left;">
+The ability to repay standard will exclude consumers from the credit markets the proposed rule s chief feature is to require lenders that provide short term, small dollar credit to make an ability to repay determination before extending a loan to a consumer. When a lender extends the short term, small dollar loan to a consumer, the consumer has a reasonable ability to avoid harm and, therefore, the extension of the loan is not unfair. In other words, only consumers with the least need for the short term, small dollar loan may obtain the loan.
+</td>
+<td style="text-align:left;">
+we strongly oppose the rule. This rule will not only practically eliminate the short-term and small-dollar lending industry across the United States, but will inflict an extensive amount of harm on consumers…Ability-to Repay Standard Will Exclude Consumers From the Credit Markets
+</td>
+<td style="text-align:left;">
+<a href="https://www.regulations.gov/document?D=CFPB-2016-0025-170672" class="uri">https://www.regulations.gov/document?D=CFPB-2016-0025-170672</a>
+</td>
+<td style="text-align:left;">
+<a href="https://ssc.wisc.edu/~judgelord/comment_text/CFPB/CFPB-2016-0025/CFPB-2016-0025-170672-1.txt" class="uri">https://ssc.wisc.edu/~judgelord/comment_text/CFPB/CFPB-2016-0025/CFPB-2016-0025-170672-1.txt</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+The Independent Finance Association of Illinois
+</td>
+<td style="text-align:left;">
+Payday and vehicle tide lenders are not the same as traditional installment lenders and the rule shoul d focus on them and not the industry that has served consu mers well for decades and decades. . j d; executive direc tor, indep enden t finance association of illinois As an example, with substantial input from the ifai and similar trade group s, the illinois attorney gener al and consu mer groups the consu mer installment loan act was substantially amended in to stop payday lenders from using a hybrid installment loan produ ct with a balloon payment feature as a way of perpetuating the life of their payday products while still offering illinois consumers affordable small dollar credit. As an association we have represented traditional installment lenders for over fifty years and some of our members have been providing affordable, accessible credit to consumers for over eighty years.
+</td>
+<td style="text-align:left;">
+withdraw the Rule in its entirety or remove installment lenders from its coverage
+</td>
+<td style="text-align:left;">
+<a href="https://www.regulations.gov/document?D=CFPB-2016-0025-185038" class="uri">https://www.regulations.gov/document?D=CFPB-2016-0025-185038</a>
+</td>
+<td style="text-align:left;">
+<a href="https://ssc.wisc.edu/~judgelord/comment_text/CFPB/CFPB-2016-0025/CFPB-2016-0025-185038-1.txt" class="uri">https://ssc.wisc.edu/~judgelord/comment_text/CFPB/CFPB-2016-0025/CFPB-2016-0025-185038-1.txt</a>
 </td>
 </tr>
 </tbody>

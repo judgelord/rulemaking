@@ -93,7 +93,7 @@ custom_stop_words <- tibble(
   unnest_tokens(output = word, input = words) %>%
   distinct()
 
-#agency_name <- c("consumer financial protection bureau")
+agency_name <- c("consumer financial protection bureau")
 
 # get txt file names from a directory, here called “comment_text”
 comments <- tibble( path = list.files( here::here('comment_text', agency, docket), 
@@ -176,7 +176,7 @@ read_comments <- . %>%
   clean_comments() 
 
 # map read
-d$text <- map_chr(d$path, read_comment)
+d$text <- map_chr(d$path, read_comments)
 ```
 
 
