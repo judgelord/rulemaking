@@ -64,12 +64,14 @@ con <- DBI::dbConnect(RSQLite::SQLite(), here::here("db", "master.sqlite"))
 dbListTables(con)
 ```
 
+
+## Actions
+
 ```{r, eval=TRUE}
 action <- dbGetQuery(con, "SELECT * FROM actions")
 
 ```
-
-## Actions in Database: `r nrow(action)`
+Actions in Database: `r nrow(action)`
 
 
 Where the SQL query to get NPRM and Final Rule data for a agency is: 
@@ -100,7 +102,7 @@ Mutate comment_text is pulling error, 'comment_text' not found
     kablebox()
 ```
 
-
+### Actions Per Agency
 
 ```{r }
 agency <- dbGetQuery(con, "
@@ -108,18 +110,47 @@ agency <- dbGetQuery(con, "
    GROUP BY agency_acronym
 ")
 
-```
-
-## Agencies in Database: `r nrow(agency)`
-
-### Count the number of actions per agency
-```{r }
  agency %>%
    kablebox()
  
 ```
 
-### Count the number of comments per agency
+### Titles in Actions
+
+```{r }
+titles <- dbGetQuery(con, "
+   SELECT title, COUNT(title) AS count FROM actions
+   GROUP BY title
+")
+ titles %>%
+   kablebox()
+
+```
+
+ Titles in Database: `r nrow(titles)`
+
+
+
+### Titles in CFPB
+
+```{r }
+titlescfpb <- dbGetQuery(con, "
+   SELECT title, COUNT(title) AS count FROM actions
+   WHERE agency_acronym = 'CFPB'
+   GROUP BY title
+")
+
+ titlescfpb %>%
+   kablebox()
+ 
+```
+
+ Titles in CFPB: `r nrow(titles)`
+
+
+## Comments
+
+### Comments Per Agency
 
 ```{r }
 comments <- dbGetQuery(con, "
@@ -132,9 +163,10 @@ comments <- dbGetQuery(con, "
  
 ```
 
+ Agencies in Comments: `r nrow(agency)`
 
 
-
+### Comments for Each Docket ID
 ```{r }
 docketids <- dbGetQuery(con, "
    SELECT docket_id, COUNT(docket_id) AS count FROM comments
@@ -142,19 +174,14 @@ docketids <- dbGetQuery(con, "
 ")
 
 
- 
-```
-
-## Docket IDs in Database: `r nrow(docketids)`
-### Count the number of comments for each docket ID
-
-```{r }
  docketids %>%
    kablebox()
 ```
 
+Docket IDs in Database: `r nrow(docketids)`
 
 
+### Comments for Each Docket ID in CFPB
 ```{r }
 cfpb <- dbGetQuery(con, "
    SELECT docket_id, COUNT(docket_id) AS count FROM comments
@@ -162,56 +189,19 @@ cfpb <- dbGetQuery(con, "
    GROUP BY docket_id
 ")
 
-```
-
-## Docket IDs in CFPB: `r nrow(cfpb)`
-### Number of comments for each docket ID in CFPB
-
-```{r }
  cfpb %>%
    kablebox()
  
 ```
-
-
-
-```{r }
-titles <- dbGetQuery(con, "
-   SELECT title, COUNT(title) AS count FROM actions
-   GROUP BY title
-")
-
-```
-
-## Titles in Database: `r nrow(titles)`
-### Count the number of titles
-```{r }
-
- titles %>%
-   kablebox()
  
-```
+ Docket IDs in CFPB: `r nrow(cfpb)`
 
 
 
 
 
-```{r }
-titlescfpb <- dbGetQuery(con, "
-   SELECT title, COUNT(title) AS count FROM actions
-   WHERE agency_acronym = 'CFPB'
-   GROUP BY title
-")
-```
 
-## Titles in CFPB: `r nrow(titles)`
-### Count the number of titles in CFPB
 
-```{r }
- titlescfpb %>%
-   kablebox()
- 
-```
 
 
 
