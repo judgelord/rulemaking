@@ -337,7 +337,7 @@ d %>%
 
 
 
-### Summary changes with and without agency name:
+### Agency Name
 
 -Function removes agency name from Textrank.
 -Typically this change swaps out one sentence in the summary.   
@@ -383,6 +383,9 @@ With Agency:
 Without Agency:
 Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. *See dfa l c l. Dfa I a.*
 
+### Textrank Limitations  
+- Repeated headers or footings can be captured by textrank.  
+- Does not produce good summaries for form/campaign letters.
 
 ### Coding
 
