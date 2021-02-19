@@ -375,10 +375,10 @@ div.tocify {
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">dbListTables</span>(con)</span></code></pre></div>
 <pre><code>## [1] &quot;actions&quot;             &quot;comment_attachments&quot; &quot;comments&quot;</code></pre>
+<hr />
 <div id="actions" class="section level2">
 <h2>Actions</h2>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>action <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(con, <span class="st">&quot;SELECT * FROM actions&quot;</span>)</span></code></pre></div>
-<p>Actions in Database: 834</p>
 <p>Where the SQL query to get NPRM and Final Rule data for a agency is:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> actions <span class="kw">WHERE</span> agency_acronym <span class="op">=</span> <span class="st">&#39;CFPB&#39;</span></span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; ">
@@ -8097,6 +8097,7 @@ CFPB-2017-0018
 </tbody>
 </table>
 </div>
+<p><strong>Actions in Actions Table: 163</strong></p>
 <p>Likewise, the SQL query to get comments on a docket is</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> comments <span class="kw">WHERE</span> docket_ID <span class="op">=</span> <span class="st">&#39;CFPB-2016-0025&#39;</span></span></code></pre></div>
 <p>Mutate comment_text is pulling error, ‘comment_text’ not found</p>
@@ -8609,6 +8610,7 @@ VA
 </tbody>
 </table>
 </div>
+<p><strong>Agencies in Actions Table: <code>nrow(agency)</code></strong></p>
 </div>
 <div id="titles-in-actions" class="section level3">
 <h3>Titles in Actions</h3>
@@ -12106,7 +12108,7 @@ Whistleblower Incentives and Protection
 </tbody>
 </table>
 </div>
-<p>Titles in Database: 434</p>
+<p><strong>Titles in Actions Table: 434</strong></p>
 </div>
 <div id="titles-in-cfpb" class="section level3">
 <h3>Titles in CFPB</h3>
@@ -12854,7 +12856,8 @@ Truth in Savings (Regulation DD)
 </tbody>
 </table>
 </div>
-<p>Titles in CFPB: 434</p>
+<p>Unique Titles in CFPB in Actions Table: 90</p>
+<hr />
 </div>
 </div>
 <div id="comments" class="section level2">
@@ -12908,7 +12911,7 @@ SEC
 </tbody>
 </table>
 </div>
-<p>Agencies in Comments: 21</p>
+<p><strong>Agencies in Comments Table: 3</strong></p>
 </div>
 <div id="comments-for-each-docket-id" class="section level3">
 <h3>Comments for Each Docket ID</h3>
@@ -14088,18 +14091,590 @@ s7-08-13
 </tbody>
 </table>
 </div>
-<p>Docket IDs in Database: 144</p>
+<p><strong>Docket IDs in Comments Table: 144</strong></p>
 </div>
-<div id="comments-for-each-docket-id-in-cfpb" class="section level3">
-<h3>Comments for Each Docket ID in CFPB</h3>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>cfpb <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(con, <span class="st">&quot;</span></span>
+<div id="comments-for-each-docket-id-in-sec" class="section level3">
+<h3>Comments for Each Docket ID in SEC</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>sec <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(con, <span class="st">&quot;</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="st">   SELECT docket_id, COUNT(docket_id) AS count FROM comments</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="st">   WHERE agency_acronym = &#39;CFPB&#39;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="st">   WHERE agency_acronym = &#39;SEC&#39;</span></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="st">   GROUP BY docket_id</span></span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;</span>)</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a> cfpb <span class="sc">%&gt;%</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a> sec <span class="sc">%&gt;%</span></span>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>   <span class="fu">kablebox</span>()</span></code></pre></div>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; ">
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+docket_id
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+count
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+S7-01-15
+</td>
+<td style="text-align:right;">
+48
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-02-11
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-02-12
+</td>
+<td style="text-align:right;">
+40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-02-13
+</td>
+<td style="text-align:right;">
+78
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-03-11
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-03-13
+</td>
+<td style="text-align:right;">
+532
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-03-15
+</td>
+<td style="text-align:right;">
+36
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-04-11
+</td>
+<td style="text-align:right;">
+86
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-05-11
+</td>
+<td style="text-align:right;">
+78
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-05-14
+</td>
+<td style="text-align:right;">
+32
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-06-11
+</td>
+<td style="text-align:right;">
+124
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-06-13
+</td>
+<td style="text-align:right;">
+1212
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-06-15
+</td>
+<td style="text-align:right;">
+32
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-07-11
+</td>
+<td style="text-align:right;">
+88
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-07-13
+</td>
+<td style="text-align:right;">
+3098
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-07-15
+</td>
+<td style="text-align:right;">
+148
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-08-10
+</td>
+<td style="text-align:right;">
+614
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-08-11
+</td>
+<td style="text-align:right;">
+64
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-08-12
+</td>
+<td style="text-align:right;">
+438
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-09-14
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-09-15
+</td>
+<td style="text-align:right;">
+94
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-10-11
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-11-11
+</td>
+<td style="text-align:right;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-12-10
+</td>
+<td style="text-align:right;">
+242
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-12-11
+</td>
+<td style="text-align:right;">
+1532
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-12-15
+</td>
+<td style="text-align:right;">
+130
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-13-11
+</td>
+<td style="text-align:right;">
+116
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-14-11
+</td>
+<td style="text-align:right;">
+974
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-14-15
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-15-11
+</td>
+<td style="text-align:right;">
+24
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-15-15
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-16-11
+</td>
+<td style="text-align:right;">
+112
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-17-11
+</td>
+<td style="text-align:right;">
+98
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-18-08
+</td>
+<td style="text-align:right;">
+220
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-18-11
+</td>
+<td style="text-align:right;">
+134
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-19-10
+</td>
+<td style="text-align:right;">
+20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-21-11
+</td>
+<td style="text-align:right;">
+88
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-22-11
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-23-07
+</td>
+<td style="text-align:right;">
+106
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-23-11
+</td>
+<td style="text-align:right;">
+54
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-24-10
+</td>
+<td style="text-align:right;">
+90
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-25-10
+</td>
+<td style="text-align:right;">
+188
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-25-11
+</td>
+<td style="text-align:right;">
+104
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-26-10
+</td>
+<td style="text-align:right;">
+116
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-26-11
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-27-10
+</td>
+<td style="text-align:right;">
+192
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-28-10
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-30-10
+</td>
+<td style="text-align:right;">
+54
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-30-11
+</td>
+<td style="text-align:right;">
+40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-31-10
+</td>
+<td style="text-align:right;">
+132
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-32-10
+</td>
+<td style="text-align:right;">
+38
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-33-10
+</td>
+<td style="text-align:right;">
+512
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-34-10
+</td>
+<td style="text-align:right;">
+284
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-35-10
+</td>
+<td style="text-align:right;">
+72
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-35-11
+</td>
+<td style="text-align:right;">
+368
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-36-10
+</td>
+<td style="text-align:right;">
+154
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-37-10
+</td>
+<td style="text-align:right;">
+246
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-38-11
+</td>
+<td style="text-align:right;">
+86
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-39-10
+</td>
+<td style="text-align:right;">
+198
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-40-10
+</td>
+<td style="text-align:right;">
+884
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-40-11
+</td>
+<td style="text-align:right;">
+106
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-41-10
+</td>
+<td style="text-align:right;">
+68
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-41-11
+</td>
+<td style="text-align:right;">
+1054
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-42-10
+</td>
+<td style="text-align:right;">
+728
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-43-10
+</td>
+<td style="text-align:right;">
+42
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-44-10
+</td>
+<td style="text-align:right;">
+38
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S7-45-10
+</td>
+<td style="text-align:right;">
+1794
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s7-08-13
+</td>
+<td style="text-align:right;">
+106
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Docket IDs in SEC in Comments Table: 68</strong></p>
+</div>
+<div id="comments-for-each-docket-id-in-cfpb" class="section level3">
+<h3>Comments for Each Docket ID in CFPB</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>cfpb <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(con, <span class="st">&quot;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="st">   SELECT docket_id, COUNT(docket_id) AS count FROM comments</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="st">   WHERE agency_acronym = &#39;CFPB&#39;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">   GROUP BY docket_id</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a> cfpb <span class="sc">%&gt;%</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>   <span class="fu">kablebox</span>()</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; ">
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
@@ -14692,7 +15267,7 @@ CFPB-2020-0010
 </tbody>
 </table>
 </div>
-<p>Docket IDs in CFPB: 72</p>
+<p><strong>Docket IDs in CFPB in Comments Table: 72</strong></p>
 </div>
 </div>
 

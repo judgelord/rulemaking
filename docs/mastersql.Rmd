@@ -64,6 +64,7 @@ con <- DBI::dbConnect(RSQLite::SQLite(), here::here("db", "master.sqlite"))
 dbListTables(con)
 ```
 
+- - -
 
 ## Actions
 
@@ -71,7 +72,7 @@ dbListTables(con)
 action <- dbGetQuery(con, "SELECT * FROM actions")
 
 ```
-Actions in Database: `r nrow(action)`
+
 
 
 Where the SQL query to get NPRM and Final Rule data for a agency is: 
@@ -80,11 +81,13 @@ Where the SQL query to get NPRM and Final Rule data for a agency is:
 SELECT * FROM actions WHERE agency_acronym = 'CFPB'
 ```
 
+
 ```{r, echo=FALSE}
 # rule[1,] %>% mutate_all(as.character) %>% pivot_longer(everything()) %>% kable(format= "pipe")
 
 action %>% kablebox()
 ```
+**Actions in Actions Table: `r nrow(action)`**
 
 Likewise, the SQL query to get comments on a docket is
 
@@ -115,6 +118,8 @@ agency <- dbGetQuery(con, "
  
 ```
 
+**Agencies in Actions Table: `nrow(agency)`**
+
 ### Titles in Actions
 
 ```{r }
@@ -127,7 +132,7 @@ titles <- dbGetQuery(con, "
 
 ```
 
- Titles in Database: `r nrow(titles)`
+**Titles in Actions Table: `r nrow(titles)`**
 
 
 
@@ -145,8 +150,9 @@ titlescfpb <- dbGetQuery(con, "
  
 ```
 
- Titles in CFPB: `r nrow(titles)`
+Unique Titles in CFPB in Actions Table: `r nrow(titlescfpb)`
 
+- - -
 
 ## Comments
 
@@ -163,7 +169,7 @@ comments <- dbGetQuery(con, "
  
 ```
 
- Agencies in Comments: `r nrow(agency)`
+**Agencies in Comments Table: `r nrow(comments)`**
 
 
 ### Comments for Each Docket ID
@@ -178,7 +184,22 @@ docketids <- dbGetQuery(con, "
    kablebox()
 ```
 
-Docket IDs in Database: `r nrow(docketids)`
+**Docket IDs in Comments Table: `r nrow(docketids)`**
+
+### Comments for Each Docket ID in SEC
+```{r }
+sec <- dbGetQuery(con, "
+   SELECT docket_id, COUNT(docket_id) AS count FROM comments
+   WHERE agency_acronym = 'SEC'
+   GROUP BY docket_id
+")
+
+ sec %>%
+   kablebox()
+ 
+```
+ 
+**Docket IDs in SEC in Comments Table: `r nrow(sec)`**
 
 
 ### Comments for Each Docket ID in CFPB
@@ -194,7 +215,7 @@ cfpb <- dbGetQuery(con, "
  
 ```
  
- Docket IDs in CFPB: `r nrow(cfpb)`
+**Docket IDs in CFPB in Comments Table: `r nrow(cfpb)`**
 
 
 
