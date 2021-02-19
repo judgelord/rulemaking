@@ -367,21 +367,23 @@ div.tocify {
 
 
 <p>This file summarizes individual comments for agency rules. To do this it uses three functions; <code>clean_comments()</code>, <code>summarizeText()</code>, and <code>summarize_comments()</code>.</p>
-<p><code>clean_comments()</code> takes in a string of text and cleans it. It is run on each comment provided.</p>
-<p><code>summarizeText()</code> takes in text, max_sentences, custom_stop_words, and agency_name<br />
+<p><code>summarize_comments()</code> takes in four inputs <code>text</code>, <code>n_sentence</code>s, <code>max_sentences</code>, <code>custom_stop_words</code>, and <code>agency_name</code><br />
+<em>n_sentences</em> is the number of sentences to use for the summary<br />
+function maps <code>summarizeText()</code> onto each each comment and then extracts the top <em>n_sentences</em></p>
+<p><code>summarizeText()</code> takes in four inputs <code>text</code>, <code>max_sentences</code>, <code>custom_stop_word</code>s, and <code>agency_name</code><br />
 <em>text</em> is the string of text for each comment<br />
 <em>max_sentences</em> is a numerical value for the max number of sentences textrank will pull in and summarize<br />
 <em>custom_stop_words</em> is a vector of words to be removed from the dictionary of words in textrank<br />
 <em>agency_name</em> name of the agency to be removed from textrank as a string function removes custom_stop_words, agency_name, and stop_words from textrank and then uses textrank to rank the sentences by importance.</p>
-<p><code>summarize_comments()</code> takes in text, n_sentences, max_sentences, custom_stop_words, and agency_name<br />
-<em>n_sentences</em> is the number of sentences to use for the summary<br />
-function maps <code>summarizeText()</code> onto each each comment and then extracts the top <em>n_sentences</em></p>
+<p><code>clean_comments()</code> takes in a string of text and cleans it. It is run on each comment provided.</p>
+<p>You can download it <a href="https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R">here</a> or load it in R with <code>source(&quot;https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R&quot;)</code></p>
+<p>For more on textrank and the steps involved in applying it to a rule, see <a href="https://judgelord.github.io/rulemaking/textrank_summary" class="uri">https://judgelord.github.io/rulemaking/textrank_summary</a> and the PDF that Chris shared.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load summarize_comment() function</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R&quot;</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># load text cleaning function </span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;functions&quot;</span>, <span class="st">&quot;clean_string.R&quot;</span>))</span></code></pre></div>
-<p>To assess the quality of computer-generated summaries, we can compare them to the key sentences identified by hand. Specifically, RAs were asked to identify the top three key “asks” in each comment and select the text associated with those askes in each comment. They also identified the commener’s organization, overall position on the proposed rule, and several other key things that might help assess the quality of textrank-generated summaries.</p>
+<p>To assess the quality of computer-generated summaries, we can compare them to the key sentences identified by hand. Specifically, RAs were asked to identify the top three key “asks” in each comment and select the text associated with those askes in each comment. They also identified the commenter’s organization, overall position on the proposed rule, and several other key things that might help assess the quality of textrank-generated summaries.</p>
 <p>Load hand-coded data.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;CFPB-2016-0025-coded.Rdata&quot;</span>))</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -963,9 +965,24 @@ To avoid any ambiguity, the CFPB should expressly exempt all state and Tribal go
 </div>
 <div id="observations-about-textrank" class="section level3">
 <h3>Observations about Textrank</h3>
-<p>-Textrank tends to capture factual statements over firm stances -The textrank comment summaries will explain why an organization is in support or in opposition.<br />
--Generated summaries capture changes an organization would like to see.<br />
--The hand coded summary contains the ask and the generated summary contains and explanation of that ask.</p>
+<ul>
+<li>Comments tend to fall into two categories
+<ol style="list-style-type: decimal">
+<li>Opposes the rule in its entirety</li>
+<li>Supports an amended form of the rule</li>
+</ol></li>
+<li>Textrank tends to capture factual statements over firm stances
+<ul>
+<li>For example of opposition to the rule see McIntyre &amp; Lemon, PLLC &amp; The Independent Finance Association of Illinois<br />
+</li>
+<li>For example of changes to a rule see NCRC &amp; The Clearing House Association LLC</li>
+</ul></li>
+<li>The <code>textrank_summary</code> tends to explain why an organization is in support or in opposition.<br />
+</li>
+<li>Generated summaries do a fairly good job of capturing changes an organization would like to see to the rule.<br />
+</li>
+<li>The hand coded summary contains the ask whereas the <code>textrank_summary</code> tends to contain sentences that explain that ask.</li>
+</ul>
 <p><strong>Examples:</strong></p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a> d <span class="sc">%&gt;%</span> </span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">textrank_summary =</span> comment_summary) <span class="sc">%&gt;%</span></span>
@@ -1037,22 +1054,28 @@ withdraw the Rule in its entirety or remove installment lenders from its coverag
 </div>
 <div id="agency-name" class="section level3">
 <h3>Agency Name</h3>
-<p>-Function removes agency name from Textrank. -Typically this change swaps out one sentence in the summary.<br />
--When agency name is removed this tends to run the risk of capturing headings.<br />
--Each option has their pros and cons and each method produces some good summaries and some bad summaries.</p>
+<ul>
+<li><code>summarizeText</code> removes agency name from Textrank.</li>
+<li>Typically the difference between <code>textrank_summaries</code> with and without the agency name is one sentences.<br />
+</li>
+<li>When agency name is removed this tends to run the risk of capturing headings.<br />
+</li>
+<li>Each option has their pros and cons and each method produces some good summaries and some bad summaries.</li>
+</ul>
 <p><strong>Examples:</strong> The italizied sentences are the changes between the summaries when agency name is removed and when agency name is kept.</p>
-<p><strong>Organization: Idaho Financial Services Association Inc</strong></p>
-<p>With agency name: Ifsa and its members to express serious concerns about the consumer financial protection bureau s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Including optional voluntary protection products as part of the proposed rule s trigger treats voluntary protection products as percent profit to the lender and of zero value to the consumer.</p>
-<p>Without Agency: The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Ifsa and its members to express serious concerns about the s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. Including optional voluntary protection products as part of the proposed rule s trigger treats voluntary protection products as percent profit to the lender and of zero value to the consumer.</p>
 <p><strong>Organization: The Chippewa Cree Tribe of the Rocky Boys Reservation</strong></p>
 <p>With Agency: Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis. <em>Because of all these deficiencies, the bureau should rescind the proposed rule entirely.</em></p>
 <p>Without Agency: Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. <em>Jackson on behalf of the chippewa cree tribe of the rocky boy s reservation tribe I submit this public comment to express the tribe s views of the proposed regulations from the cfpb or bureau regarding small dollar lending proposed rule.</em> There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis.</p>
 <p><strong>Organization: Ballard Spahr</strong></p>
-<p>With Agency: The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. <em>The proposed rule was published by the consumer financial protection bureau cfpb or ’ bureau in fed.</em> I the proposed rule.</p>
-<p>Without Agency: The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. I the proposed rule. <em>Monica jackson october page executive summary consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to add ress other serious financia l needs.</em></p>
+<p>With Agency Name:<br />
+The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. <em>The proposed rule was published by the consumer financial protection bureau cfpb or ’ bureau in fed.</em> I the proposed rule.</p>
+<p>Without Agency Name:<br />
+The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. I the proposed rule. <em>Monica jackson october page executive summary consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to add ress other serious financia l needs.</em></p>
 <p><strong>Organization: Katten Muchin Rosenman LLP</strong></p>
-<p>With Agency: <em>Jackson the comments set forth below are provided in connection with the payday, vehicle title and certain high cost installment loans proposal set forth by the consumer financial protection bureau cfpb or bureau in the federal register on july the proposal.</em> Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. Dfa o.</p>
-<p>Without Agency: Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. <em>See dfa l c l. Dfa I a.</em></p>
+<p>With Agency Name:<br />
+<em>Jackson the comments set forth below are provided in connection with the payday, vehicle title and certain high cost installment loans proposal set forth by the consumer financial protection bureau cfpb or bureau in the federal register on july the proposal.</em> Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. Dfa o.</p>
+<p>Without Agency Name:<br />
+Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. <em>See dfa l c l. Dfa I a.</em></p>
 </div>
 <div id="textrank-limitations" class="section level3">
 <h3>Textrank Limitations</h3>
@@ -1061,9 +1084,10 @@ withdraw the Rule in its entirety or remove installment lenders from its coverag
 </li>
 <li>Does not produce good summaries for form/campaign letters.</li>
 </ul>
+<hr />
 </div>
-<div id="coding" class="section level3">
-<h3>Coding</h3>
+<div id="dealing-with-bad-ocrs" class="section level3">
+<h3>Dealing with Bad OCRs</h3>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>d <span class="sc">%&gt;%</span> </span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">textrank_summary =</span> comment_summary) <span class="sc">%&gt;%</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># join with coded data </span></span>
@@ -1182,7 +1206,7 @@ withdraw the Rule in its entirety or remove installment lenders from its coverag
 </tbody>
 </table>
 </div>
-<p><strong>Textrank is capturing state names &amp; Summary has output from footnote that is not captured by textrank</strong></p>
+<p><strong>Textrank is capturing state names &amp; ‘textrank_summary’ has output from footnote that is not captured by textrank</strong></p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>d <span class="sc">%&gt;%</span> </span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">textrank_summary =</span> comment_summary) <span class="sc">%&gt;%</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># join with coded data </span></span>
@@ -1236,11 +1260,10 @@ strongly encourage the Bureau to continue to emphasize that its Proposed Rules, 
 </div>
 <div id="notes" class="section level3">
 <h3>Notes</h3>
-<p>Things to consider:<br />
-- Will want to replace modified sentences with complete sentences<br />
-- Will still want to run <code>clean_comments()</code> on these sentences<br />
-- May want to drop short sentences (sentences under 7 words). Headers get caught by textrank when there is more than one page for a comment.<br />
-- U.S. had to be replaced with United States in order to prevent splicing. Other common acronyms may cause issues in the same way.</p>
+<p>Things to consider:Will want to replace modified sentences with complete sentences:<br />
+* Will still want to run <code>clean_comments()</code> on these sentences<br />
+* May want to drop short sentences (sentences under 7 words). Headers get caught by textrank when there is more than one page for a comment.<br />
+* U.S. had to be replaced with United States in order to prevent splicing. Other common acronyms may cause issues in the same way.</p>
 </div>
 
 

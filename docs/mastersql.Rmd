@@ -50,7 +50,11 @@ kablebox <- . %>%  knitr::kable() %>%
 ```
 
 
-This database contains metadata on Dodd-Frank regulatory actions and public comments. It has two tables, `actions` and `comments`.
+This database contains metadata on Dodd-Frank regulatory actions and public comments. It has two tables, `actions` and `comments`.  
+
+
+This document illustrates how to pull tables of interest from this database.  
+For more information on `RSQLite` see the package summary (https://cran.r-project.org/web/packages/RSQLite/RSQLite.pdf)  
 
 With **R**:
 
@@ -73,7 +77,13 @@ action <- dbGetQuery(con, "SELECT * FROM actions")
 
 ```
 
+```{r, echo=FALSE}
+# rule[1,] %>% mutate_all(as.character) %>% pivot_longer(everything()) %>% kable(format= "pipe")
 
+action %>% kablebox()
+```
+
+**Actions in Actions Table: `r nrow(action)`**
 
 Where the SQL query to get NPRM and Final Rule data for a agency is: 
 
@@ -81,13 +91,6 @@ Where the SQL query to get NPRM and Final Rule data for a agency is:
 SELECT * FROM actions WHERE agency_acronym = 'CFPB'
 ```
 
-
-```{r, echo=FALSE}
-# rule[1,] %>% mutate_all(as.character) %>% pivot_longer(everything()) %>% kable(format= "pipe")
-
-action %>% kablebox()
-```
-**Actions in Actions Table: `r nrow(action)`**
 
 Likewise, the SQL query to get comments on a docket is
 
@@ -118,7 +121,7 @@ agency <- dbGetQuery(con, "
  
 ```
 
-**Agencies in Actions Table: `nrow(agency)`**
+**Agencies in Actions Table: `r nrow(agency)`**
 
 ### Titles in Actions
 
@@ -150,7 +153,7 @@ titlescfpb <- dbGetQuery(con, "
  
 ```
 
-Unique Titles in CFPB in Actions Table: `r nrow(titlescfpb)`
+*Unique Titles in CFPB in Actions Table: `r nrow(titlescfpb)`*
 
 - - -
 
