@@ -2,6 +2,7 @@ clean_comments <- . %>%
   str_c(collapse = " ") %>% 
   # remove tab and line breaks
   str_replace_all("\\t|\\\n", " ") %>% 
+  str_replace_all("U\\.S\\.", "United States") %>% #Issues with cut of sentences due to period
   #str_remove_all(" ?(f|ht)(tp)(s?)(://)([A-z]*)[.|/](.*)") %>%
   #str_replace_all("\\s+", " ") %>% # removed by str_squish()
   #str_remove_all("^[0-9](?!\\.)") %>% #FIXME are not numbers removed below
@@ -10,13 +11,14 @@ clean_comments <- . %>%
   # remvove numbers and specials (keep only text and basic punctuation)
   str_replace_all("[^[A-z] \\.\\,\\?\\!\\;&\\;\\']", " ") %>% 
   str_remove_all("\\[|\\]") %>%
+  str_remove_all("§") %>%
   #str_remove_all("\\'") %>%
   str_squish() %>%
   #str_replace_all(" (\\.|\\?|\\!||:|;)", "\\1 ") %>%
   str_replace_all(" , ", " ") %>%
   str_replace_all("_", " ") %>%
   # double commas  
-  #str_replace_all("\\, \\, ", ", ") %>%  # double punctuation not in summaries, uncomment if this shows up in summaries
+  #str_replace_all("\\, \\, ", ", ") %>% 
   # double periods 
   #str_replace_all("\\. \\. ", ". ") %>% 
   # one character after a period 
@@ -25,7 +27,7 @@ clean_comments <- . %>%
   str_squish() %>% 
   str_remove_all("pagebreak") %>% # Devin's OCR method adds this 
   # remove repeated periods
-  #str_replace_all("\\.*", ". ") %>% # duplicated punctuation removed below
+  #str_replace_all("\\.*", ". ") %>% #removed below
   # str_replace_all(" \\,", ", ") %>%
   str_replace_all(" \\.", ". ") %>%
   #remove space in 's

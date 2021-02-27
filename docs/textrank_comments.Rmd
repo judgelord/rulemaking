@@ -7,8 +7,8 @@ output:
     #   keep_tex: true
     html_document:
       highlight: zenburn
-      #toc: true
-      # toc_float: true
+      toc: true
+      toc_float: true
       code_folding: hide
 editor_options: 
   chunk_output_type: console
@@ -49,13 +49,26 @@ kablebox <- . %>%  knitr::kable() %>%
   scroll_box(height = "500px")
 ```
 
-`summarize_comment` is a wrapper for `textrank_sentences` that returns a summary for each comment. It takes three inputs:
+ This file summarizes individual comments for agency rules. To do this it uses three functions; `clean_comments()`, `summarizeText()`, and `summarize_comments()`.  
+ 
+ `summarize_comments()` takes in four inputs `text`, `n_sentence`s, `max_sentences`, `custom_stop_words`, and `agency_name`  
+*n_sentences* is the number of sentences to use for the summary  
+function maps `summarizeText()` onto each each comment and then extracts the top *n_sentences*
 
-1. Comment `text` 
-1. The number of sentences to return, `n_sentences` (optional)--this controls the length of the summary. Do you want each comment summarized in one sentence summary or five? The current default is two sentences per comment, but I plan to make this vary by a comment's length (longer comment may deserve a longer summary).  
-1. The maximum number of sentences per comment to summarize `max_sentences` (optional). Fewer sentences makes textrank go faster, but we will often want to use all sentences. The default is 100 sentences per comment.
+ `summarizeText()` takes in four inputs `text`, `max_sentences`, `custom_stop_word`s, and `agency_name`  
+  *text* is the string of text for each comment  
+  *max_sentences* is a numerical value for the max number of sentences textrank will pull in and summarize  
+  *custom_stop_words* is a vector of words to be removed from the dictionary of words in textrank  
+  *agency_name* name of the agency to be removed from textrank as a string
+function removes custom_stop_words, agency_name, and stop_words from textrank and then uses textrank to rank the sentences by importance.
+  
+  `clean_comments()` takes in a string of text and cleans it. It is run on each comment provided.  
+  
 
-When the function is done, I'll add it to the textrank.R file, available [here](https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R). Load it in R with `source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R")`
+You can download it [here](https://github.com/judgelord/rulemaking/blob/master/functions/textrank.R) or load it in R with `source("https://raw.githubusercontent.com/judgelord/rulemaking/master/functions/textrank.R")`
+
+For more on textrank and the steps involved in applying it to a rule, see https://judgelord.github.io/rulemaking/textrank_summary and the PDF that Chris shared.
+
 
 ```{r}
 # load summarize_comment() function
@@ -66,7 +79,7 @@ source(here::here("functions", "clean_string.R"))
 ```
 
 
-To assess the quality of computer-generated summaries, we can compare them to the key sentences identified by hand. Specifically, RAs were asked to identify the top three key "asks" in each comment and select the text associated with those askes in each comment. They also identified the commener's organization, overall position on the proposed rule, and several other key things that might help assess the quality of textrank-generated summaries. 
+To assess the quality of computer-generated summaries, we can compare them to the key sentences identified by hand. Specifically, RAs were asked to identify the top three key "asks" in each comment and select the text associated with those askes in each comment. They also identified the commenter's organization, overall position on the proposed rule, and several other key things that might help assess the quality of textrank-generated summaries. 
 
 Load hand-coded data.
 
@@ -200,8 +213,8 @@ Summarize comments.
 
 ```{r}
 # for testing 
-# text <- d$text[4]
-# max_sentences = 100
+#text <- d$text[4]
+ #max_sentences = 100
 
 summarizeText <- function(text, max_sentences, custom_stop_words, agency_name) {
 
@@ -210,7 +223,7 @@ summarizeText <- function(text, max_sentences, custom_stop_words, agency_name) {
     distinct() %>%
     mutate(textrank_id = row_number()) %>% 
     # textrank requires columns in order
-    select(textrank_id, sentences)
+    select(textrank_id, sentences) 
   
   # remove agency name string from textrank dictionary
   sentences %<>%
@@ -228,6 +241,8 @@ summarizeText <- function(text, max_sentences, custom_stop_words, agency_name) {
   
   # inspect 
   count(words, word, sort = T) %>% filter(n>2) %>% pull(word)
+  
+
      
   # textRank fails if you feed it only one sentence
   if(nrow(sentences) > 1){
@@ -303,103 +318,19 @@ d %>%
   select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% kablebox()
 ```
 
+### Observations about Textrank
 
-Function removes agency name from Textrank. This doesn't impact every summary but the ones below are changed and generally the better summary is the one with the removed agency name. 
+- Comments tend to fall into two categories  
+  1. Opposes the rule in its entirety
+  2. Supports an amended form of the rule
+- Textrank tends to capture factual statements over firm stances  
+  - For example of opposition to the rule see McIntyre & Lemon, PLLC & The Independent Finance Association of Illinois  
+  - For example of changes to a rule see NCRC & The Clearing House Association LLC
+- The `textrank_summary` tends to explain why an organization is in support or in opposition.  
+- Generated summaries do a fairly good job of capturing changes an organization would like to see to the rule.   
+- The hand coded summary contains the ask whereas the `textrank_summary` tends to contain sentences that explain that ask.  
 
-
-# Summary changes with and without agency name:
-
-Typically this change swaps out one sentence in the summary. When agency name is removed this tends to run the risk of capturing headings. Each option has their pros and cons and each method produces some good summaries and some bad summaries.
-
-## Examples:
-
-
-## Organization: Idaho Financial Services Association Inc
-
-With agency name:
-Ifsa and its members to express serious concerns about the consumer financial protection bureau s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Including optional voluntary protection products as part of the proposed rule s trigger treats voluntary protection products as percent profit to the lender and of zero value to the consumer.
-
-Without Agency:
-The net effect of including optional voluntary protection products in the proposed rule s trigger is that likely many of our members will no longer make voluntary protection products available to their borrowers. Ifsa and its members to express serious concerns about the s cfpb recent proposed rule for payday, vehicle title, and certain high cost installment loans proposed rule. Including optional voluntary protection products as part of the proposed rule s trigger treats voluntary protection products as percent profit to the lender and of zero value to the consumer.
-
-
-## Organization: The Chippewa Cree Tribe of the Rocky Boys Reservation
-
-With Agency:
-Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis. **Because of all these deficiencies, the bureau should rescind the proposed rule entirely.**
-
-Without Agency:
-Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. **Jackson on behalf of the chippewa cree tribe of the rocky boy s reservation tribe I submit this public comment to express the tribe s views of the proposed regulations from the cfpb or bureau regarding small dollar lending proposed rule.** There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis.
-
-
-## Organization: Ballard Spahr
-
-With Agency: 
-The bureau ' s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. **The proposed rule was published by the consumer financial protection bureau cfpb or ' bureau in fed.** I the proposed rule.
-
-Without Agency:
-The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. I the proposed rule. **Monica jackson october page executive summary consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to add ress other serious financia l needs.**
-
-
-## Organization: Katten Muchin Rosenman LLP
-
-With Agency:
-**Jackson the comments set forth below are provided in connection with the payday, vehicle title and certain high cost installment loans proposal set forth by the consumer financial protection bureau cfpb or bureau in the federal register on july the proposal.** Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb's statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. Dfa o.
-
-
-Without Agency:
-Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. **See dfa l c l. Dfa I a.**
-
-
-
-
-```{r investigate}
-d %>% 
-  mutate(textrank_summary = comment_summary) %>%
-  # join with coded data 
-  left_join(coded) %>% 
-  # a table comparing textrank vs hand coded
-  select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% 
-  filter(org_name == "Ballard Spahr") %>%
-  kablebox()
-
-
-```
-
-Textrank is capturing split words as important. Once this is fixed in the loading of text files this could change the summaries with more words being captured by textrank
-
-```{r spliceSentences}
-d %>% 
-  mutate(textrank_summary = comment_summary) %>%
-  # join with coded data 
-  left_join(coded) %>% 
-  # a table comparing textrank vs hand coded
-  select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% 
-  filter(org_name == "The Independent Finance Association of Illinois") %>%
-  kablebox()
-  
-```
-
-
-Textrank is capturing state names & Summary has output from footnote that is not captured by textrank
-```{r stateNames}
-d %>% 
-  mutate(textrank_summary = comment_summary) %>%
-  # join with coded data 
-  left_join(coded) %>% 
-  # a table comparing textrank vs hand coded
-  select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% 
-  filter(org_name == "State Attorney Generals") %>%
-  kablebox()
-
-```
-
-
-# General Observations about Textrank
-
-Textrank tends to capture specifics instead of firm stances. The coded comment summaries tend to explain why an organization is in support or in opposition to a rule but will not usually spell out whether or not the comment supports or does not support. Generated summaries more accurately capture changes an organization would like to see to a rule instead of attitudes about the rule as a whole. The hand coded summary contains the ask and the generated summary contains and explanation of that ask.
-
-## Examples
+**Examples:**
 
 ```{r obs}
  d %>% 
@@ -417,4 +348,99 @@ Textrank tends to capture specifics instead of firm stances. The coded comment s
 
 
 
+### Agency Name
 
+- `summarizeText` removes agency name from Textrank.
+- Typically the difference between `textrank_summaries` with and without the agency name is one sentences.  
+- When agency name is removed this tends to run the risk of capturing headings.   
+- Each option has their pros and cons and each method produces some good summaries and some bad summaries.
+
+**Examples:**
+The italizied sentences are the changes between the summaries when agency name is removed and when agency name is kept.
+
+**Organization: The Chippewa Cree Tribe of the Rocky Boys Reservation**
+
+With Agency:
+Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis. *Because of all these deficiencies, the bureau should rescind the proposed rule entirely.*
+
+Without Agency:
+Once again, nowhere in the NPRM does the bureau acknowledge tribal regulation in the small dollar lending industry. *Jackson on behalf of the chippewa cree tribe of the rocky boy s reservation tribe I submit this public comment to express the tribe s views of the proposed regulations from the cfpb or bureau regarding small dollar lending proposed rule.* There is no discussion whatsoever of tribal regulation of small dollar lending, an omission that undercuts any empirical foundation for the proposed rule and significantly and negatively impacts the rulemaking analysis.
+
+
+**Organization: Ballard Spahr**
+
+With Agency Name:  
+The bureau ' s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. *The proposed rule was published by the consumer financial protection bureau cfpb or ' bureau in fed.* I the proposed rule.
+
+Without Agency Name:  
+The bureau ’ s own analysis shows that its proposed rule w ill have a devastating impact both on consumers who rely on covered loans and on providers of covered loans. I the proposed rule. *Monica jackson october page executive summary consumers rely upon loans subject to the proposed rule covered loans to pay for emergency expenses, to avoid late charges and nsf fees, and to add ress other serious financia l needs.*
+
+
+**Organization: Katten Muchin Rosenman LLP**
+
+With Agency Name:  
+*Jackson the comments set forth below are provided in connection with the payday, vehicle title and certain high cost installment loans proposal set forth by the consumer financial protection bureau cfpb or bureau in the federal register on july the proposal.* Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb's statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. Dfa o.
+
+
+Without Agency Name:  
+Like many providers included within the scope of the proposal, our client appreciates this opportunity to comment on the first regulatory exercise of the cfpb’s statutory authority to deter unfair and abusive acts and practices in connection with the provision of consumer financial products and services. *See dfa l c l. Dfa I a.*
+
+### Textrank Limitations  
+- Repeated headers or footings can be captured by textrank.  
+- Does not produce good summaries for form/campaign letters.
+
+- - -
+
+### Dealing with Bad OCRs
+
+
+
+```{r investigate}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  # join with coded data 
+  left_join(coded) %>% 
+  # a table comparing textrank vs hand coded
+  select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% 
+  filter(org_name == "Ballard Spahr") %>%
+  kablebox()
+
+
+```
+
+**Textrank is capturing split words as important. Once this is fixed in the loading of text files this could change the summaries with more words being captured by textrank**
+```{r spliceSentences}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  # join with coded data 
+  left_join(coded) %>% 
+  # a table comparing textrank vs hand coded
+  select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% 
+  filter(org_name == "The Independent Finance Association of Illinois") %>%
+  kablebox()
+  
+```
+
+
+**Textrank is capturing state names & 'textrank_summary' has output from footnote that is not captured by textrank**
+```{r stateNames}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  # join with coded data 
+  left_join(coded) %>% 
+  # a table comparing textrank vs hand coded
+  select(org_name, textrank_summary, hand_selected_summary, comment_url, comment_txt)  %>% 
+  filter(org_name == "State Attorney Generals") %>%
+  kablebox()
+
+```
+
+
+
+
+### Notes
+
+Things to consider:Will want to replace modified sentences with complete sentences:  
+* Will still want to run `clean_comments()` on these sentences  
+* May want to drop short sentences (sentences under 7 words). Headers get caught by textrank when there is more than one page for a comment.  
+* U.S. had to be replaced with United States in order to prevent splicing. Other common acronyms may cause issues in the same way.
