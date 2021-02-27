@@ -4,7 +4,7 @@ This is a project to collect and join various data on US federal agency rulemaki
 
 I have collected two datasets from regulations.gov, one for all rules, proposed rules, and notices and a second for all public comments:
 
-### 1. Metadata for all rules, proposed rules, and notices on regulations.gov ([.Rdata](https://drive.google.com/file/d/1LrafvpLDC2vBjO8DxEyCsGCEXhlwlKEe/view?usp=sharing))
+### 1. Metadata for all rules, proposed rules, and notices on regulations.gov ([.Rdata](https://drive.google.com/file/d/1LrafvpLDC2vBjO8DxEyCsGCEXhlwlKEe/view?usp=sharing),[SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing))
 
 |name                        |value                                                                                                                    |
 |:---------------------------|:------------------------------------------------------------------------------------------------------------------------|
@@ -27,7 +27,7 @@ I have collected two datasets from regulations.gov, one for all rules, proposed 
 |title                       |Part 433 - Exemptions from Antibiotic Certification and Labeling Requirements - Notice of Confirmation of Effective Date |
 |fr_document_id              |NA                                                                                                                       |
 
-### 2. Metadata for all public comments on regulations.gov ([.Rdata](https://drive.google.com/file/d/1iryaZo4W4-mPnsNC535HPl2KbSt5RKav/view?usp=sharing))
+### 2. Metadata for all public comments on regulations.gov ([.Rdata](https://drive.google.com/file/d/1iryaZo4W4-mPnsNC535HPl2KbSt5RKav/view?usp=sharing),[SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing))
 
 |name                        |value                                                                        |
 |:---------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -52,7 +52,7 @@ I have collected two datasets from regulations.gov, one for all rules, proposed 
 | attachment_1                    | CFPB-2018-0023-0006-1.doc                                                                                                                                                                                                     |
 | comment_url                     | https://www.regulations.gov/document?D=CFPB-2018-0023-0006                                                                                                                                 |
 
-### Both tables are also available in [SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing) ([SQL instructions](https://judgelord.github.io/rulemaking/sql))
+### Both tables are also available in [SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing) ([instructions for using SQL](https://judgelord.github.io/rulemaking/sql))
 
 For example, to get metadata for all CFPB rules:
 
