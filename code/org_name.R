@@ -1,9 +1,9 @@
 # this script extracts some basic org_name info, prior to hand coding
 
-#bring over organization to org
+# start with existing self-identified organization
 d %<>% mutate(org_name = organization)
 
-# remove preface 
+# remove preface in title
 preface <- ".*ponsored by |.*ponsoring organization |.*ubmitted by |.*omments from |.*ampaign from |.*on behalf of "
 
 d %<>% 
@@ -105,6 +105,7 @@ d$org_name %<>% str_squish()
 source("data/onewordorgs.R")
 
 d %<>% 
+  # generally people's initials 
   mutate(org_name = ifelse(str_dct(org_name, "^[[:alpha:]]\\. \\w+") & !str_dct(org_name, orgsShort), NA, org_name)) %>% 
   mutate(org_name = ifelse(str_dct(org_name, "^[[:alpha:]]\\.\\w+") & !str_dct(org_name, orgsShort), NA, org_name)) %>% 
   #making lost short org_name names stay as orgs while getting rid of useless one words
@@ -144,13 +145,13 @@ d %<>%
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, ".*Center"), 
                           str_ext(title,"\\w+ center.*"), 
                           org_name)) %>%
-  #community1
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "community") & !str_dct(title, "community$"), 
-                          str_ext(title, "\\w+ community.*"), 
-                          org_name)) %>%
+  # #community1
+  # mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "community") & !str_dct(title, "community$"), 
+  #                         str_ext(title, "\\w+ community.*"), 
+  #                         org_name)) %>%
   #community2
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "community$"), 
-                          str_ext(title, "\\w+ \\w+ \\w+ community"), 
+  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "community"), 
+                          title, 
                           org_name)) %>%
   #cooperative
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, ".*cooperative"), 
@@ -162,15 +163,15 @@ d %<>%
                           org_name)) %>% 
   #co. 
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, ".*Co\\.$"), 
-                          str_rm(title, "comment from"), 
+                          str_rm(title, "Co\\."), 
                           org_name)) %>% 
   #corp 
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "corp |corp\\."), 
-                          str_rm(title, "comment from"), 
+                          str_rm(title, "corp |corp\\."), 
                           org_name)) %>% 
   #Inc. 
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, ".*Inc\\..*|.*Inc \\.*"), 
-                          str_rm(title, "comment from"), 
+                          str_rm(title, "Inc\\..*"), 
                           org_name)) %>% 
   #LLP
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "LLP"), 
@@ -182,7 +183,7 @@ d %<>%
                           org_name)) %>% 
   #coalition
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "coalition"), 
-                          str_ext(title, "\\w+ \\w+ \\w+ coalition"), 
+                          str_ext(title, "(\\w+ )*coalition"), 
                           org_name)) %>% 
   #institute
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "institute|insitute"), 
@@ -194,7 +195,7 @@ d %<>%
                           org_name)) %>% 
   #society1 
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "society$"), 
-                          str_ext(title,  "\\w+ \\w+ \\w+ society"), 
+                          str_ext(title,  "(\\w+ )*society"), 
                           org_name)) %>% 
   #society2
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "society"), 
@@ -206,7 +207,7 @@ d %<>%
                           org_name)) %>% 
   #growers
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "growers"), 
-                          str_ext(title, "\\w+ \\w+ \\w+ growers"), 
+                          str_ext(title, "(\\w+ )*growers"), 
                           org_name)) %>% 
   #council, could use fixing
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "council"), 
@@ -230,7 +231,7 @@ d %<>%
                           org_name)) %>% 
   #farms
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, ".*farm"), 
-                          str_ext(title, "\\w+ \\w+ \\w+ farm"), 
+                          str_ext(title, "(\\w+ )*farm"), 
                           org_name)) %>%
   #farms2
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, ".*farm"), 
@@ -242,7 +243,7 @@ d %<>%
                           org_name)) %>%
   #federation1
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "federation$"), 
-                          str_ext(title, "\\w+ \\w+ \\w+ federation"), 
+                          str_ext(title, "(\\w+ )*federation"), 
                           org_name)) %>% 
   #federation2
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "federation"), 
@@ -250,7 +251,7 @@ d %<>%
                           org_name)) %>%  
   #church
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, ".*church"), 
-                          str_rpl(title, "church.*", "Church"), 
+                          title, 
                           org_name)) %>% 
   #partnership
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "partnership"), 
@@ -258,15 +259,15 @@ d %<>%
                           org_name)) %>% 
   #partnership
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "union"), 
-                          str_ext(title, ".*union.*"), 
+                          title, 
                           org_name)) %>% 
   #public health
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "public health"), 
-                          str_ext(title, ".*public health.*"), 
+                          title,
                           org_name)) %>% 
   #foundation
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "foundation"), 
-                          str_ext(title, ".*foundation.*"), 
+                          title, 
                           org_name)) %>% 
   #foundation
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "board of"), 
@@ -274,39 +275,39 @@ d %<>%
                           org_name)) %>% 
   #university
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "university"), 
-                          str_ext(title, "\\w+ \\w+ \\w+ university"), 
+                          title, 
                           org_name)) %>% 
   #city of
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "city of"), 
-                          str_ext(title, ".*city of.*"), 
+                          title, 
                           org_name)) %>% 
   #city of
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "commerce"), 
-                          str_ext(title, ".*commerce.*"), 
+                          title, 
                           org_name)) %>% 
-  #names
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, ".*, .*president, .*, .*"), 
-                          str_rm(title, ".*, .*president, .*,"), 
-                          org_name)) %>% 
-  #names2
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, ".*, .*president,.*"), 
-                          str_rm(title, ".*, .*president,"), 
-                          org_name)) %>%
+  # #names
+  # mutate(org_name= ifelse(is.na(org_name) & str_dct(title, ".*, .*president, .*, .*"), 
+  #                         str_rm(title, ".*, .*president, .*,"), 
+  #                         org_name)) %>% 
+  # #names2
+  # mutate(org_name= ifelse(is.na(org_name) & str_dct(title, ", .*president,"), 
+  #                         str_rm(title, ".*, .*president,"), 
+  #                         org_name)) %>%
   #names3
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "president,.*"), 
+  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "president,"), 
                           str_rm(title, ".*president,"), 
                           org_name)) %>% 
   #testimony from
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "testimony from.*"), 
+  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "testimony from"), 
                           str_rm(title, "testimony from"), 
                           org_name)) %>% 
   #request for an extension
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "request for extension from .*"), 
+  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "request for extension from"), 
                           str_rm(title, "request for extension from"), 
                           org_name)) %>% 
   #group
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "group.*"), 
-                          str_ext(title, ".*group.*"), 
+  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "group"), 
+                          title, 
                           org_name))
 
 
@@ -410,7 +411,7 @@ d %<>%
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "festival foods"), 
                           "Festival Foods", 
                           org_name)) %>% 
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "Union of Concerned Scientists"), 
+  mutate(org_name= ifelse(str_dct(title, "Union of Concerned Scientists"), 
                           "union of concerned scientists",
                           org_name)) %>% 
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "Kwik Trip"), 
@@ -422,10 +423,19 @@ d %<>%
   mutate(org_name= ifelse(is.na(org_name) & str_dct(title, "National Congress of American Indians"), 
                           "National Congress of American Indians",
                           org_name)) %>% 
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(org_name, "U.S. Chamber of Commerce"), 
-                          "U.S. Chamber of Commerce",
+  mutate(org_name= ifelse(str_dct(org_name, "Chamber of Commerce"), 
+                          "Chamber of Commerce",
                           org_name))
 
+
+
+
+
+
+
+
+
+################################################################
 #text
 d %<>% 
   #International Fund for Animal Welfare
@@ -471,17 +481,17 @@ d %<>%
                           org_name)) %>% 
   #no-reply@democracyinaction.org
   #FIXME
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "Melissa Drapeau <no-reply@democracyinaction.org>"), 
-                          str_rpl(comment_text, "Melissa Drapeau.*", "Democracy In Action"), 
+  mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "no-reply@democracyinaction.org"), 
+                          "Democracy In Action", 
                           org_name)) %>% 
   #American Lung Association
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "See attached letter from 617 health professionals"), 
-                          str_rpl(comment_text, "See attached letter from 617 health professionals.*", "American Lung Association"), 
+                          "American Lung Association", 
                           org_name)) %>% 
   #Power Shift Network
   #FIXME
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network"), 
-                          str_rpl(comment_text, "I am submitting the attached 1,418 comments on Docket EPA-HQ-OAR-2010-0505 collected by the Power Shift Network.*", "Power Shift Network"), 
+  mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "collected by the Power Shift Network"), 
+                           "Power Shift Network", 
                           org_name)) %>% 
   #Trustees for Alaska
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "written by Trustees for Alaska"), 
@@ -501,7 +511,7 @@ d %<>%
                           org_name)) %>% 
   #The Board of Directors of the Society for Ethnomusicology
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "The Board of Directors of the Society for Ethnomusicology"), 
-                          "The Board of Directors of the Society for Ethnomusicology", 
+                          "Society for Ethnomusicology", 
                           org_name)) %>% 
   #Doyon, Limited
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "Doyon, Limited"), 
@@ -516,8 +526,8 @@ d %<>%
                           "Central Sierra Environmental Resource Center", 
                           org_name)) %>% 
   #human society 
-  mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "this is the humane society"), 
-                          "Humane Society of the United States", 
+  mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "the humane society"), 
+                          "Humane Society", 
                           org_name)) %>% 
   #congressional sportmen's foundation
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "Congressional Sportsmen's Foundation"), 
@@ -529,27 +539,27 @@ d %<>%
                           org_name)) %>% 
   #institute
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "institute|insitute"), 
-                          str_ext(comment_text, "\\w+ \\w+ \\w+ institute"), 
+                          str_ext(comment_text, "(\\w+ )*institute"), 
                           org_name)) %>% 
   #co. 
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, ".*Co\\.$"), 
-                          str_ext(comment_text, "\\w+ \\w+ \\w+ co"), 
+                          str_ext(comment_text, "(\\w+ )*co"), 
                           org_name)) %>% 
   #corp 
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "corp |corp\\."), 
-                          str_ext(comment_text, "\\w+ \\w+ \\w+ corp"), 
+                          str_ext(comment_text, "(\\w+ )*corp"), 
                           org_name)) %>% 
   #Inc. 
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, ".*Inc\\..*|.*Inc \\.*"), 
-                          str_ext(comment_text, "\\w+ \\w+ \\w+ inc"), 
+                          str_ext(comment_text, "(\\w+ )*inc"), 
                           org_name)) %>% 
   #LLP
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "LLP"), 
-                          str_ext(comment_text, "\\w+ \\w+ \\w+ llp"), 
+                          str_ext(comment_text, "(\\w+ )*llp"), 
                           org_name)) %>% 
   #LLC
   mutate(org_name= ifelse(is.na(org_name) & str_dct(comment_text, "LLC|LC"), 
-                          str_ext(comment_text, "\\w+ \\w+ \\w+ llc"), 
+                          str_ext(comment_text, "(\\w+ )*llc"), 
                           org_name))
 
 
