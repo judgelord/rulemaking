@@ -40,7 +40,7 @@ d <- all
 # d <- filter(all, docketId %in% mass$docketId)
 
 ## Comments from one agency
-# d <- filter(all, agencyAcronym %in% c("DOT"))
+# d <- filter(all, agencyAcronym %in% c("EPA", "BSEE", "DOJ", "DOD", "ED", "CFPB", "DOL", "MSHA", "DOI", "PHMSA"))
 
 # Inspect
 nrow(d)
@@ -81,7 +81,28 @@ dim(download)
 download %>% head() %>% select(file, attach.url, downloaded)
 download %>%  count(agency_acronym, sort = T) %>% knitr::kable()
 
-# download %<>% filter(agencyAcronym == "OCC")
+download %<>% filter(agency_acronym %in% c("ATF", 
+                                                  "NLRB",
+                                                  "OFCCP",
+                                                  "OJP",
+                                                  "USCG",
+                                                  "CIS",
+                                                  "USCBP",
+                                                  "PHMSA",
+                                                  "DOS",
+                                                  "ED", 
+                                                  "MSHA", 
+                                                  "BSEE", 
+                                                  "DOJ-CRT", 
+                                                  "DOL", 
+                                                  "BIA", 
+                                                  "FEMA", 
+                                                  "BLM", 
+                                                  "DOI", 
+                                                  "DEA",
+                                                  "OSHA",
+                                                  "DARS", 
+                                                  "DHS")) 
 dim(download)
 # Load data on failed downloads 
 load("data/comment_fails.Rdata")
