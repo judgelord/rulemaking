@@ -1,52 +1,66 @@
 
 source("setup.R")
-load("rules_metadata.Rdata")
+load(here::here("data", "rules_metadata.Rdata"))
 names(rules)
-load("comment_metadata.Rdata")
+load(here::here("comment_metadata.Rdata"))
 names(comments_all)
 
 topdockets <- rules %>% 
+  group_by(docket_id) %>% 
+  mutate(number_of_comments_received = sum(number_of_comments_received)) %>%
   ungroup() %>% 
   filter(docket_type == "Rulemaking",
-         number_of_comments_received > 0) %>% 
+         number_of_comments_received > 0, # dockets with 100 comments 
+         document_type == "Rule") %>% # dockets with a final rule (initially sampled all dockets)
   group_by(agency_acronym) %>%
+  mutate(max_comments = max(number_of_comments_received)) %>%
+  filter(max_comments > 100) %>%  
   slice_max(order_by = number_of_comments_received,
-            n = 1,
+            n = 3,
             with_ties =F)
+
+# ejdockets <- rules %>% 
+#   ungroup() %>% 
+#   filter(docket_type == "Rulemaking",
+#          number_of_comments_received > 0,
+#          docket_id %in% ej_dockets) 
 
 topdockets$number_of_comments_received %>% head()
 
 dim(topdockets)
 
-topdockets %>% count(number_of_comments_received)
+count(topdockets, docket_id, number_of_comments_received)
 
+agencies <- unique(rules$agency_acronym)
+
+# agencies = c("EPA","ATF",
+#              "NLRB",
+#              "OFCCP",
+#              "OJP",
+#              "USCG",
+#              "CIS",
+#              "USCBP",
+#              "PHMSA",
+#              "DOS",
+#              "ED",
+#              "MSHA",
+#              "BSEE",
+#              "DOJ-CRT",
+#              "DOL",
+#              "BIA",
+#              "FEMA",
+#              "BLM",
+#              "DOI",
+#              "DEA",
+#              "OSHA",
+#              "DARS",
+#              "DHS")
 
 d <- comments_all %>% 
   # filter to top dockets
   filter(docket_id %in% topdockets$docket_id) %>% 
   # selecting agencies for hand codeing
-  filter(agency_acronym %in% c("ATF", 
-                               "NLRB",
-                               "OFCCP",
-                               "OJP",
-                               "USCG",
-                               "CIS",
-                               "USCBP",
-                               "PHMSA",
-                               "DOS",
-                               "ED", 
-                               "MSHA", 
-                               "BSEE", 
-                               "DOJ-CRT", 
-                               "DOL", 
-                               "BIA", 
-                               "FEMA", 
-                               "BLM", 
-                               "DOI", 
-                               "DEA",
-                               "OSHA",
-                               "DARS", 
-                               "DHS")) 
+  filter(agency_acronym %in% agencies) 
 
 dim(d)
 
@@ -55,17 +69,19 @@ dim(d)
 # filter to mass dockets
 d %<>% group_by(docket_id) %>% 
   # mass dockets
-  mutate(number_of_comments_on_docket = sum(number_of_comments_received),
+  mutate(comments_on_docket = sum(number_of_comments_received),
          max = max(number_of_comments_received) ) %>% 
   ungroup() %>% 
-  filter(max > 99 | number_of_comments_on_docket > 999)
+  filter(max > 99 | comments_on_docket > 999)
 dim(d)
 
 # apply auto-coding 
 #FIXME with updated org_names from hand-coding 
 source(here::here("code", "org_name.R"))
-source(here::here("code", "comment_position.R"))
+#FIXME source(here::here("code", "comment_position.R"))
 
+save(d, file = here::here("data", "comments4datasheets.Rdata"))
+# load(here::here("data", "comments4datasheets.Rdata"))
 temp <- d
 d <- temp
 
@@ -78,8 +94,8 @@ d %<>%
   ungroup() %>%
   arrange(-number_of_comments_received) %>% 
   filter(attachment_count > 0) %>% 
-  filter(!org_name %in% c("NA", "na", "Organization Unknown 1", "Organization Unknown 2", "Organization Unknown 3"),
-         !is.na(org_name) ) %>% 
+  mutate(org_name = org_name %>% replace_na("NA") ) %>% 
+  filter(number_of_comments_received > 99 | !org_name %in% c("NA", "na", "Organization Unknown 1", "Organization Unknown 2", "Organization Unknown 3")) %>% 
   add_count(docket_id)
 
 d %>% 
@@ -104,19 +120,21 @@ d %<>%
                             document_id,
                             "-1.txt"), 
                       NA),
-         comment_url = str_c("https://www.regulations.gov/document?D=",
+         comment_url = str_c("https://www.regulations.gov/comment/",
                              document_id),
-         proposed_url = NA,
-         final_url = NA)
+         docket_url = str_c("https://www.regulations.gov/docket/",
+                            document_id %>% str_remove("-[0-9]*$")))
 
 d$attachment_txt[1]
 d$comment_url[1]
+d$docket_url[1]
 
 d %<>% rename(comment_title = title)
 names(d)
 ## PREP SHEETS
 d %<>% select(agency_acronym, 
               docket_id, 
+              docket_url,
               docket_title, 
               document_id, 
               comment_url, 
@@ -169,7 +187,7 @@ if (!dir.exists(here::here("data", "datasheets") ) ){
 write_comment_sheets <- function(docket){
   d %>% 
     filter(docket_id == docket) %>% 
-    write_csv(path = here::here("data",
+    write_csv(file = here::here("data",
                                 "datasheets",
                               #str_extract("^[A-Z]"), # agency  
                               str_c(docket, "_org_comments.csv")))
@@ -182,5 +200,6 @@ d %<>% mutate(comment_type = ifelse(number_of_comments_received > 99, "mass", co
 unique(d$docket_id)
 
 walk(unique(d$docket_id), write_comment_sheets)
+
 
 

@@ -5,6 +5,8 @@ library(magrittr)
 
 source(here::here("functions", "regulations-gov-API-search.R"))
 
+search_keyword_page <- search_keyword_page4
+
 source(here::here("api-key.R"))
 
 # RULES 
@@ -63,16 +65,17 @@ save(support, file = here::here("data", str_c("support", Sys.Date(), ".Rdata")))
 
 # EJ NPRMs
 # test with first 10k
-ejPR <- map_dfr(.x = c(1:10),
+ejPR <- map_dfr(.x = c(1:20),
                 .f = search_keyword_page,
-                documenttype = "PR",
-                keyword = "environmental justice")
+                documenttype = "Proposed Rule",
+                keyword = "environmental justice",
+                lastModifiedDate = Sys.time() %>% str_remove(" [A-Z]"))
 
 ejPR %>%
   filter(!is.na(postedDate)) %>%
   arrange(postedDate) %>%
   head() %>%
-  select(postedDate, page)
+  select(postedDate, lastpage)
 
 # # up to 100k
 ejPR100 <- map_dfr(.x = c(11:100),
@@ -86,6 +89,14 @@ ejPR100 %>%
   arrange(postedDate) %>%
   head() %>%
   select(postedDate, page)
+
+ejPR %>% 
+  mutate(year = str_sub(postedDate, 1,4) %>% as.numeric()) %>% 
+  ggplot() + 
+  aes(x = year, fill = documentType) +
+  geom_bar()
+
+
 #
 ejPR %<>% full_join(ejPR100)
 
@@ -97,13 +108,19 @@ save(ejPR, file = here::here("data",
 ##################################
 # EJ Rules 
 # test with first 10k
-ejFR <- map_dfr(.x = c(1:10),
+ejFR <- map_dfr(.x = c(1:20),
                       .f = search_keyword_page,
-                      documenttype = "FR",
-                      keyword = "environmental justice")
+                      documenttype = "Rule",
+                      keyword = "environmental justice",
+                lastModifiedDate <-- Sys.time() %>% str_remove(" [A-Z]"))
+
+# if(content$meta$lastPage){
+#   lastModifiedDate <-- content$data$attributes$lastModifiedDate %>% tail(1)
+#   #lastModifiedDate <-- Sys.time() %>% str_remove(" [A-Z]")
+# } 
 
 # up to 100k
-ejFR2 <- map_dfr(.x = c(60:100),
+ejFR2 <- map_dfr(.x = c(1:20),
                  .f = search_keyword_page,
                  documenttype = "FR",
                  keyword = "Environmental Justice")
@@ -125,7 +142,7 @@ ejFR %>%
 
 ejFR %<>% full_join(ejFR2)
 
-ejFR %>% filter(is.na(postedDate)) %>% count(docketId, message, sort= T)
+ejFR %>% filter(is.na(postedDate)) %>% count(docketId, lastpage, sort= T)
 
 save(ejFR, file = here::here("data", 
                              str_c("ejFR", 
@@ -136,34 +153,54 @@ save(ejFR, file = here::here("data",
 
 ###################
 # EJ COMMENTS 
+# initialize
+ejcomments1 <- map_dfr(.x = c(1),
+                      .f = search_keyword_page4,
+                      documenttype = "Public Submission",
+                      keyword = "environmental justice",
+                      lastModifiedDate = Sys.time() %>% str_remove(" [A-Z]"))
 
-# test with first 10k
-ejcomments <- map_dfr(.x = c(1:10),
-                      .f = search_keyword_page,
-                      documenttype = "PS",
-                      keyword = "environmental justice")
 
-# up to 100k
-ej100 <- map_dfr(.x = c(11:100),
-                 .f = search_keyword_page,
-                 documenttype = "PS",
-                 keyword = "environmental justice")
+# first 5k
+ejcomments <- map_dfr(.x = c(1:20),
+                      .f = possibly(search_keyword_page4, otherwise = ejcomments1),
+                      documenttype = "Public Submission",
+                      keyword = "environmental justice",
+                      lastModifiedDate = Sys.time() %>% str_remove(" [A-Z]"))
+
+unique(ejcomments$lastpage)
+
+## begin loop (as of 2021-02-06, there were ~25k ej comments, so repeat 5+ times)
+# next 5k
+ej2 <- map_dfr(.x = c(1:20),
+               .f = possibly(search_keyword_page4, otherwise = ejcomments1),
+                 documenttype = "Public Submission",
+                 keyword = "environmental justice",
+               # starting at the last modified date (the function arranges by last modified date)
+                 lastModifiedDate = #"2020-05-14T23:47:37Z")# there are more than 5k comenst on 2020-5-15
+                 ejcomments$lastModifiedDate %>% min() )
 
 # inspect
-ej100 %>% 
+ej2 %>% 
   filter(!is.na(postedDate)) %>% 
-  arrange(postedDate) %>%
+  arrange(lastModifiedDate) %>%
   head() %>%
-  select(postedDate, page, documentId)
+  select(lastModifiedDate, postedDate)
 
-ej100 %>% 
-  filter(!is.na(postedDate)) %>% 
-  mutate(year = str_sub(postedDate, 1,4) %>% as.numeric()) %>% 
+ej2 %>% 
   ggplot() + 
-  aes(x = year, fill = documentType) +
+  aes(x = as.Date(postedDate), fill = documentType) +
   geom_bar()
 
-ejcomments %<>% full_join(ej100)
+ejcomments %<>% full_join(ej2)
+
+ejcomments %>% 
+  ggplot() + 
+  aes(x = as.Date(postedDate), fill = documentType) +
+  geom_bar()
+
+# Repeat above 
+# TODO make while loop in function 
 
 save(ejcomments, 
      file = here::here("data", 

@@ -199,7 +199,7 @@ search.keyword <- function(path) {
 
 # create path function for keyword searches, comment out things like agency or status
 search.keywords <- function(documenttype, keywords, n) {
-  keywords <- gsub(" ", "%2B", keywords)
+  keywords <- str_c("&22", keywords, "&22") %>% str_replace(" ", "%2B")
   documenttype <- gsub(", ", "%2B", documenttype)
   
   regs.gov.path <- function(documenttype, search){
@@ -222,9 +222,6 @@ for(i in 1:length(keywords)){
     documenttype = documenttype, # "N%2BPR%2BFR%2BPS%2BSR%2BO" # N%2BPR%2BFR%2BPS%2BSR%2BO = all docs, N: Notice PR: Proposed Rule FR: Rule O: Other SR: Supporting & Related Material PS: Public Submission
     search = keywords[i])
 }
-
-
-
 
 
 ###################
@@ -253,13 +250,108 @@ return(d)
 } # end search.keywords() function 
 
 
+search_keyword_page <- function(page, documenttype, keyword){
+  
+  # format (put in quotes and replace space with unicode)
+search <- str_c("%22", keyword, "%22") %>% str_replace(" ", "%2B")
+documenttype <- gsub(", ", "%2B", documenttype)
+rpp <- 1000
+page <- page*rpp
+path <- paste0("/regulations/v3/documents?api_key=", api_key, 
+         "&rpp=", rpp, 
+         #"&a=", agency,
+         "&so=", order, 
+         "&sb=", sortby, 
+         "&s=", search, 
+         #"&cp=", status,
+         "&dct=", documenttype,
+         "&po=", page)
+  
+  
+  raw.result <- GET(url = url, path = path)
+  
+  content <- fromJSON(rawToChar(raw.result$content))
+  
+  d <- as.data.frame(content[[1]]) %>% as_tibble() %>% 
+    mutate(page = page/rpp)
+  
+  return(d)
+}
+
+# api v4
+# https://api.regulations.gov/v4/comments?filter[searchTerm]=water&api_key=DEMO_KEY
+# https://api.regulations.gov/v4/comments?filter[commentOnId]=09000064846eebaf
+# &page[size]=250
+# &page[number]=N
+# &sort=lastModifiedDate,documentId
+# &api_key=DEMO_KEY
+
+# https://api.regulations.gov/v4/comments?filter[commentOnId]=09000064846eebaf
+# &filter[lastModifiedDate][ge]=2020-08-10 11:58:52
+# &page[size]=250
+# &page[number]=N
+# &sort=lastModifiedDate,documentId
+# &api_key=DEMO_KEY
 
 
+search_keyword_page4 <- function(page = 1, 
+                                 documenttype = "Rule", 
+                                 keyword, 
+                                 lastModifiedDate = Sys.time() ){
+  
+  
+  lastModifiedDate %<>% str_replace_all("[A-Z]", " ") %>%  str_squish()
+  
+  # format (replace space with unicode)
+  search <- #keyword %>% 
+    str_c("%22", keyword, "%22") %>% 
+    str_replace(" ", "%2B")
+  
+  
+  endpoint = ifelse(documenttype == "Public Submission", "comments", "documents")
+  
+  documentType = ifelse(documenttype == "Public Submission", "", "&filter[documentType]=documents")
 
+  path <- paste0("/v4/", endpoint,
+                 "?page[number]=", page,
+                 "&page[size]=250", 
+                 documentType,
+                 #"&a=", agency,
+                 "&sort=-lastModifiedDate,documentId",
+                 "&filter[searchTerm]=", search,
+                 "&filter[lastModifiedDate][le]=", lastModifiedDate,
+                 "&api_key=", api_key)
+  
+  # this works:
+  # raw.result <- GET(url = "https://api.regulations.gov", 
+  # path = "/v4/comments?filter[searchTerm]=environmental%2Bjustice&api_key=aynn8SLo5zdb2V0wqBKQwHQ5FmCLd2cIpWStzrZ0")
+  
+  str_c("https://api.regulations.gov", path)
+  
+  raw.result <- GET(url = "https://api.regulations.gov", path = path)
+  
+  content <- fromJSON(rawToChar(raw.result$content))
+  
+  d <- content$data$attributes %>%  as_tibble()  %>%
+    mutate(id = content$data$id,
+           type = content$data$type,
+           links = content$data$links$self,
+      lastpage = content$meta$lastPage)
+  
+  #TODO loop this over batches of 5k documents
+  # if(content$meta$lastPage){
+  #   lastModifiedDate <-- content$data$attributes$lastModifiedDate %>% tail(1)
+  #   #lastModifiedDate <-- Sys.time() %>% str_remove(" [A-Z]")
+  # } 
+  
+  return(d)
+}
 
-
-
-
+d <- search_keyword_page4(keyword = "environmental justice",
+                          documenttype = "Public Submission",
+                          lastModifiedDate =  "2020-05-15 18:39:57")
+d$lastModifiedDate
+d$highlightedContent
 
 # d %<>% filter(
 #   !is.na(commentText)|
@@ -319,7 +411,6 @@ search.doc <- function(docID) {
 
 
 
-
 ##########################################################
 
 
@@ -342,4 +433,3 @@ search.doc <- function(docID) {
 # d$summary <- gsub("\n", "", d$summary)
 # d$commentText <- gsub("\n", "", d$commentText)
 # write.csv(names(d), paste(documenttype, keywords, ".csv"))
-

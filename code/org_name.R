@@ -1,5 +1,4 @@
-##################### START HERE ################################
-# extract org_name info 
+# this script extracts some basic org_name info, prior to hand coding
 
 #bring over organization to org
 d %<>% mutate(org_name = organization)

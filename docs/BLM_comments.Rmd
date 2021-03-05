@@ -1,0 +1,187 @@
+---
+title: "BLM Rule Comment Summary"
+subtitle: 
+output:
+    # pdf_document:
+    #   toc: true
+    #   keep_tex: true
+    html_document:
+      highlight: zenburn
+      #toc: true
+      # toc_float: true
+      code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = TRUE, 
+                      fig.width=8.5, 
+                      split = T,
+                      fig.align = 'center', 
+                      fig.path='figs/',
+                      warning=FALSE, 
+                      message=FALSE)
+
+
+library(tidyverse)
+library(magrittr)
+library(tidytext)
+library(xml2)
+library(knitr)
+library(kableExtra)
+
+library(ggplot2); theme_set(theme_bw())
+  options(
+    ggplot2.continuous.color = "viridis",
+    ggplot2.continuous.fill = "viridis"
+  )
+  scale_color_discrete <- function(...)
+    scale_color_viridis_d(..., direction = -1)
+  scale_fill_discrete <- function(...)
+    scale_fill_viridis_d(..., direction = -1)
+  
+  
+kablebox <- . %>%  knitr::kable() %>% 
+  kable_styling() %>% 
+  scroll_box(height = "500px")
+```
+
+# About   
+  
+  This file summarizes individual comments for agency rules. To do this it uses three functions; `clean_comments()`, `summarizeText()`, and `summarize_comments()`.  
+  
+  `clean_comments()` takes in a string of text and cleans it. It is run on each comment provided.  
+  
+  `summarizeText()` takes in text, max_sentences, custom_stop_words, and agency_name  
+  *text* is the string of text for each comment  
+  *max_sentences* is a numerical value for the max number of sentences textrank will pull in and summarize  
+  *custom_stop_words* is a vector of words to be removed from the dictionary of words in textrank  
+  *agency_name* name of the agency to be removed from textrank as a string
+function removes custom_stop_words, agency_name, and stop_words from textrank and then uses textrank to rank the sentences by importance.  
+
+`summarize_comments()` takes in text, n_sentences, max_sentences, custom_stop_words, and agency_name  
+*n_sentences* is the number of sentences to use for the summary  
+function maps `summarizeText()` onto each each comment and then extracts the top *n_sentences*
+
+# Instructions
+
+Load functions
+
+```{r functions}
+# load text cleaning function 
+source(here::here("functions", "clean_comments.R"))
+
+# load text summarize function 
+source(here::here("functions", "summarizeText.R")) # gives textrank ditionary of words from comments
+
+
+# load comment summarize function 
+source(here::here("functions", "summarize_comments.R")) # ranks sentences and gives top ranked sentence back
+```
+
+
+Change file paths to search for agency and docket
+
+Change **custom_stop_words** and **agency_name** with agency acronym, rule title, and agency name
+
+
+```{r data}
+# file paths for comments 
+agency <- "BLM"
+docket <- "BLM-2013-0002"
+
+# A dataframe of custom stop words, formatted like tidytext::stop_words
+# If form letters need to be summariezed standard headings should be removed (docket no., email, etc.)
+custom_stop_words <- tibble( 
+  words = c("blm", "BLM", "Oil and Gas Hydraulic Fracturing on Federal and Indian Lands")) %>% # ignore case?
+
+  mutate(words = words)%>%
+  unnest_tokens(output = word, input = words) %>%
+  distinct()
+
+agency_name <- c("bureau of land management")
+
+# get txt file names from a directory, here called “comment_text”
+comments <- tibble( path = list.files( here::here('comment_text', agency, docket), 
+                                       full.names = T) ) %>% 
+  filter( str_detect(path, "txt") )
+
+# in SQL, CFPB file names are regs_dot_gov_document_id, shortened to document_id for now
+comments %<>% 
+  mutate( document_id = path %>%
+            str_remove(".*/")  %>%
+            str_remove("-[0-9]*\\..*") 
+   ) 
+
+
+ d <- comments #%>% 
+#   # select comments that have been hand coded # No hand coded comments yet
+#   filter(document_id %in% coded$document_id)
+```
+
+Read in comment and run `clean_comments()` and map onto **text**
+
+```{r readComment}
+read_comment <- . %>%
+  read_lines() %>%
+  clean_comments() 
+
+# map read
+d$text <- map_chr(d$path, read_comment)
+
+```
+
+
+Run `summarize_comments()`
+
+```{r summarize}
+comment_summary <- summarize_comments(d$text, 
+                                      n_sentences = 3, 
+                                      max_sentences = 50, 
+                                      custom_stop_words = custom_stop_words,
+                                      agency_name = agency_name)
+```
+
+Create table
+
+```{r}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  # a table comparing textrank vs hand coded
+  select(document_id, textrank_summary)  %>% kablebox()
+```
+
+# Ongoing issues
+
+## Textrank has a hard time with form letters and captures names and titles
+```{r}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  filter(document_id == c("BLM-2013-0002-5231","BLM-2013-0002-0036", "BLM-2013-0002-5667")) %>%
+  # a table comparing textrank vs hand coded
+  select(document_id, textrank_summary)  %>% kablebox()
+```
+
+## Comments with two column formatting in the txt file lead to summaries like this:
+
+```{r}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  filter(document_id == "BLM-2013-0002-0036") %>%
+  # a table comparing textrank vs hand coded
+  select(document_id, textrank_summary)  %>% kablebox()
+```
+
+
+## Huh??
+
+```{r}
+d %>% 
+  mutate(textrank_summary = comment_summary) %>%
+  filter(document_id == "BLM-2013-0002-5193") %>%
+  # a table comparing textrank vs hand coded
+  select(document_id, textrank_summary)  %>% kablebox()
+```
