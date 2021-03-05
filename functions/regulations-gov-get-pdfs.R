@@ -13,24 +13,25 @@ load("comment_metadata.Rdata")
 all <- comments_all
 dim(all)
 names(all)
+all %<>% namingthings() # from updateRdata.R
+names(all)
 
 # urls for first attachments 
 all %<>% 
-  mutate(file = str_c(document_id, "-1.pdf"),
+  mutate(file = str_c(id, "-1.pdf"),
          attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
-                            document_id,
+                            id,
                             "&attachmentNumber=1"),
          downloaded = file %in% list.files(here::here("comments")) )
 
 names(all)
-
 # inspect missing files
 all %>% 
   filter(!downloaded,
          #org.comment, # comments identified as a org comment 
          #!is.na(organization), # comments with an org name identified
          attachment_count > 0) %>% 
-         count(agency_acronym, sort = T) %>% knitr::kable()
+         count(agency_id, sort = T) %>% knitr::kable()
 
 d <- all
 
@@ -56,7 +57,7 @@ nrow(docs)
 docs %>% head() %>% select(file, attach.url, downloaded)
 
 
-docs %>%  count(agency_acronym, sort = T) %>% knitr::kable()
+docs %>%  count(agency_id, sort = T) %>% knitr::kable()
 #################################
 # files we do have 
 downloaded <- filter(docs, downloaded)
@@ -79,30 +80,30 @@ download <- filter(docs,
 dim(docs)
 dim(download)
 download %>% head() %>% select(file, attach.url, downloaded)
-download %>%  count(agency_acronym, sort = T) %>% knitr::kable()
+download %>%  count(agency_id, sort = T) %>% knitr::kable()
 
-download %<>% filter(agency_acronym %in% c("ATF", 
-                                                  "NLRB",
-                                                  "OFCCP",
-                                                  "OJP",
-                                                  "USCG",
-                                                  "CIS",
-                                                  "USCBP",
-                                                  "PHMSA",
-                                                  "DOS",
-                                                  "ED", 
-                                                  "MSHA", 
-                                                  "BSEE", 
-                                                  "DOJ-CRT", 
-                                                  "DOL", 
-                                                  "BIA", 
-                                                  "FEMA", 
-                                                  "BLM", 
-                                                  "DOI", 
-                                                  "DEA",
-                                                  "OSHA",
-                                                  "DARS", 
-                                                  "DHS")) 
+# download %<>% filter(agency_id %in% c("ATF", 
+#                                                   "NLRB",
+#                                                   "OFCCP",
+#                                                   "OJP",
+#                                                   "USCG",
+#                                                   "CIS",
+#                                                   "USCBP",
+#                                                   "PHMSA",
+#                                                   "DOS",
+#                                                   "ED", 
+#                                                   "MSHA", 
+#                                                   "BSEE", 
+#                                                   "DOJ-CRT", 
+#                                                   "DOL", 
+#                                                   "BIA", 
+#                                                   "FEMA", 
+#                                                   "BLM", 
+#                                                   "DOI", 
+#                                                   "DEA",
+#                                                   "OSHA",
+#                                                   "DARS", 
+#                                                   "DHS")) 
 dim(download)
 # Load data on failed downloads 
 load("data/comment_fails.Rdata")
