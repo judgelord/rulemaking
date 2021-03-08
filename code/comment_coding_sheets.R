@@ -31,7 +31,7 @@ nrow(rules)
 done <- list.files(here::here("data", "datasheets")) %>% 
   str_remove("_.*")
 
-rules %<>% filter(docket_id %in% done)
+# rules %<>% filter(docket_id %in% done)
 nrow(rules)
 #/FIXME
 
@@ -45,9 +45,9 @@ topdockets <- rules %>%
   mutate(number_of_comments_received = sum(number_of_comments_received)) %>%
   ungroup() %>% 
   filter(docket_type == "Rulemaking",
-         number_of_comments_received > 0, # dockets with 100 comments 
+         number_of_comments_received > 99, # dockets with 100 comments 
          document_type == "Rule") %>% # dockets with a final rule (initially sampled all dockets)
-  group_by(agency_acronym) %>%
+  group_by(agency_id) %>%
   # agencie that have mass dockets
   mutate(max_comments = max(number_of_comments_received)) %>%
   #filter(max_comments > 100) %>%  
@@ -56,11 +56,7 @@ topdockets <- rules %>%
             with_ties =F)
 
 nrow(topdockets)
-# ejdockets <- rules %>% 
-#   ungroup() %>% 
-#   filter(docket_type == "Rulemaking",
-#          number_of_comments_received > 0,
-#          docket_id %in% ej_dockets) 
+
 
 topdockets$number_of_comments_received %>% head()
 
@@ -68,7 +64,7 @@ dim(topdockets)
 
 count(topdockets, docket_id, number_of_comments_received)
 
-agencies <- unique(rules$agency_acronym)
+agencies <- unique(rules$agency_id)
 
 # agencies = c("EPA","ATF",
 #              "NLRB",
@@ -110,6 +106,14 @@ d %<>% group_by(docket_id) %>%
          max = max(number_of_comments_received) ) %>% 
   ungroup() %>% 
   filter(max > 99 | comments_on_docket > 999)
+
+names(d)
+d %<>% filter(attachment_count > 0,
+       !str_detect(organization, "^.\\. |illegible|surname|last name|forename|no name|^unknown$"),
+       !str_detect(title, "illegible|surname|last name|forename|no name") ) 
+
+
+
 dim(d)
 
 # apply auto-coding 
@@ -124,10 +128,10 @@ d <- temp
 
 d %>% count(org_name, sort = T)
 
-d %<>% mutate(org_name = ifelse(str_dct(title, "Chief, "),
-                               str_remove(title, ".*Chief, "),
+d %<>% mutate(org_name = ifelse(str_dct(title, "Chief,"),
+                               str_remove(title, ".*Chief,"),
                                org_name),
-             org_name = ifelse(str_dct(title, "Member of Congress|Senat|Rep\\.|Sen\\."),
+             org_name = ifelse(str_dct(title, "Member of Congress|Senat|Rep\\.|Sen\\.|House of Representatives"),
                                title,
                                org_name),
              org_name = ifelse(str_dct(title, ", Counsel,"),
@@ -136,53 +140,95 @@ d %<>% mutate(org_name = ifelse(str_dct(title, "Chief, "),
              org_name = ifelse(str_dct(title, "President,"),
                                str_remove(title, ".*President,"),
                                org_name),
-             org_name = ifelse(str_dct(title, ", Chairman, "),
-                               str_remove(title, ".*, Chairman, "),
+             org_name = ifelse(str_dct(title, ", Chairman,"),
+                               str_remove(title, ".*, Chairman,"),
                                org_name),
              org_name = ifelse(str_dct(title, "Chair,"),
                                str_remove(title, ".*Chair, "),
                                org_name),
-             org_name = ifelse(str_dct(title, ", MPA, "),
-                               str_remove(title, ".*, MPA, "),
+             org_name = ifelse(str_dct(title, ", MPA,"),
+                               str_remove(title, ".*, MPA,"),
                                org_name),
-             org_name = ifelse(str_dct(title, ", Council Chair, "),
-                               str_remove(title, ".*, Council Chair, "),
+             org_name = ifelse(str_dct(title, ", Council Chair,"),
+                               str_remove(title, ".*, Council Chair,"),
                                org_name),
-             org_name = ifelse(str_dct(title, "Director, "),
-                               str_remove(title, ".* Director, "),
+             org_name = ifelse(str_dct(title, "Director,"),
+                               str_remove(title, ".*Director,"),
                                org_name),
-             org_name = ifelse(str_dct(title, "Commissioner, "),
-                               str_remove(title, ".*Commissioner, "),
+             org_name = ifelse(str_dct(title, "Commissioner,"),
+                               str_remove(title, ".*Commissioner,"),
                                org_name),
-             org_name = ifelse(str_dct(title, "Manager, "),
-                               str_remove(title, ".*Manager, "),
+             org_name = ifelse(str_dct(title, "Manager,"),
+                               str_remove(title, ".*Manager,"),
                                org_name),
-             org_name = ifelse(str_dct(title, "City of "),
-                               str_remove(title, ".*City of "),
+             org_name = ifelse(str_dct(title, "City of"),
+                               str_remove(title, ".*City of"),
                                org_name),
-             org_name = ifelse(str_dct(title, "Treasurer, "),
-                               str_remove(title, ".*Treasurer, "),
+             org_name = ifelse(str_dct(title, "Treasurer,"),
+                               str_remove(title, ".*Treasurer,"),
                                org_name),
-             org_name = ifelse(str_dct(title, "Consultant, "),
-                               str_remove(title, ".*Consultant, "),
+             org_name = ifelse(str_dct(title, "Consultant,"),
+                               str_remove(title, ".*Consultant,"),
                                org_name),
-             org_name = ifelse(str_dct(title, "Attorney General, "),
-                               str_remove(title, ".*Attorney General, "),
+             org_name = ifelse(str_dct(title, "Attorney General,"),
+                               str_remove(title, ".*Attorney General,"),
                                org_name),
-             org_name = ifelse(str_dct(title, "Engineer, "),
-                               str_remove(title, ".*Engineer, "),
+             org_name = ifelse(str_dct(title, "Engineer,"),
+                               str_remove(title, ".*Engineer,"),
                                org_name),
-             org_name = ifelse(str_dct(title, "Judge, "),
-                               str_remove(title, ".*Judge, "),
+             org_name = ifelse(str_dct(title, "Judge,"),
+                               str_remove(title, ".*Judge,"),
                                org_name),
-             org_name = ifelse(str_dct(title, "CEO,  "),
-                               str_remove(title, ".*CEO, "),
+             org_name = ifelse(str_dct(title, " CEO,"),
+                               str_remove(title, ".*CEO,"),
                                org_name),
-             org_name = ifelse(str_dct(title, ", Secretary, "),
-                               str_remove(title, ".*, Secretary, "),
+             org_name = ifelse(str_dct(title, ", Secretary,"),
+                               str_remove(title, ".*, Secretary,"),
                                org_name),
-             org_name = ifelse(str_dct(title, "Attorney, "),
-                               str_remove(title, ".*Attorney, "),
+             org_name = ifelse(str_dct(title, "Attorney,"),
+                               str_remove(title, ".*Attorney,"),
+                               org_name),
+             org_name = ifelse(str_dct(title, " \\(C.O\\),"),
+                               str_remove(title, ".* \\(C.O\\),"),
+                               org_name),
+             org_name = ifelse(str_dct(title, " Chief Technology Officer,"),
+                               str_remove(title, ".*Chief Technology Officer,"),
+                               org_name),
+             org_name = ifelse(str_dct(title, "Governmental Affairs,"),
+                               str_remove(title, ".*Governmental Affairs,"),
+                               org_name),
+             org_name = ifelse(str_dct(title, "Mayor, "),
+                               str_remove(title, ".*Mayor, "),
+                               org_name),
+             org_name = ifelse(str_dct(title, "Affairs,"),
+                               str_remove(title, ".*Affairs,"),
+                               org_name),
+             org_name = ifelse(str_dct(title, "Governor,"),
+                               str_remove(title, ".*Governor,"),
+                               org_name),
+             org_name = ifelse(str_dct(title, " Operations,"),
+                               str_remove(title, ".* Operations,"),
+                               org_name),
+             org_name = ifelse(str_dct(title, " Fellow,"),
+                               str_remove(title, ".* Fellow,"),
+                               org_name),
+             org_name = ifelse(str_dct(title, "ember,"),
+                               str_remove(title, ".*ember,"),
+                               org_name),
+             org_name = ifelse(str_dct(title, "Board Member,"),
+                               str_remove(title, ".*Board Member,"),
+                               org_name),
+             org_name = ifelse(str_dct(title, "Chairman et al.,"),
+                               str_remove(title, ".*Chairman et al.,"),
+                               org_name),
+             org_name = ifelse(str_dct(title, "Officer,"),
+                               str_remove(title, ".*Officer,"),
+                               org_name),
+             org_name = ifelse(str_dct(title, "Secretary,"),
+                               str_remove(title, ".*Secretary,"),
+                               org_name),
+             org_name = ifelse(str_dct(title, "Chair of the Board,"),
+                               str_remove(title, ".*Chair of the Board,"),
                                org_name)
              )
 
@@ -199,15 +245,18 @@ d %<>%
   filter(attachment_count > 0,
          str_detect(str_c(title, org_name), "Congress|Senat|Rep\\.|Sen\\.|Representative") |
          # individual names
-         !str_detect(org_name, "^.\\.$|^.\\. |^\\w+ .\\.|illegible|no surname"),
-         !str_detect(title, "illegible|surname|last name|forename|no name"),
+         !str_detect(org_name, "^.\\.$|^.\\. |^.\\.[A-Z][a-z]|^.\\. [A-Z][a-z]|^\\w+ .\\.|illegible|no surname"),
+         !str_detect(title, "illegible|surname| suranme |last name|forename|no name"),
          nchar(org_name) > 1) %>% 
   mutate(org_name = org_name %>% replace_na("NA") ) %>% 
-  filter(number_of_comments_received > 99 | !org_name %in% c("NA", "na", "")) %>% 
+  filter(number_of_comments_received > 99 | !org_name %in% c("NA", "na", "","unknown")) %>% 
   add_count(docket_id, name = "org_comments")
 
-d %>% slice_max(org_comments) %>% count(org_name,title, sort = T) %>% 
-  slice_sample(n = 100) %>% knitr::kable()# %>% pull(org_name) 
+
+d %>% count(org_name, sort = T)
+
+# random sample 
+d %>% distinct(org_name,title) %>% slice_sample(n = 100) %>% knitr::kable()
 
 d %>% 
   #filter(n > 10, n < 20) %>% 
@@ -289,6 +338,9 @@ names(d)
 count(d, organization, sort = T) %>% head()
 count(d, org_name, sort = T) %>% head()
 
+d %>% filter( organization  == "N/A") %>% distinct(org_name, number_of_comments_received)
+d %>% filter(org_name == "unknown") %>% distinct(org_name, number_of_comments_received)
+
 # create new directory if needed
 if (!dir.exists(here::here("data", "datasheets") ) ){
   dir.create( here::here("data", "datasheets") )
@@ -311,6 +363,8 @@ d %<>% mutate(comment_type = ifelse(number_of_comments_received > 99, "mass", co
 unique(d$docket_id)
 
 walk(unique(d$docket_id), write_comment_sheets)
+
+
 
 
 
