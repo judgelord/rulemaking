@@ -9,33 +9,29 @@ source("setup.R")
 ## The advantage of this approach is that it does not require using the API to get file names
 ## However, after it is run, one should run regulation-gov-get-attachments.R on the fails to get non-pdfs 
 
-load("comment_metadata.Rdata") #FIXME check for updates
-all <- comments_all
+load(here("data", "comment_meta_min.Rdata")) #FIXME check for updates
+all <- comment_meta_min
 dim(all)
-names(all)
-all %<>% namingthings() # from updateRdata.R
 names(all)
 
 # urls for first attachments 
-all %<>% 
-  mutate(file = str_c(id, "-1.pdf"),
-         attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=",
-                            id,
-                            "&attachmentNumber=1"),
-         downloaded = file %in% list.files(here::here("comments")) )
+# 
 
-names(all)
-# inspect missing files
-all %>% 
+d <- all %>% 
+  mutate(agency_id = str_remove(id, "-.*"),
+         year = posted_date %>% str_sub(1,4),
+         file = str_c(id, "-1.pdf"),
+         attach_url = str_c("https://downloads.regulations.gov/", id, "/attachment_1.pdf"),
+         #attach.url = str_c("https://www.regulations.gov/contentStreamer?documentId=", id,"&attachmentNumber=1"),
+         downloaded = file %in% list.files(here::here("comments")) ) %>%
   filter(!downloaded,
-         #org.comment, # comments identified as a org comment 
-         #!is.na(organization), # comments with an org name identified
-         attachment_count > 0) %>% 
-         count(agency_id, sort = T) %>% knitr::kable()
+         attachment_count > 0)
 
-d <- all
-
-d$year <- d$posted_date %>% str_sub(1,4)
+# inspect missing files
+d %>% count(agency_id, sort = T) %>% knitr::kable()
+dim(d)
+names(d)
+head(d)
 max(d$year, na.rm = T)
 
 # # MASS DOCKETS:
@@ -56,7 +52,7 @@ docs <- d %>% filter(#org.comment, # comments identified as a org comment
 
 # Inspect
 nrow(docs)
-docs %>% head() %>% select(file, attach.url, downloaded)
+docs %>% head() %>% select(file, attach_url, downloaded)
 
 
 docs %>%  count(agency_id, sort = T) %>% knitr::kable()
@@ -66,22 +62,22 @@ downloaded <- filter(docs, downloaded)
 
 # inspect 
 dim(downloaded)
-head(downloaded)
-sum(downloaded$number_of_comments_received)
-write.table(sum(downloaded$number_of_comments_received), file = "data/downloaded.tex")
+#head(downloaded)
+#sum(downloaded$number_of_comments_received)
+#write.table(sum(downloaded$number_of_comments_received), file = "data/downloaded.tex")
 
 # to DOWNLOAD 
 # files we don't have 
 download <- filter(docs,
                      !downloaded,
-                     !attach.url %in% c("","NULL"), 
-                     !is.na(attach.url),
-                     !is.null(attach.url) )
+                     !attach_url %in% c("","NULL"), 
+                     !is.na(attach_url),
+                     !is.null(attach_url) )
 
 # inspect 
 dim(docs)
 dim(download)
-download %>% head() %>% select(file, attach.url, downloaded)
+download %>% head() %>% select(file, attach_url, downloaded)
 download %>%  count(agency_id, sort = T) %>% knitr::kable()
 
 # download %<>% filter(agency_id %in% c("ATF", 
@@ -115,7 +111,7 @@ download %<>% anti_join(fails)
 
 # inspect 
 dim(download)
-head(download$attach.url)
+head(download$attach_url)
 
 
 download %<>% filter( !is.na(file) ) 
@@ -124,7 +120,7 @@ download %<>% filter(!file %in% list.files("comments/") )
 
 # inspect 
 dim(download)
-head(download$attach.url)
+head(download$attach_url)
 
 # remove large data files from  memory
 rm(list("all", "d", "comments_all"))
@@ -132,7 +128,7 @@ rm(list("all", "d", "comments_all"))
 # test
 n <- 1
 for(i in 1:n){
-download.file(download$attach.url[i], 
+download.file(download$attach_url[i], 
               destfile = str_c("comments/", download$file[i]) ) 
 }
 
@@ -143,11 +139,12 @@ Sys.sleep(400) # wait after downloading the first one so we don't hit the limit 
 # FIXME should use purrr walk() here and in get-attachments
 # for(attachment_n in 1:max(download$attachmentCount)){} # loop to capture multiple attachments, starting with first file for all with attachmentCoung > 0, then subsetting to attachmentCount > 1, etc
 N <- nrow(download)
+batch <- 78
 
-# run this loop about n/78 times to get everything
-for(i in 1:round(nrow(download)/78)){
+# run this loop about N/batch size times to get everything
+for(i in 1:round(nrow(download)/batch)){
   # n complete
-  n <- (i-1)*78
+  n <- (i-1)*batch
   # filter out files already downloaded
   download %<>% filter(!file %in% fails$file,
                        !file %in% list.files("comments/") ) 
@@ -155,13 +152,13 @@ for(i in 1:round(nrow(download)/78)){
   ## Reset error counter
   errorcount <<- 0
   
-  for(i in 1:78){ 
+  for(i in 1:batch){ 
     message(paste(n+i, "of", N, download$file[i], "at", Sys.time()))
     
     if(errorcount < 5 & nrow(download) > 0){
       # download to comments folder 
       tryCatch({ # tryCatch handles errors
-        download.file(download$attach.url[i], 
+        download.file(download$attach_url[i], 
                       destfile = paste0("comments/", download$file[i]) ) 
       },
       error = function(e) {
