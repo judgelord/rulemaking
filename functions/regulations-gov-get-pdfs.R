@@ -9,7 +9,7 @@ source("setup.R")
 ## The advantage of this approach is that it does not require using the API to get file names
 ## However, after it is run, one should run regulation-gov-get-attachments.R on the fails to get non-pdfs 
 
-load("comment_metadata.Rdata")
+load("comment_metadata.Rdata") #FIXME check for updates
 all <- comments_all
 dim(all)
 names(all)
@@ -35,6 +35,8 @@ all %>%
 
 d <- all
 
+d$year <- d$posted_date %>% str_sub(1,4)
+max(d$year, na.rm = T)
 
 # # MASS DOCKETS:
 # load(here("data/masscomments.Rdata"))
@@ -49,7 +51,7 @@ head(d)
 
 # subset to download
 docs <- d %>% filter(#org.comment, # comments identified as a org comment 
-                     !is.na(organization) | number_of_comments_received > 99, # comments with an org name identified
+                     !is.na(organization) | number_of_comments_received > 1, # comments with an org name identified
                      attachment_count>0) # subset to those with attachment
 
 # Inspect
@@ -166,7 +168,7 @@ for(i in 1:round(nrow(download)/78)){
         errorcount <<- errorcount+1
         message(paste("error", errorcount))
         if( str_detect(e[[1]][1], "cannot open URL") ){
-          fails <<- rbind(fails, download$file[i])# this will cause this url to be filtered out for future runs of the loop
+          fails <<- rbind(fails, download$file[i])
         }
         message(e)
         if(str_detect(e, "SSL connect error|500 Internal Server Error")){
@@ -176,7 +178,7 @@ for(i in 1:round(nrow(download)/78)){
         }
       })
 
-      Sys.sleep(.1) # pausing between requests does not seem to help, but makes it easier to stop failed calls
+      Sys.sleep(.1) # easier to stop failed calls
     }
     ## If 5 errors, wait and reset (sometimes you get "cannot open URL" 5x in a row)
     if(errorcount == 5){

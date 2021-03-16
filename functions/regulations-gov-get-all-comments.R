@@ -4,7 +4,7 @@
 source("setup.R")
 
 # I keep keep data I have already downloaded in ascending order in a directory called "ascending"
-directory <- "ascending2"
+directory <- "ascending3"
 list.files(here::here(directory))
 # The api call below loads data in ascending order. 
 # To start with the earliest comment, set page to 1
@@ -20,7 +20,7 @@ url  <- "https://api.data.gov"
 rpp <- 1000 # 1000 = max results per page
 order <- "ASC" # DESC = Decending, ASC = Ascending 
 sortby <- "postedDate" #docketId (Docket ID) docId (Document ID) title (Title) postedDate (Posted Date) agency (Agency) documentType (Document Type) submitterName (Submitter Name) organization (Organization)
-pages <- c(1, (seq(1000000)*rpp)+1) # up to 100,000,000 results
+pages <- c(1, (seq(100000000)*rpp)+1) # up to 100,000,000 results
 documenttype <- "PS" # "N%2BPR%2BFR%2BPS%2BSR%2BO"
 ## N: Notice, 
 ## PR: Proposed Rule, 
@@ -101,7 +101,7 @@ while (error < 61) {
     Sys.sleep(60)
   }
   
-  # If call works, mege in new data
+  # If call works, merge in new data
   if (raw.result$status_code == 200) {
     # extract content to list
     content <- fromJSON(rawToChar(raw.result$content))
@@ -139,7 +139,7 @@ while (error < 61) {
 }# END LOOP 
 
 # Save last comments
-load("lastcomments.Rdata")
+save(d, "lastcomments.Rdata")
 save(d, page, skip, file = here::here(directory, "lastcomments.Rdata") ) 
 save.image()
 
@@ -148,5 +148,6 @@ save(d, file = "data/recentcomments.Rdata")
 
 tail(d %>% drop_na(postedDate) %>% .$postedDate)
 
-
+max(d$postedDate, na.rm = T)
+min(d$postedDate, na.rm = T)
 

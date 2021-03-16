@@ -92,9 +92,9 @@ save(ejcommentsnew, file = here::here("data", "ejcommentsnew.Rdata"))
 # subset comments 
 
 load("comment_metadata.Rdata")
-names(comments_all)
+names(comment_metadata)
 
-org_comments <- comments_all %>% filter(!is.na(organization)) %>% count(organization, docket_id, number_of_comments_received)
+org_comments <- comment_metadata %>% filter(!is.na(organization)) %>% distinct(organization, docket_id, number_of_comments_received)
 
 head(org_comments)
 dim(org_comments)
@@ -103,7 +103,7 @@ save(org_comments, file = here::here("data", "org_comments.Rdata"))
 
 
 
-comments_min <- comments_all %>% distinct(document_id, organization,submitter_name, number_of_comments_received)
+comments_min <- comment_metadata %>% distinct(id, organization,submitter_name, number_of_comments_received)
 
 head(comments_min)
 dim(comments_min)
