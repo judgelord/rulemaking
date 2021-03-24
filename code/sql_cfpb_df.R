@@ -162,7 +162,33 @@ unmatched %>%
 # 9 NA        CFPB-2013-0035
 # 10 NA        CFPB-2017-0027
 
+############################
 
+#FIXME this will not be necessary with the next version of devin's db
+comments_cfpb_df %<>% 
+  mutate(comment_url = comment_url %>% str_replace("document?D=", "document/"))
+
+# Refining for uniqueness 
+d <- comments_cfpb_df
+
+names(d)
+
+d %<>% select(-late_comment)
+
+d %<>% distinct() %>% arrange(comment_url)
+
+# oddly, some comments have more than one posted date; maybe they were updated between my scrapes?
+d %<>% group_by(comment_url) %>% 
+  slice_max(posted_date)
+
+# check for duplicate urls (primary key to attachments table)
+d %>% 
+  add_count(comment_url, sort = T) %>% 
+  filter(n >1) %>% 
+  arrange(comment_url)
+
+
+comments_cfpb_df <- d
 
 
 ##########################
@@ -284,6 +310,7 @@ actions_cfpb %>%
 
 
 #### ???????? is this incomplete 
+
 
 
 
