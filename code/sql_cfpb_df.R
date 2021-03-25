@@ -14,7 +14,40 @@ comments_cfpb <- dbGetQuery(con, "SELECT * FROM comments WHERE agency_acronym = 
 
 head(comments_cfpb)
 
-dbClearResult(res)
+# Refining for uniqueness 
+d <- comments_cfpb
+
+names(d)
+
+# redundent 
+d %<>% select(-late_comment)
+
+# oddly there are duplicate comments with only different start dates
+d %<>% select(-comment_start_date)
+
+d %<>% distinct()
+
+# some dockets have more than one due date due to comment period extensions
+d %<>% group_by(document_id) %>% 
+  slice_max(comment_due_date)
+
+# oddly, some comments have more than one posted date; maybe they were updated between my scrapes?
+d %<>% group_by(document_id) %>% 
+  slice_max(posted_date)
+
+# check for duplicate urls (primary key to attachments table)
+look <- d %>% 
+  add_count(document_id, sort = T) %>% 
+  filter(n >1) %>% 
+  arrange(document_id)
+
+# inspect duplicates
+head(look)
+nrow(d)
+nrow(comments_cfpb)
+
+comments_cfpb <- d
+#/dedupe
 
 # fetch results:
 rules_cfpb <- dbGetQuery(con, "SELECT * FROM rules WHERE agency_acronym = 'CFPB'")
@@ -80,8 +113,11 @@ comments_cfpb %<>% select(fr_document_id,
                           comment_text
                           ) %>% 
   mutate(source = "regulations.gov",
-         comment_url = str_c("https://www.regulations.gov/document?D=", document_id)
+         comment_url = str_c("https://www.regulations.gov/document/", document_id)
          )
+
+
+names(comments_cfpb)
 
 # rename to match 
 names(rules_cfpb)
@@ -109,7 +145,6 @@ actions_cfpb <- rules_cfpb %>%
 
 
 
-
 ###################################################
 # Subset to Davis Polk Dodd-Frank rules 
 
@@ -123,7 +158,8 @@ df %<>% filter(str_detect(agency, "CFPB"))
 df_rins <- df$RIN %>% na.omit() %>% unique()
 df_dockets <- df$identifier %>% na.omit() %>% unique()
 
-comments_cfpb_df <- comments_cfpb %>% filter(docket_id %in% df_dockets | rin %in% df_rins)
+comments_cfpb_df <- comments_cfpb %>% 
+  filter(docket_id %in% df_dockets | rin %in% df_rins)
 
 # rins not in dockets to scrape
 comments_cfpb_df %>% 
@@ -142,8 +178,11 @@ comments_cfpb_df$docket_id %>% unique()
 comments_cfpb_df$rin %>% unique()
 
 # look back to see how many we matched 
-matched <- df %>% filter(RIN %in% na.omit(comments_cfpb_df$rin) | identifier %in% na.omit(comments_cfpb_df$docket_id))
+matched <- df %>% 
+  filter(RIN %in% na.omit(comments_cfpb_df$rin) | identifier %in% na.omit(comments_cfpb_df$docket_id))
+
 unmatched <- df %>% anti_join(matched)
+
 unmatched %>% 
   select(RIN, identifier) %>% 
   distinct()
@@ -164,31 +203,7 @@ unmatched %>%
 
 ############################
 
-#FIXME this will not be necessary with the next version of devin's db
-comments_cfpb_df %<>% 
-  mutate(comment_url = comment_url %>% str_replace("document?D=", "document/"))
 
-# Refining for uniqueness 
-d <- comments_cfpb_df
-
-names(d)
-
-d %<>% select(-late_comment)
-
-d %<>% distinct() %>% arrange(comment_url)
-
-# oddly, some comments have more than one posted date; maybe they were updated between my scrapes?
-d %<>% group_by(comment_url) %>% 
-  slice_max(posted_date)
-
-# check for duplicate urls (primary key to attachments table)
-d %>% 
-  add_count(comment_url, sort = T) %>% 
-  filter(n >1) %>% 
-  arrange(comment_url)
-
-
-comments_cfpb_df <- d
 
 
 ##########################
@@ -358,3 +373,4 @@ dbGetQuery(con, "SELECT * FROM actions WHERE docket_id = 'CFPB-2012-0029'") %>% 
 dbGetQuery(con, "SELECT * FROM comments WHERE docket_id = 'CFPB-2012-0029'") %>% head()
 dbClearResult(res)
 dbDisconnect(con)
+
