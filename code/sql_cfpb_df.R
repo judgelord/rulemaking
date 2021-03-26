@@ -23,7 +23,9 @@ names(d)
 d %<>% select(-late_comment)
 
 # oddly there are duplicate comments with only different start dates
-d %<>% select(-comment_start_date)
+# FIXME I use comment_start_date to merge in fr_document_id below; selecting max here may leave some without a match below. Hopefully we can get fr_doc id from the new regulations.gov metatdata
+d %<>% group_by(document_id) %>% 
+  slice_max(comment_start_date)
 
 d %<>% distinct()
 
@@ -33,7 +35,8 @@ d %<>% group_by(document_id) %>%
 
 # oddly, some comments have more than one posted date; maybe they were updated between my scrapes?
 d %<>% group_by(document_id) %>% 
-  slice_max(posted_date)
+  slice_max(posted_date) %>% 
+  ungroup()
 
 # check for duplicate urls (primary key to attachments table)
 look <- d %>% 
@@ -45,8 +48,9 @@ look <- d %>%
 head(look)
 nrow(d)
 nrow(comments_cfpb)
+names(d)
 
-comments_cfpb <- d
+comments_cfpb <- d %>% ungroup()
 #/dedupe
 
 # fetch results:
@@ -68,7 +72,7 @@ dockets %>% count(docket_id,
 nrow(dockets)
 dockets %>% distinct() %>% nrow()
 
-crosswalk <- comments_cfpb %>% left_join(dockets) %>% 
+crosswalk <- comments_cfpb %>% ungroup() %>% left_join(dockets) %>% 
   select(docket_id, fr_document_id, comment_start_date) %>% distinct()
 
 crosswalk %>% count(docket_id,
@@ -97,6 +101,9 @@ crosswalk %<>% filter(!is.na(comment_start_date))
 comments_cfpb %<>% left_join(crosswalk)
 
 names(comments_cfpb)
+
+comments_cfpb %<>% rename(comment_title = title)
+
 comments_cfpb %<>% select(fr_document_id,
                           agency_acronym,
                           rin,
@@ -106,7 +113,7 @@ comments_cfpb %<>% select(fr_document_id,
                           document_id,
                           posted_date,
                           submitter_name,
-                          comment_title = title,
+                          comment_title,
                           organization,
                           #comment_url,
                           #late_comment,
@@ -114,10 +121,20 @@ comments_cfpb %<>% select(fr_document_id,
                           ) %>% 
   mutate(source = "regulations.gov",
          comment_url = str_c("https://www.regulations.gov/document/", document_id)
-         )
-
+         ) %>% 
+  distinct()
 
 names(comments_cfpb)
+
+# check for dupes
+comments_cfpb %>% 
+  add_count(comment_url) %>% 
+  filter(n > 1) %>% 
+  select(fr_document_id, submitter_name, rin, posted_date) %>% 
+  head() %>% knitr::kable()
+
+# duplicates by federal register number 
+
 
 # rename to match 
 names(rules_cfpb)
@@ -152,14 +169,32 @@ actions_cfpb <- rules_cfpb %>%
 df <- read_csv(here::here("data", "dockets_to_scrape.csv"))
 names(df)
 head(df)
-df %<>% filter(str_detect(agency, "CFPB"))
 
-# Subset to Dodd-Frank rules
 df_rins <- df$RIN %>% na.omit() %>% unique()
 df_dockets <- df$identifier %>% na.omit() %>% unique()
 
-comments_cfpb_df <- comments_cfpb %>% 
-  filter(docket_id %in% df_dockets | rin %in% df_rins)
+df %<>% distinct(agency, identifier, document_number, REG_DOT_GOV_DOCNO)
+
+df %>% distinct() %>% 
+  count(agency, identifier, REG_DOT_GOV_DOCNO ,sort = T) %>%
+  filter(n > 1) %>% knitr::kable()
+
+df %<>% filter(str_detect(agency, "CFPB"))
+
+df %>% count(REG_DOT_GOV_DOCNO, sort = T)
+
+df %>% filter(is.na(REG_DOT_GOV_DOCNO))
+
+# Subset to Dodd-Frank rules
+
+
+names(comments_cfpb)
+comments_cfpb_df <- comments_cfpb %>% ungroup() %>% 
+  filter(#docket_id %in% df_dockets | rin %in% df_rins | fr_document_id %in% df$document_number)
+    fr_document_id %in% df$REG_DOT_GOV_DOCNO)
+
+# dockets with multiple fr docs
+df %>% count(identifier, sort = T) 
 
 # rins not in dockets to scrape
 comments_cfpb_df %>% 
@@ -337,6 +372,14 @@ comments_cfpb_df %>%
   distinct() %>% nrow()
 # target N
 nrow(comments_cfpb_df)
+
+# check for duplicatess
+comments_cfpb_df %>% add_count(comment_url) %>% filter(n > 1) %>% 
+  select(fr_document_id, submitter_name, rin, document_id, posted_date)
+
+names(df)
+# FIXME given differences in fr_document_id, this may remove too many 
+comments_cfpb_df %<>% filter(fr_document_id %in% df$document_number)
 
 
 # Create RSQLite database
