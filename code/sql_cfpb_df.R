@@ -46,132 +46,15 @@ look <- d %>%
 
 # inspect duplicates
 head(look)
-nrow(d)
-nrow(comments_cfpb)
-names(d)
+
 
 comments_cfpb <- d %>% ungroup()
 #/dedupe
 
-# fetch results:
-rules_cfpb <- dbGetQuery(con, "SELECT * FROM rules WHERE agency_acronym = 'CFPB'")
-
-head(rules_cfpb)
-
-dbClearResult(res)
-
-dbDisconnect(con)
-
-dockets <- rules_cfpb %>% select(docket_id, fr_document_id, comment_start_date) 
-
-dockets %>% count(docket_id,
-                  comment_start_date, 
-                  fr_document_id,
-                  sort = T) %>% head()
-
-nrow(dockets)
-dockets %>% distinct() %>% nrow()
-
-# crosswalk of docket + comment start --> fr_document_id
-crosswalk <- comments_cfpb %>% ungroup() %>% left_join(dockets) %>% 
-  select(docket_id, fr_document_id, comment_start_date) %>% distinct()
-nrow(crosswalk)
-
-crosswalk %>% count(docket_id,
-                  comment_start_date, 
-                  fr_document_id,
-                  sort = T) %>% head()
-
-crosswalk %>% filter(is.na(fr_document_id))
-
-# to fill in NAs, include additional fr_document ids where start dated did not match
-# join in alt fr_document id
-crosswalk %<>% left_join(dockets %>% select(-comment_start_date) %>% rename(fr2 = fr_document_id) %>% distinct() )
-nrow(crosswalk)
-
-
-crosswalk %<>% 
-  distinct() %>% 
-  mutate(fr_document_id = coalesce(fr_document_id, fr2)) %>%
-  select(-fr2) %>% 
-  filter(!is.na(fr_document_id)) %>% 
-  distinct()
-
-# should be back to original size
-nrow(crosswalk)
-
-
-crosswalk %>% count(docket_id,
-                    comment_start_date, 
-                    fr_document_id,
-                    sort = T) %>% head()
-
-crosswalk %>% arrange(docket_id)
-
-crosswalk %<>% filter(!is.na(comment_start_date))
-nrow(crosswalk)
-
-crosswalk %>% filter(fr_document_id == '2012-01728')
-crosswalk %>% filter(fr_document_id == '2012-01726')
-
-rules_cfpb %>% filter(fr_document_id == '2012-01726')
-
-# summary  stats 
-rules_cfpb %>% 
-  arrange(-number_of_comments_received) %>% 
-  select(number_of_comments_received, title) %>% 
-  head()
-
-comments_cfpb %>% count(docket_id, docket_title, sort = T)
-
-
-crosswalk %<>% left_join(rules_cfpb %>% distinct(number_of_comments_received, 
-                                                 #document_type, 
-                                                 document_id, 
-                                                 fr_document_id))
-
-nrow(crosswalk)
-
-crosswalk %>% count(fr_document_id, sort = T)
-
-names(crosswalk)
-crosswalk %<>% group_by(fr_document_id) %>% 
-  slice_max(number_of_comments_received)
-
-nrow(crosswalk)
-
-crosswalk %>% count(fr_document_id, sort = T)
-
-crosswalk %>% filter(fr_document_id == '2013-00736') %>% knitr::kable()
-
-# by number of comments 
-crosswalk %<>% group_by(fr_document_id) %>% 
-  slice_max(comment_start_date) 
-
-crosswalk %>% count(fr_document_id, sort = T)
-
-# one regulations.gov id 
-crosswalk %<>% group_by(fr_document_id) %>% 
-  slice_max(document_id) 
-
-crosswalk %>% count(fr_document_id, sort = T)
-#####################
-# JOIN comment data with crosswalk to add fr_document_id
-# First, check for comment times in comment data
-comments_cfpb %>% filter(is.na(comment_start_date))
-
-
-comments_cfpb %<>% left_join(crosswalk)
-
-#  should now have fr_document_id
-names(comments_cfpb)
-
-# missing fr_document_id
-comments_cfpb %>% filter(is.na(fr_document_id))
 
 comments_cfpb %<>% rename(comment_title = title)
 
-comments_cfpb %<>% select(fr_document_id,
+comments_cfpb %<>% select(#fr_document_id,
                           agency_acronym,
                           rin,
                           docket_id,
@@ -198,32 +81,8 @@ names(comments_cfpb)
 comments_cfpb %>% 
   add_count(comment_url) %>% 
   filter(n > 1) %>% 
-  select(fr_document_id, submitter_name, rin, posted_date, ) %>% 
+  select(submitter_name, rin, posted_date) %>% 
   head() %>% knitr::kable()
-
-# duplicates by federal register number 
-
-
-# rename to match 
-names(rules_cfpb)
-actions_cfpb <- rules_cfpb %>% 
-  select(fr_document_id,
-         fr_number,
-         #volume,
-         #start_page,
-         #page_length,
-         agency_acronym,
-         title,
-         #action_description_fr,
-         stage = document_type,
-         #stage_n,
-         #action,
-         #joint, 
-         #publication_date = posted_date,
-         #action_url,
-         reg_dot_gov_document_id = document_id,
-         rin,
-         docket_id)
 
 
 
@@ -241,31 +100,15 @@ head(df)
 df_rins <- df$RIN %>% na.omit() %>% unique()
 df_dockets <- df$identifier %>% na.omit() %>% unique()
 
-df %<>% distinct(agency, identifier, document_number, REG_DOT_GOV_DOCNO)
-
-df %>% distinct() %>% 
-  count(agency, identifier, REG_DOT_GOV_DOCNO ,sort = T) %>%
-  filter(n > 1) %>% knitr::kable()
-
-df %<>% filter(str_detect(agency, "CFPB"))
-
-df %>% count(REG_DOT_GOV_DOCNO, sort = T)
-
-df %>% filter(is.na(REG_DOT_GOV_DOCNO))
-
-# Subset to Dodd-Frank rules
-
-
-names(comments_cfpb)
-
-head(comments_cfpb$document_id)
-
-# overinclusive subset
-comments_cfpb_df <- comments_cfpb %>% ungroup() %>% 
-  filter(docket_id %in% df_dockets | rin %in% df_rins | fr_document_id %in% df$document_number)
-
 # dockets with multiple fr docs
 df %>% count(identifier, sort = T) 
+
+# Subset to Dodd-Frank rules
+# overinclusive subset?
+comments_cfpb_df <- comments_cfpb %>% ungroup() %>% 
+  filter(docket_id %in% df_dockets | rin %in% df_rins)
+
+
 
 
 # rins not in dockets to scrape
@@ -296,7 +139,7 @@ comments_cfpb_df$rin %>% unique()
 matched <- df %>% 
   filter(RIN %in% na.omit(comments_cfpb_df$rin) | identifier %in% na.omit(comments_cfpb_df$docket_id))
 
-unmatched <- df %>% anti_join(matched)
+unmatched <- df %>% anti_join(matched) %>% filter(agency == 'CFPB')
 
 unmatched %>% 
   select(identifier) %>% 
@@ -316,150 +159,16 @@ unmatched %>%
 # 9 NA        CFPB-2013-0035
 # 10 NA        CFPB-2017-0027
 
+
+# 10 CFPB-2017-0027
+
+
+# INVESTIGATE 
+# 11 CFPB-2011-0008 26 comments NOT IN regulations.gov API DATA?
+# 12 CFPB-2013-0001 1 comment
 ############################
 
-
-
-
-##########################
-# Actions table 
-
-
-actions_cfpb %<>% 
-  mutate(fr_document_id_length = fr_document_id %>% nchar() ) 
-
-actions_cfpb %>% filter(is.na(fr_document_id), 
-                                !is.na(fr_number)) %>% 
-  select(fr_number) %>% filter(nchar(fr_number) > 5)
-
-# example fed reg ids
-actions_cfpb %>% arrange(-fr_document_id_length) %>% 
-  group_by(fr_document_id_length) %>%
-  add_count(name = "n_of_length") %>% 
-  slice(1) %>%
-  select(n_of_length, fr_document_id, fr_number) %>% knitr::kable()
-
-#FIXME edit document_number
-actions_cfpb %<>% mutate(fr_document_id = ifelse(str_detect(fr_document_id, "^[0-9]{4}-[0-9]{4}$"),
-                                                         fr_document_id %>% str_replace("-", "-0"),
-                                                         fr_document_id)) 
-
-# fed reg ids in dodd frank dockets to scrape 
-df %>%
-  mutate(fr_document_id_length = document_number %>% nchar() ) %>%
-  arrange(-fr_document_id_length) %>% 
-  group_by(fr_document_id_length) %>%
-  add_count(name = "n_of_length") %>% 
-  slice(1) %>%
-  select(n_of_length, document_number) %>% knitr::kable()
-
-df %>% #filter(str_detect(document_number, "-0")) %>% 
-  filter(!document_number %in% actions_cfpb$fr_document_id)
-
-#FIXME edit document_number
-# df %<>% mutate(document_number = ifelse(str_detect(document_number, "-[0-9]{4}$"),
-#                                        document_number %>% str_replace("-", "-0"),
-#                                        document_number)) 
-# 
-
-
-
-# check against Dodd-Frank dockets to scrape
-
-# merging on regulations.gov document id
-df_min <- df %>% select(reg_dot_gov_document_id = 
-                          REG_DOT_GOV_DOCNO,
-                        #fr_document_id = 
-                        document_number) %>% 
-  distinct()
-
-# failing 
-df_min %>% left_join(actions_cfpb) %>% 
-  filter(is.na(agency_acronym))
-
-# mismatched federal reg docuemnt ID
-df_min %>% left_join(actions_cfpb) %>% 
-  filter(!is.na(agency_acronym),
-         fr_document_id != document_number)%>% 
-  select(docket_id, fr_document_id, document_number, reg_dot_gov_document_id) %>% knitr::kable()
-
-
-
-
-# merging on fr_document_id
-df_min <- df %>% 
-  select(#document_id = 
-    REG_DOT_GOV_DOCNO,
-    fr_document_id = document_number ) %>% 
-  distinct() 
-
-df_min %<>% 
-  mutate(fr_document_id = fr_document_id %>% 
-           str_extract("[0-9]{4}-[0-9]{5}"))
-
-# failing 
-df_min %>% left_join(actions_cfpb) %>% 
-  filter(is.na(agency_acronym))
-
-# bad regs_gov docuemnt ID
-df_min %>% left_join(actions_cfpb) %>% 
-  filter(!is.na(agency_acronym),
-         REG_DOT_GOV_DOCNO != reg_dot_gov_document_id)%>% 
-  select(docket_id, fr_document_id, REG_DOT_GOV_DOCNO, reg_dot_gov_document_id) %>% knitr::kable()
-
-
-# add actions to Dodd Frank dockets to scrape by FR numbers
-df_min %<>% left_join(actions_cfpb %>% 
-                        filter(#number_of_comments_received >0,
-                               stage == "Proposed Rule",
-                               !is.na(fr_document_id))) 
-
-df_min %<>% 
-  select(fr_document_id, docket_id) %>% 
-  distinct()
-
-multiples <- df_min %>% 
-  distinct() %>% 
-  count(docket_id, sort = T) %>%
-  filter(n ==2)
-
-actions_cfpb %>% 
-  filter(docket_id %in% multiples$docket_id,
-         #number_of_comments_received >0,
-         stage == "Proposed Rule",
-         !is.na(fr_document_id)) %>% 
-  arrange(docket_id) %>%
-  select(docket_id, rin, fr_document_id, reg_dot_gov_document_id) %>%
-         #number_of_comments_received, comment_start_date, comment_due_date) %>%
-  knitr::kable()
-
-
-
-
-
-
-
-#### ???????? is this incomplete 
-
-
-
-
-names(comments_cfpb_df)
-# N
-comments_cfpb_df %>% 
-  left_join(df_min %>% 
-              select(fr_document_id, docket_id))%>% 
-  distinct() %>% nrow()
-# target N
-nrow(comments_cfpb_df)
-
-# check for duplicatess
-comments_cfpb_df %>% add_count(comment_url) %>% filter(n > 1) %>% 
-  select(fr_document_id, submitter_name, rin, document_id, posted_date)
-
-names(df)
-# FIXME given differences in fr_document_id, this may remove too many 
-comments_cfpb_df %<>% filter(fr_document_id %in% df$document_number)
+unmatched %>% filter(docket_id %in% c("FPB-2011-0008", "CFPB-2013-0001"))
 
 
 # Create RSQLite database
