@@ -14,29 +14,79 @@ comments_cfpb <- dbGetQuery(con, "SELECT * FROM comments WHERE agency_acronym = 
 
 head(comments_cfpb)
 
+# every document_id should contain docket_id
+sum(str_detect(comments_cfpb$document_id, comments_cfpb$docket_id))
+nrow(comments_cfpb)
+
 # Refining for uniqueness 
 d <- comments_cfpb
 
 names(d)
 
-# redundent 
-d %<>% select(-late_comment)
+
+# duplicates
+d %>% distinct(docket_id, comment_start_date) %>% 
+  count(docket_id, sort = T) %>% filter(n>1)
 
 # oddly there are duplicate comments with only different start dates
-# FIXME I use comment_start_date to merge in fr_document_id below; selecting max here may leave some without a match below. Hopefully we can get fr_doc id from the new regulations.gov metatdata
-d %<>% group_by(document_id) %>% 
-  slice_max(comment_start_date)
 
-d %<>% distinct()
+# fill up and down by docket 
+d$comment_start_date %<>% as.Date()
+
+d %<>% group_by(docket_id) %>%
+  fill(comment_start_date, .direction = "downup") 
+
+# replace NAs so that we can slice the max date
+d$comment_start_date %<>% replace_na(as.Date("2000-01-01"))
+
+# FIXME I use comment_start_date to merge in fr_document_id below; selecting max here may leave some without a match below. Hopefully we can get fr_doc id from the new regulations.gov metatdata
+nrow(d)
+d %<>% group_by(document_id) %>% 
+  slice_max(comment_start_date) %>% 
+  ungroup()
+nrow(d)
+
+# problem observations
+c("CFPB-2011-0008", "CFPB-2013-0001") %in% d$docket_id
+
+d %>% filter(docket_id %in% c("CFPB-2011-0008", "CFPB-2013-0001")) %>% 
+  distinct(docket_id, comment_start_date) #%>%  slice_max(comment_start_date)
+
+d %>% filter(docket_id %in% c("CFPB-2011-0008", "CFPB-2013-0001"))  %>% 
+  distinct(document_id, docket_id)
 
 # some dockets have more than one due date due to comment period extensions
+d$comment_due_date %<>% as.Date()
+
+d %<>% group_by(docket_id) %>%
+  fill(comment_due_date, .direction = "downup") 
+
+# replace NAs so that we can slice the max date
+d$comment_due_date %<>% replace_na(as.Date("2000-01-01"))
+
+dim(d)
 d %<>% group_by(document_id) %>% 
   slice_max(comment_due_date)
+dim(d)
+
+c("CFPB-2011-0008", "CFPB-2013-0001") %in% d$docket_id
+
 
 # oddly, some comments have more than one posted date; maybe they were updated between my scrapes?
+d$posted_date %<>% as.Date()
+
+d %<>% group_by(docket_id) %>%
+  fill(posted_date, .direction = "downup") 
+
+# replace NAs so that we can slice the max date
+d$posted_date %<>% replace_na(as.Date("2000-01-01"))
+
 d %<>% group_by(document_id) %>% 
   slice_max(posted_date) %>% 
   ungroup()
+
+c("CFPB-2011-0008", "CFPB-2013-0001") %in% d$docket_id
+
 
 # check for duplicate urls (primary key to attachments table)
 look <- d %>% 
@@ -165,12 +215,19 @@ unmatched %>%
 
 # INVESTIGATE 
 # 11 CFPB-2011-0008 26 comments NOT IN regulations.gov API DATA?
-# 12 CFPB-2013-0001 1 comment
+# 12 CFPB-2013-0001 1 comment FIXME 
 ############################
+names(all)
+all %>% filter(docketId %in% c("CFPB-2011-0008", "CFPB-2013-0001")) %>% 
+  distinct(docketId, agencyAcronym) 
+c("CFPB-2011-0008", "CFPB-2013-0001") %in% df_dockets 
+c("CFPB-2011-0008", "CFPB-2013-0001") %in% all$docketId
+c("CFPB-2011-0008", "CFPB-2013-0001") %in% d$docket_id
+c("CFPB-2011-0008", "CFPB-2013-0001") %in% comments_cfpb$docket_id
 
-unmatched %>% filter(docket_id %in% c("FPB-2011-0008", "CFPB-2013-0001"))
+unmatched %>% filter(identifier %in% c("CFPB-2011-0008", "CFPB-2013-0001"))
 
-
+ls()
 # Create RSQLite database
 con <- dbConnect(RSQLite::SQLite(), here::here("db", "comment_metadata_CFPB_df.sqlite"))
 
