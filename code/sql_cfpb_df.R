@@ -210,12 +210,9 @@ unmatched %>%
 # 10 NA        CFPB-2017-0027
 
 
-# 10 CFPB-2017-0027
-
-
-# INVESTIGATE 
-# 11 CFPB-2011-0008 26 comments NOT IN regulations.gov API DATA?
-# 12 CFPB-2013-0001 1 comment FIXME 
+# THESE TWO HAD MISSING comment_start, end, or posted date, now fixed 
+# 11 CFPB-2011-0008 26 comments 
+# 12 CFPB-2013-0001 1 comment 
 ############################
 names(all)
 all %>% filter(docketId %in% c("CFPB-2011-0008", "CFPB-2013-0001")) %>% 
@@ -227,7 +224,6 @@ c("CFPB-2011-0008", "CFPB-2013-0001") %in% comments_cfpb$docket_id
 
 unmatched %>% filter(identifier %in% c("CFPB-2011-0008", "CFPB-2013-0001"))
 
-ls()
 # Create RSQLite database
 con <- dbConnect(RSQLite::SQLite(), here::here("db", "comment_metadata_CFPB_df.sqlite"))
 
