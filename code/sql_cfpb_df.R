@@ -233,6 +233,13 @@ list.files("db")
 dbListTables(con)
 dbWriteTable(con, "comments", comments_cfpb_df, overwrite = T)
 dbListTables(con)
+
+# check for unique comment urls
+d <- dbGetQuery(con, "SELECT * FROM comments WHERE agency_acronym = 'CFPB'") 
+nrow(d)
+d %>% count(comment_url, sort = T) %>% filter(n>1)
+d %>% count(docket_title, sort = T) %>% head(10) %>% knitr::kable()
+
 dbDisconnect(con)
 
 
