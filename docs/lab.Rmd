@@ -31,10 +31,10 @@ Julia Derzay is interested in Southeast Asian history and American politics in t
 ---
 
 ```{r}
-#include_graphics("RAs/megan.png")
+include_graphics("RAs/megan.png")
 ```
 
-Megan Gmelch is a political science and legal studies major. Prior to joining the Rulemaking Lab as a 2020-2021 Research Assistant, Megan interned for VoteSmart and a member of Congress.
+Megan Gmelich is a political science and legal studies major planning to attend law school after graduation. Interested in the intersection of law and politics, her research focuses on rules by the Department of Justice. Prior to joining the Rulemaking Lab as a 2020-2021 Research Assistant, Megan interned for VoteSmart and a member of Congress.
 
 ---
 
