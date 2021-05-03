@@ -33,6 +33,7 @@ library(tidytext)
 library(xml2)
 library(knitr)
 library(kableExtra)
+library(pryr)
 
 library(ggplot2); theme_set(theme_bw())
   options(
@@ -264,7 +265,7 @@ Partial matches are not always exactly symmetrical; the percent of comment x in 
 
 ### Minimize the size of stored output
 
-Since Steve is doing similar work with SEC data, we are trying to identify standard data formats to allow for plug-and-play analysis. 
+The aim here is to identify standard data formats to allow for plug-and-play analysis. 
 
 Token matches stored as Run Length Encoding take up about half the space as a logical vector of token matches and can easily be converted back. Download the RLE version of these data [here](https://github.com/judgelord/rulemaking/blob/master/data/payday_comments_rle.Rdata).
 

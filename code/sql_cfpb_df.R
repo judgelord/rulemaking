@@ -263,6 +263,6 @@ dbListFields(con, "actions")
 # fetch results:
 dbGetQuery(con, "SELECT * FROM actions WHERE docket_id = 'CFPB-2012-0029'") %>% head()
 dbGetQuery(con, "SELECT * FROM comments WHERE docket_id = 'CFPB-2012-0029'") %>% head()
-dbClearResult(res)
+
 dbDisconnect(con)
 
