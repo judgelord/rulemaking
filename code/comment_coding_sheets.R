@@ -5,15 +5,18 @@ source("setup.R")
 load(here::here("data", "rules_metadata.Rdata"))
 rules %<>% as_tibble()
 names(rules)
-head(rules$posted_date)
-tail(rules$posted_date)
+dim(rules)
+
 
 rules$posted_date %<>% as.Date()
+max(rules$posted_date, na.rm = T)
+min(rules$posted_date, na.rm = T)
+
 
 rules %<>% mutate(year = str_sub(posted_date, 0, 4) %>% as.integer())
 unique(rules$year)
 
-rules %<>% filter(year > 2000)
+rules %<>% filter(year > 2008, year < 2021)
 
 # inspect for completeness (metadata are missing notices for 2018 and 2019)
 count(rules, year)
@@ -25,7 +28,7 @@ rules %>% filter(document_type =="Proposed Rule") %>% count(year)
 load(here::here("data", "ejdockets.Rdata"))
 head(ejdockets)
 
-rules %<>% filter(docket_id %in% ejdockets$docket_id)
+# rules %<>% filter(docket_id %in% ejdockets$docket_id)
 nrow(rules)
 
 done <- list.files(here::here("data", "datasheets")) %>% 
@@ -37,8 +40,16 @@ nrow(rules)
 
 
 # comments 
-load(here::here("comment_metadata.Rdata"))
+load(here::here("data", "comment_metadata.Rdata"))
+dim(comment_metadata)
+ls()
+names(comment_metadata)
 names(comments_all)
+
+d <- comment_metadata
+d$posted_date %<>% as.Date()
+max(d$posted_date, na.rm = T)
+min(d$posted_date, na.rm = T)
 
 topdockets <- rules %>% 
   group_by(docket_id) %>% 
@@ -47,19 +58,20 @@ topdockets <- rules %>%
   filter(docket_type == "Rulemaking",
          number_of_comments_received > 99, # dockets with 100 comments 
          document_type == "Rule") %>% # dockets with a final rule (initially sampled all dockets)
+  # drop ones with more than one FR
+  add_count(docket_id) %>% filter(n == 1) %>% 
   group_by(agency_id) %>%
   # agencie that have mass dockets
   mutate(max_comments = max(number_of_comments_received)) %>%
   #filter(max_comments > 100) %>%  
-  slice_max(order_by = number_of_comments_received,
-            n = 5,
-            with_ties =F)
+  slice_sample(weight_by = number_of_comments_received,
+            n = 5)
 
 nrow(topdockets)
 
 
 topdockets$number_of_comments_received %>% head()
-
+head(topdockets$docket_id)
 dim(topdockets)
 
 count(topdockets, docket_id, number_of_comments_received)
@@ -89,11 +101,11 @@ agencies <- unique(rules$agency_id)
 #              "DARS",
 #              "DHS")
 
-d <- comments_all %>% 
+d %<>% 
   # filter to top dockets
   filter(docket_id %in% topdockets$docket_id) %>% 
   # selecting agencies for hand codeing
-  filter(agency_acronym %in% agencies) 
+  filter(agency_id %in% agencies) 
 
 dim(d)
 
@@ -106,15 +118,16 @@ d %<>% group_by(docket_id) %>%
          max = max(number_of_comments_received) ) %>% 
   ungroup() %>% 
   filter(max > 99 | comments_on_docket > 999)
+dim(d)
 
 names(d)
 d %<>% filter(attachment_count > 0,
        !str_detect(organization, "^.\\. |illegible|surname|last name|forename|no name|^unknown$"),
        !str_detect(title, "illegible|surname|last name|forename|no name") ) 
-
-
-
 dim(d)
+
+d %<>% mutate(agency_acronym = agency_id)
+d %<>% mutate(document_id = id)
 
 # apply auto-coding 
 #FIXME with updated org_names from hand-coding 
@@ -123,6 +136,7 @@ source(here::here("code", "org_name.R"))
 
 save(d, file = here::here("data", "comments4datasheets.Rdata"))
 # load(here::here("data", "comments4datasheets.Rdata"))
+dim(d)
 temp <- d
 d <- temp
 
@@ -232,9 +246,12 @@ d %<>% mutate(org_name = ifelse(str_dct(title, "Chief,"),
                                org_name)
              )
 
-d$title %<>% str_remove("Comment submitted by ")
+d$title %<>% str_remove("Comment submitted by |Comment from |Comments from |Comment on |Comments|Submitted Electronically via eRulemaking Portal")
 
 d$org_name%<>% str_squish()
+
+save(d, file = here::here("data", "comments4datasheets.Rdata"))
+# load(here::here("data", "comments4datasheets.Rdata"))
 
 # filter down to org comments
 d %<>% 
@@ -249,7 +266,7 @@ d %<>%
          !str_detect(title, "illegible|surname| suranme |last name|forename|no name"),
          nchar(org_name) > 1) %>% 
   mutate(org_name = org_name %>% replace_na("NA") ) %>% 
-  filter(number_of_comments_received > 99 | !org_name %in% c("NA", "na", "","unknown")) %>% 
+  filter(number_of_comments_received > 9 | !org_name %in% c("NA", "na", "","unknown")) %>% 
   add_count(docket_id, name = "org_comments")
 
 
@@ -262,6 +279,7 @@ d %>%
   #filter(n > 10, n < 20) %>% 
   count(docket_id, sort = T) %>% knitr::kable()
 
+d %>% distinct(docket_id, org_comments)%>% knitr::kable()
 
 d %<>%  filter(org_comments < 1000)
 
@@ -292,14 +310,15 @@ d$docket_url[1]
 d %<>% rename(comment_title = title)
 names(d)
 ## PREP SHEETS
-d %<>% select(agency_acronym, 
+d %<>% select(#agency_acronym, 
               docket_id, 
               docket_url,
-              docket_title, 
+              #docket_title, 
               document_id, 
+              posted_date,
               comment_url, 
               comment_text,
-              attachment_txt,
+              #attachment_txt,
               organization, 
               comment_title,
               attachment_count, 

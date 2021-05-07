@@ -1,8 +1,13 @@
 source("setup.R")
-load("rules_metadata.Rdata")
+load("data/rules_metadata.Rdata")
 names(rules)
+max(rules$posted_date, na.rm = T)
 
 combine_strings <- . %>% unique() %>% str_c(collapse = ";;;")
+
+rules %<>% filter(document_type %in% c("Proposed Rule", "Rule"))
+
+rules %<>% mutate(document_id = id)
 
 d <- rules %>% 
   #head(100) %>% 
@@ -16,8 +21,17 @@ d <- rules %>%
   ungroup() 
 
 dockets <- d 
+dockets_min <- d %>% select(docket_id, 
+                            docket_type, 
+                            number_of_comments_received, 
+                            document_type,
+                            posted_date,
+                            comment_start_date,
+                            comment_due_date)
 
 save(dockets, file =  here::here("data", "dockets_metadata.Rdata") )
+save(dockets_min, file =  here::here("data", "dockets_min.Rdata") )
+
 # load(here::here("data", "dockets_metadata.Rdata"))
 
 d  <- dockets
@@ -29,7 +43,7 @@ dim(d)
 
 d %<>% 
   ungroup() %>% 
-  mutate(         # add vars 
+  mutate(# add vars 
     proposed_url = "",
     final_url = "", 
     proposed_direction = "",
@@ -37,9 +51,10 @@ d %<>%
     final_relative_direction = "",
     issue1 = "",
     issue2 = "",
-    issue3 = "") %>% 
+    issue3 = "",
+    coalitions = "") %>% 
   # order 
-  select(agency_acronym,
+  select(agency_id,
          docket_type,
          number_of_comments_received,
          docket_id, 
@@ -53,14 +68,14 @@ d %<>%
          issue1,
          issue2,
          issue3,
+         coalitions,
          # combined rule vars just for extra info
          document_type,
-         posted_date,
          title,
          document_id,
          rin,
          fr_number,
-         fr_document_id,
+         #fr_document_id = fr_number,
          posted_date,
          comment_start_date,
          comment_due_date, 
@@ -73,13 +88,13 @@ d %>% count(docket_type)
 # write sheets
 write_rule_sheets <- function(agency){
   d %>% 
-    filter(agency_acronym == agency) %>% 
+    filter(agency_id == agency) %>% 
     write_csv(path = here::here("data",
                                 "datasheets", 
                                 str_c(agency, ".csv")))
 }
 
-unique(d$agency_acronym)
+unique(d$agency_id)
 
-walk(unique(d$agency_acronym), write_rule_sheets)  
+walk(unique(d$agency_id), write_rule_sheets)  
 
