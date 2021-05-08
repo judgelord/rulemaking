@@ -4,37 +4,22 @@ source("setup.R")
 
 
 # comments 
-load(here::here("data", "comment_metadata.Rdata"))
+load(here::here("data", "comment_metadata2020.Rdata"))
 dim(comment_metadata)
 ls()
 names(comment_metadata)
 names(comments_all)
+dim(comments_all)
 
-d <- comment_metadata
+d <- comment_metadata 
+d %<>% as_tibble()
 d$posted_date %<>% as.Date()
 max(d$posted_date, na.rm = T)
 min(d$posted_date, na.rm = T)
 
-d %<>% filter(number_of_comments_received > 99)
+d %<>% filter(number_of_comments_received > 9)
 
 
-dim(d)
-
-
-
-# filter to mass dockets
-d %<>% group_by(docket_id) %>% 
-  # mass dockets
-  mutate(comments_on_docket = sum(number_of_comments_received), 
-         max = max(number_of_comments_received) ) %>% 
-  ungroup() %>% 
-  filter(max > 99 | comments_on_docket > 999)
-dim(d)
-
-names(d)
-d %<>% filter(attachment_count > 0,
-              !str_detect(organization, "^.\\. |illegible|surname|last name|forename|no name|^unknown$"),
-              !str_detect(title, "illegible|surname|last name|forename|no name") ) 
 dim(d)
 
 d %<>% mutate(agency_acronym = agency_id)
@@ -49,7 +34,7 @@ save(d, file = here::here("data", "comments4masssheet.Rdata"))
 # load(here::here("data", "comments4datasheets.Rdata"))
 temp <- d
 d <- temp
-
+dim(d)
 d %>% count(org_name, sort = T)
 
 d %<>% mutate(org_name = ifelse(str_dct(title, "Chief,"),
@@ -160,20 +145,17 @@ d$title %<>% str_remove("Comment submitted by |Comment from |Comments from |Comm
 
 d$org_name%<>% str_squish()
 
+d %<>% mutate(org_name = coalesce(org_name, title))
+
 save(d, file = here::here("data", "comments4masssheet.Rdata"))
 # load(here::here("data", "comments4datasheets.Rdata"))
 
-# filter down to org comments
-d %<>% 
-  group_by(docket_id, org_name) %>% 
-  add_count(name = "org_total") %>% 
-  ungroup() %>%
-  arrange(-number_of_comments_received) %>% 
-  mutate(org_name = org_name %>% replace_na("NA") ) %>% 
-  add_count(docket_id, name = "org_comments")
-
 
 d %>% count(org_name, sort = T)
+
+d %>% count(is.na(org_name))
+
+
 
 # random sample 
 d %>% distinct(org_name,title) %>% slice_sample(n = 100) %>% knitr::kable()
@@ -191,21 +173,16 @@ d$comment_url[1]
 d %<>% mutate(comment_title = title)
 names(d)
 
-## PREP SHEETS
-d %<>% select(#agency_acronym, 
-  docket_id, 
-  docket_url,
-  #docket_title, 
-  document_id, 
-  posted_date,
-  comment_url, 
-  comment_text,
-  #attachment_txt,
-  organization, 
-  comment_title,
-  attachment_count, 
-  number_of_comments_received,
-  org_name)
+d %<>% 
+  group_by(docket_id, org_name) %>% 
+  summarise(comment_url = str_c(comment_url, collapse = " \n "),
+            document_id = str_c(comment_url, collapse = " \n "),
+            comments = sum(number_of_comments_received))
+
+d %<>% arrange(-comments)
+
+head(d)
+
 
 # add blanks
 d %<>% mutate(position = "",
@@ -233,39 +210,14 @@ d %<>% mutate(position = "",
               notes = "")
 
 names(d)
+dim(d)
 
 # unique(d$organization)
 
 count(d, organization, sort = T) %>% head()
 count(d, org_name, sort = T) %>% head()
 
-d %>% filter( organization  == "N/A") %>% distinct(org_name, number_of_comments_received)
-d %>% filter(org_name == "unknown") %>% distinct(org_name, number_of_comments_received)
-
-# create new directory if needed
-if (!dir.exists(here::here("data", "datasheets") ) ){
-  dir.create( here::here("data", "datasheets") )
-}
-
-
-write_comment_sheets <- function(docket){
-  d %>% 
-    filter(docket_id == docket) %>% 
-    write_csv(file = here::here("data",
-                                "datasheets",
-                                #str_extract("^[A-Z]"), # agency  
-                                str_c(docket, "_org_comments.csv")))
-}
-
-
-names(d)
-d %<>% mutate(comment_type = ifelse(number_of_comments_received > 99, "mass", comment_type))
-
-unique(d$docket_id)
-
-walk(unique(d$docket_id), write_comment_sheets)
-
-
+write_csv(d ,file = here::here("data","datasheets", "mass.csv"))
 
 
 

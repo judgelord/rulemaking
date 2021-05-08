@@ -40,11 +40,11 @@ nrow(rules)
 
 
 # comments 
-load(here::here("data", "comment_metadata.Rdata"))
+load(here::here("data", "comment_metadata2020.Rdata"))
 dim(comment_metadata)
 ls()
 names(comment_metadata)
-names(comments_all)
+# names(comments_all)
 
 d <- comment_metadata
 d$posted_date %<>% as.Date()
@@ -64,6 +64,7 @@ topdockets <- rules %>%
   # agencie that have mass dockets
   mutate(max_comments = max(number_of_comments_received)) %>%
   #filter(max_comments > 100) %>%  
+  # SAMPLE 
   slice_sample(weight_by = number_of_comments_received,
             n = 5)
 
