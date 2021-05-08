@@ -28,7 +28,7 @@ rules %>% filter(document_type =="Proposed Rule") %>% count(year)
 load(here::here("data", "ejdockets.Rdata"))
 head(ejdockets)
 
-# rules %<>% filter(docket_id %in% ejdockets$docket_id)
+rules %<>% filter(docket_id %in% ejdockets$docket_id)
 nrow(rules)
 
 done <- list.files(here::here("data", "datasheets")) %>% 
