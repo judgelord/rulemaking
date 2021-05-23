@@ -157,6 +157,10 @@ head(comments_min)
 dim(comment_metadata)
 dim(comments_min)
 
-save(comments_min, file = here::here("data", "comments_min.Rdata"))
+comments_min %<>% filter(date >= as.Date("2005-01-01"))
 
-# save(comment_metadata, file =  here::here("data", "comment_metadata2020.Rdata"))
+save(comments_min, file = here::here("data", "comments_min.Rdata"))
+class(comments_min)
+comments_min %<>% as_tibble()
+
+save(comment_metadata, file =  here::here("data", "comment_metadata2020.Rdata"))
