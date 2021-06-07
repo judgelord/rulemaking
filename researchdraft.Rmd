@@ -1,0 +1,87 @@
+---
+title             : "Do members of Congress have an increasing level of influence on the outcome of federal agency financial rulemaking?"
+shorttitle        : "Have federal agencies become more partisan over time?"
+
+author: 
+  - name          : "Samiha Bhushan"
+    affiliation   : "1"
+    corresponding : no    # Define only one corresponding author
+    address       : ""
+    email         : "bhushan3@wisc.edu"
+    
+
+affiliation:
+  - id            : "1"
+    institution   : "University of Wisconsin-Madison"
+
+authornote: |
+  Department of Political Science, University of Wisconsin-Madison
+
+
+abstract: |
+  empty
+  
+keywords          : "keywords"
+wordcount         : "X"
+
+bibliography      : ["r-references.bib"]
+
+floatsintext      : no
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+linenumbers       : no
+mask              : no
+draft             : no
+
+documentclass     : "apa6"
+classoption       : "man"
+output            : papaja::apa6_pdf
+---
+
+```{r setup, include = FALSE}
+library("papaja")
+r_refs("r-references.bib")
+```
+
+```{r analysis-preferences}
+# Seed for random number generation
+set.seed(42)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+```
+
+
+
+# Methods
+I will gather data from 40 rules issued by financial agencies, including but not limited to the Consumer Financial Protection Bureau, the Treasury Department, and the Office of the Comptroller of the Currency. I focus on public comments issued by members of Congress and focus on whether their demands were ultimately fulfilled in the final rule. 
+
+The research design additionally combines data from a previous study conducted by Jennifer L. Selin, who determined an estimate of the level of structural independence for several agencies during the Obama administration. My study will also include rules during the subsequent Trump administration, wherein the Senate majority switched to the Republican party. I will compare and contrast rules from both eras to determine if influence from political parties have grown over time, including determining if there is an increased presence of politicians commenting on policies. 
+
+I will also use textual analysis in addition to the hand coding to see if elected officials use more partisan rhetoric over time. In this study, “partisan rhetoric” refers to an individual making positive assertions about their own party or negative assertions about the opposing party. I will also examine whether the demands of elected officials that are the same party as the President are increasingly met over those of the opposing party. 
+
+
+## Participants
+
+## Material
+
+## Procedure
+
+## Data analysis
+We used `r cite_r("r-references.bib")` for all our analyses.
+
+
+# Results
+
+# Discussion
+
+
+\newpage
+
+# References
+
+\begingroup
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}
+
+<div id="refs" custom-style="Bibliography"></div>
+\endgroup
