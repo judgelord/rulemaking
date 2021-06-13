@@ -52,9 +52,11 @@ knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
 ```
 
 # Methods
+I will attempt to answer two questions: first, have federal agencies become increasingly receptive to the demands of members of Congress? Second, are more independent agencies less likely to be influenced by members of Congress? 
+
 I will gather data from 40 rules issued by financial agencies, including but not limited to the Consumer Financial Protection Bureau, the Treasury Department, and the Office of the Comptroller of the Currency. I focus on public comments issued by members of Congress and focus on whether their demands were ultimately fulfilled in the final rule. 
 
-The research design additionally combines data from a previous study conducted by Jennifer L. Selin, who determined an estimate of the level of structural independence for several agencies during the Obama administration. My study will also include rules during the subsequent Trump administration, wherein the Senate majority switched to the Republican party. I will compare and contrast rules from both eras to determine if influence from political parties have grown over time, including determining if there is an increased presence of politicians commenting on policies. 
+The research design additionally combines data from a previous study conducted by Jennifer L. Selin, who determined an estimate of the level of structural independence for several agencies during the Obama administration. My study will also include rules during the subsequent Trump administration, wherein the Senate majority switched to the Republican party. I will compare and contrast rules from both eras to determine if influence from political parties have grown over time, including determining if there is an increased presence of politicians commenting on policies. I will also compare the estimates of agency independence as calculated by Selin to level of success with regard to demands made by members of Congress. 
 
 I will also use textual analysis in addition to the hand coding to see if elected officials use more partisan rhetoric over time. In this study, “partisan rhetoric” refers to an individual making positive assertions about their own party or negative assertions about the opposing party. I will also examine whether the demands of elected officials that are the same party as the President are increasingly met over those of the opposing party. 
 
