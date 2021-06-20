@@ -50,12 +50,15 @@ r_refs("r-references.bib")
 set.seed(42)
 knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
 ```
-#Theory
+# Theory
+
 I will attempt to answer two questions: first, have federal agencies become increasingly receptive to the demands of members of Congress? Second, are more independent agencies less likely to be influenced by members of Congress? 
 
 I use data from a previous study conducted by Jennifer Selin. Selin's data disseminates various structural features of agencies, such as if the agency is involved within an executive department, if the agency places a conflict of interest restriction on its members, if they provide some avenue for congressional input in the process it nominates its members, and if the agency is a commission or has a board of directors, whether the statute limits the number of members who may serve from the same party. 
 
-With a Bayesian latent variable model, she estimates the level of independence for 321 federal agencies, where the higher the number, the more indendent the angency is in its rulemaking process. Extrapolating data from Selin, we find that financial agencies are generally rated higher in terms of level of independence, where the Consumer Financial Protection Bureau (CFPB) is rated one of the highest at 4.1 and the Federal Trade Commission (FTC) is 2.269. The CFPB is rated so highly because of its 5-year term limit for members, commissioners, and agency heads, additional clauses in the statute that enable members to be removed due to "neglect of duty", and a clause that enables the CFPB to fund a substantial amount of its funding from independent sources.  
+With a Bayesian latent variable model, she estimates the level of independence for 321 federal agencies, where the higher the number, the more indendent the agency is in its rulemaking process. Extrapolating data from Selin, we find that financial agencies are generally rated higher in terms of level of independence, where the Consumer Financial Protection Bureau (CFPB) is rated one of the highest at 4.1 and the Federal Trade Commission (FTC) is 2.269. The CFPB's rating is impacted by its 5-year term limit for members, commissioners, and agency heads, additional clauses in the statute that enable members to be removed due to "neglect of duty", and a clause that enables the CFPB to fund a substantial amount of its funding from independent sources. The FTC's rating is higher than most overall agencies because it has similar term limitations and an clause to limits the number of members serving from one party. It has a lower rating than the CFPB likely due to a lower reliance on independent funding sources, therefore making the policy decision process more reliant on government input. 
+
+With this in mind, I believe that financial agencies with a higher estimate of agency independence will 
 
 # Methods
 I will gather data from 40 rules issued by financial agencies, including but not limited to the Consumer Financial Protection Bureau, the Treasury Department, and the Office of the Comptroller of the Currency. I focus on public comments issued by members of Congress and focus on whether their demands were ultimately fulfilled in the final rule. 
