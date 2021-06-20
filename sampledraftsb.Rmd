@@ -62,10 +62,9 @@ With a Bayesian latent variable model, she estimates the level of independence f
 With this in mind, I believe that financial agencies with a higher estimate of agency independence will have lower evidence of congressional influence. Higher rated agencies will have a lower average level of success coded for members of Congress. In turn, those with a lower estimate of independence will have a higher average level of success coded for Congress members, and possibly from a higher level of success coded for members from the same party as the President. 
 
 # Literature Review
-Jennifer L. Selin: 
-concludes agency structure is important, which is why i'm doing over time with respect to two presidents
+Jennifer Selin concludes that "a lack of influence is correlated with statutory provisions that insulate agency policy decisions from review by political principals" (Selin, 2015). This means the main indication of an agency's independence comes from additional clauses in its statute to ensure strict limitations on policy reviews and other decisions from political forces, as opposed to the number of oversight committees for instance. Likewise, the FTC has become more independent over time, according to Selin, due to additional policy features put in place to prevent political interference, including the employment of administrative law judges. Selin found that generally financial agencies had the largest increase in independence over time. This trend should translate beyond the years the study was conducted, translating into the Trump administraton, with agencies such as the FTC and CFPB maintaining or increasing their level of agency independence as much of the structural clauses implemented to maintain agency independence were retained. For example, the U.S. Supreme Court maintained the clause that subject the removal of the director for the CFPB subject to the President's discretion, after a petitioner challenged its constitutionality (Seila Law v. CFPB, 2020). 
 
-
+That is to say, while there a high estimate of independence for financial agencies, no agency is immune to political influence. Selin cited that while Securities and Exchange Commission’s (SEC’s) has high estimates, 3.566, SEC policy reflected presidential preferences during the financial crisis in 2008. We may see similar 
 
 
 
