@@ -50,6 +50,7 @@ r_refs("r-references.bib")
 set.seed(42)
 knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
 ```
+
 # Theory
 
 I will attempt to answer two questions: first, have federal agencies become increasingly receptive to the demands of members of Congress? Second, are more independent agencies less likely to be influenced by members of Congress? 
@@ -58,7 +59,15 @@ I use data from a previous study conducted by Jennifer Selin. Selin's data disse
 
 With a Bayesian latent variable model, she estimates the level of independence for 321 federal agencies, where the higher the number, the more indendent the agency is in its rulemaking process. Extrapolating data from Selin, we find that financial agencies are generally rated higher in terms of level of independence, where the Consumer Financial Protection Bureau (CFPB) is rated one of the highest at 4.1 and the Federal Trade Commission (FTC) is 2.269. The CFPB's rating is impacted by its 5-year term limit for members, commissioners, and agency heads, additional clauses in the statute that enable members to be removed due to "neglect of duty", and a clause that enables the CFPB to fund a substantial amount of its funding from independent sources. The FTC's rating is higher than most overall agencies because it has similar term limitations and an clause to limits the number of members serving from one party. It has a lower rating than the CFPB likely due to a lower reliance on independent funding sources, therefore making the policy decision process more reliant on government input. 
 
-With this in mind, I believe that financial agencies with a higher estimate of agency independence will 
+With this in mind, I believe that financial agencies with a higher estimate of agency independence will have lower evidence of congressional influence. Higher rated agencies will have a lower average level of success coded for members of Congress. In turn, those with a lower estimate of independence will have a higher average level of success coded for Congress members, and possibly from a higher level of success coded for members from the same party as the President. 
+
+# Literature Review
+Jennifer L. Selin: 
+concludes agency structure is important, which is why i'm doing over time with respect to two presidents
+
+
+
+
 
 # Methods
 I will gather data from 40 rules issued by financial agencies, including but not limited to the Consumer Financial Protection Bureau, the Treasury Department, and the Office of the Comptroller of the Currency. I focus on public comments issued by members of Congress and focus on whether their demands were ultimately fulfilled in the final rule. 
@@ -67,9 +76,6 @@ The research design additionally combines data from a previous study conducted b
 
 I will also use textual analysis in addition to the hand coding to see if elected officials use more partisan rhetoric over time. In this study, “partisan rhetoric” refers to an individual making positive assertions about their own party or negative assertions about the opposing party. I will also examine whether the demands of elected officials that are the same party as the President are increasingly met over those of the opposing party. 
 
-## Participants
-
-## Material
 
 ## Procedure
 
