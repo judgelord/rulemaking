@@ -387,15 +387,716 @@ div.tocify {
 </div>
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Seed for random number generation</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">cache.extra =</span> knitr<span class="sc">::</span>rand_seed)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># selin estimate data</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>data1 <span class="ot">&lt;-</span> <span class="fu">read.csv</span>((<span class="st">&quot;/Users/samihabhushan/Downloads/selindatacsv.csv&quot;</span>), <span class="at">header=</span>T)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>data1</span></code></pre></div>
+<pre><code>##                                                        Agency       Dimension.1
+## 1                                                             (Decision Makers)
+## 2                                                                      Estimate
+## 3                    Administration for Children and Families            -0.781
+## 4                         Administration for Community Living            -0.769
+## 5              Administrative Conference of the United States             1.111
+## 6    Administrative Conference of the United States (Initial)             1.012
+## 7                  Agency for Healthcare Research and Quality            -0.622
+## 8            Agency for Toxic Substances and Disease Registry            -0.644
+## 9                              Agricultural Marketing Service            -0.779
+## 10                              Agricultural Research Service            -0.646
+## 11                                                  Air Force            -0.535
+## 12                   Alcohol and Tobacco Tax and Trade Bureau            -0.767
+## 13                 Animal and Plant Health Inspection Service            -0.771
+## 14                            Appalachian Regional Commission             0.755
+## 15                                                       Army            -0.541
+## 16        Barry Goldwater Schol and Excellence in Ed. Program             1.544
+## 17        Bd. of Directors of the Hope for Homeowners Program            -0.298
+## 18                                      Benefits Review Board            -0.145
+## 19                                  Board of Veterans Appeals             0.266
+## 20                            Bonneville Power Administration            -0.646
+## 21             Border and Transportation Security Directorate            -0.639
+## 22                            Broadcasting Board of Governors             1.719
+## 23       Bureau of Alcohol, Tobacco, Firearms, and Explosives            -0.668
+## 24                                      Bureau of Competition             -0.38
+## 25                                Bureau of Economic Analysis            -0.785
+## 26                                        Bureau of Economics            -0.377
+## 27                           Bureau of Engraving and Printing            -0.611
+## 28                                   Bureau of Indian Affairs            -0.656
+## 29                                 Bureau of Indian Education            -0.767
+## 30                            Bureau of Industry and Security            -0.766
+## 31                      Bureau of International Labor Affairs            -0.773
+## 32                                 Bureau of Labor Statistics            -0.306
+## 33                                  Bureau of Land Management             -0.37
+## 34                          Bureau of Ocean Energy Management            -0.774
+## 35                    Bureau of Prisons/Federal Prison System            -0.636
+## 36                                      Bureau of Reclamation            -0.645
+## 37             Bureau of Safety and Environmental Enforcement            -0.746
+## 38                                       Bureau of the Census             0.032
+## 39                                  Bureau of the Public Debt            -0.644
+## 40                 Centers for Disease Control and Prevention            -0.761
+## 41                 Centers for Medicare and Medicaid Services            -0.791
+## 42                                Central Intelligence Agency             0.223
+## 43         Chemical Safety and Hazard Invest. Board (Initial)             0.764
+## 44             Chemical Safety and Hazard Investigation Board             0.703
+## 45                           Citizen and Immigration Services            -0.494
+## 46                                             Civil Division             -0.78
+## 47                                      Civil Rights Division             -0.78
+## 48                               Commodity Credit Corporation            -0.262
+## 49                       Commodity Futures Trading Commission             1.588
+## 50          Community Development Financial Institutions Fund            -0.391
+## 51                                           Consular Affairs            -0.772
+## 52                       Consumer Financial Protection Bureau              0.24
+## 53                         Consumer Product Safety Commission             1.981
+## 54               Consumer Product Safety Commission (Initial)             2.032
+## 55                 Corporation for National Community Service             1.455
+## 56                        Corporation for Public Broadcasting             1.361
+## 57                               Council of Economic Advisors             0.579
+## 58                           Council on Environmental Quality             0.582
+## 59                 Council on Environmental Quality (Initial)             0.583
+## 60                                          Criminal Division            -0.769
+## 61                              Customs and Border Protection            -0.641
+## 62                             Defense Acquisition University             -0.65
+## 63                    Defense Acquisitions Regulations System            -0.758
+## 64                  Defense Advanced Research Projects Agency            -0.773
+## 65                                 Defense Commissary Agency             -0.778
+## 66                              Defense Contract Audit Agency            -0.764
+## 67                         Defense Contract Management Agency             -0.77
+## 68                     Defense Finance and Accounting Service            -0.784
+## 69                         Defense Information Systems Agency            -0.761
+## 70                                Defense Intelligence Agency            -0.659
+## 71                              Defense Legal Services Agency            -0.771
+## 72                                   Defense Logistics Agency            -0.781
+## 73                                     Defense Media Activity            -0.763
+## 74                    Defense Nuclear Facilities Safety Board             1.912
+## 75           Defense Prisoner of War/Missing Personnel Office            -0.658
+## 76                 Defense Procurement and Acquisition Policy            -0.775
+## 77                        Defense Security Cooperation Agency            -0.782
+## 78                                   Defense Security Service            -0.779
+## 79                       Defense Technical Information Center            -0.776
+## 80                 Defense Technology Security Administration            -0.788
+## 81                            Defense Threat Reduction Agency            -0.782
+## 82                                   Delta Regional Authority             0.217
+## 83           Dep’t of Defense Test Resource Management Center            -0.502
+## 84                                  Department of Agriculture            -0.361
+## 85                                     Department of Commerce            -0.373
+## 86                                      Department of Defense            -0.227
+## 87                   Department of Defense Education Activity            -0.651
+## 88             Department of Defense Human Resources Activity            -0.785
+## 89                                    Department of Education            -0.382
+## 90                                       Department of Energy            -0.386
+## 91                             Department of Energy (Initial)            -0.319
+## 92                    Department of Health and Human Services            -0.597
+## 93                            Department of Homeland Security            -0.337
+## 94                  Department of Homeland Security (Initial)            -0.241
+## 95                Department of Housing and Urban Development            -0.692
+## 96                                      Department of Justice            -0.359
+## 97                                        Department of Labor            -0.358
+## 98                              Department of Labor (Initial)            -0.321
+## 99                                        Department of State            -0.327
+## 100                                Department of the Interior            -0.359
+## 101                                Department of the Treasury             -0.14
+## 102                              Department of Transportation            -0.366
+## 103                            Department of Veterans Affairs            -0.389
+## 104                     Directorate of Defense Trade Controls            -0.768
+## 105                Division of Consumer and Community Affairs            -0.385
+## 106                         Domestic Nuclear Detection Office            -0.498
+## 107                           Drug Enforcement Administration            -0.698
+## 108                       Economic Development Administration             -0.65
+## 109                                 Economic Research Service             -0.77
+## 110                   Economics and Statistics Administration            -0.776
+## 111                          Educational and Cultural Affairs            -0.665
+## 112                 Employee Benefits Security Administration             -0.76
+## 113                      Employees Compensation Appeals Board            -0.624
+## 114                    Employment and Training Administration            -0.774
+## 115                       Employment Standards Administration            -0.776
+## 116                           Environmental Protection Agency            -0.006
+## 117                   Equal Employment Opportunity Commission             1.629
+## 118         Equal Employment Opportunity Commission (Initial)              1.62
+## 119                             European and Eurasian Affairs            -0.785
+## 120                   Executive Office for Immigration Review            -0.709
+## 121                      Executive Office for U.S. Attorneys             -0.776
+## 122                        Executive Office for U.S. Trustees            -0.786
+## 123                   Export-Import Bank of the United States             1.784
+## 124                                Farm Credit Administration             2.109
+## 125                                       Farm Service Agency            -0.845
+## 126                 Federal Agricultural Mortgage Corporation             1.459
+## 127                           Federal Aviation Administration             0.024
+## 128                           Federal Bureau of Investigation            -0.562
+## 129                         Federal Communications Commission             1.837
+## 130                     Federal Deposit Insurance Corporation             1.317
+## 131           Federal Deposit Insurance Corporation (Initial)             1.152
+## 132                               Federal Election Commission              1.79
+## 133                       Federal Emergency Management Agency            -0.497
+## 134                      Federal Energy Regulatory Commission             1.065
+## 135                            Federal Highway Administration             -0.66
+## 136              Federal Hospital Insurance Trust Fund Board              0.794
+## 137                            Federal Housing Administration             -0.66
+## 138                            Federal Housing Finance Agency             0.956
+## 139                         Federal Labor Relations Authority             1.019
+## 140               Federal Labor Relations Authority (Initial)             1.426
+## 141                   Federal Law Enforcement Training Center            -0.647
+## 142                               Federal Maritime Commission             1.815
+## 143                Federal Mediation and Conciliation Service             0.124
+## 144      Federal Mediation and Conciliation Service (Initial)             0.103
+## 145          Federal Mine Safety and Health Review Commission             1.753
+## 146               Federal Motor Carrier Safety Administration            -0.499
+## 147                                 Federal Prison Industries            -0.056
+## 148                           Federal Railroad Administration            -0.491
+## 149                                     Federal Reserve Board             2.235
+## 150                           Federal Reserve Board (Initial)             2.069
+## 151                Federal Retirement Thrift Investment Board             1.415
+## 152                                       Federal Student Aid            -0.763
+## 153    Federal Supp. Medication Ins. Trust Fund Bd. (Initial)             0.144
+## 154       Federal Supp. Medication Insurance Trust Fund Board             0.791
+## 155                                  Federal Trade Commission             1.655
+## 156                            Federal Transit Administration            -0.672
+## 157                               Field Policy and Management             -0.78
+## 158                      Financial Crimes Enforcement Network            -0.654
+## 159                              Financial Management Service             -0.77
+## 160                     Financial Stability Oversight Council             0.371
+## 161                              Food and Drug Administration             -0.64
+## 162                                Food and Nutrition Service            -0.773
+## 163                        Food Safety and Inspection Service            -0.787
+## 164                              Foreign Agricultural Service            -0.769
+## 165                     Foreign Claims Settlement Commission              0.136
+## 166                                            Forest Service            -0.491
+## 167                           General Services Administration             0.083
+## 168                  Government National Mortgage Association              -0.6
+## 169          Grain Inspection, Packers, and Stockyards Admin.            -0.781
+## 170                     Harry S Truman Scholarship Foundation             1.905
+## 171              Health Resources and Services Administration            -0.773
+## 172                       Immigration and Customs Enforcement            -0.495
+## 173                        Independent Payment Advisory Board             1.923
+## 174                                     Indian Health Service            -0.456
+## 175                 Institute for Museum and Library Services              0.59
+## 176                         Institute of American Indian Arts             1.715
+## 177                           Institute of Education Sciences             0.736
+## 178                      Intelligence and Counterintelligence            -0.782
+## 179                                 Inter-American Foundation             1.951
+## 180                                  Internal Revenue Service             0.031
+## 181                  Internal Revenue Service Oversight Board             0.778
+## 182                        International Trade Administration            -0.768
+## 183              James Madison Memorial Fellowship Foundation             1.497
+## 184                               Justice Management Division             -0.76
+## 185                                Legal Services Corporation             1.007
+## 186                                   Maritime Administration            -0.654
+## 187                            Merit Systems Protection Board             1.113
+## 188                 Metropolitan Washington Airport Authority             2.074
+## 189       Metropolitan Washington Airport Authority (Initial)              1.68
+## 190                          Millennium Challenge Corporation             0.997
+## 191                Millennium Challenge Corporation (Initial)             0.738
+## 192                     Mine Safety and Health Administration            -0.655
+## 193                      Minority Business Development Agency            -0.764
+## 194                                    Missile Defense Agency            -0.777
+## 195                              Mississippi River Commission             1.268
+## 196                    Morris K. Udall Scholarship Foundation             1.689
+## 197          Morris K. Udall Scholarship Foundation (Initial)             1.595
+## 198             National Aeronautics and Space Administration             0.189
+## 199                  National Agricultural Statistics Service            -0.762
+## 200              National Archives and Records Administration             0.356
+## 201                          National Cemetery Administration            -0.658
+## 202                        National Consumer Cooperative Bank             0.822
+## 203                            National Council on Disability             1.505
+## 204                      National Credit Union Administration             2.138
+## 205                           National Endowment for the Arts             0.358
+## 206                     National Endowment for the Humanities             0.386
+## 207                   National Geospatial-Intelligence Agency            -0.521
+## 208            National Highway Traffic Safety Administration            -0.644
+## 209                         National Indian Gaming Commission             1.052
+## 210                 National Infrastructure Protection Center            -0.686
+## 211  National Inst. on Disability and Rehabilitation Research            -0.464
+## 212                   National Institute of Building Sciences             1.262
+## 213         National Institute of Building Sciences (Initial)              1.09
+## 214                National Institute of Food and Agriculture              0.12
+## 215            National Institute of Standards and Technology            -0.582
+## 216                             National Institutes of Health            -0.605
+## 217                            National Labor Relations Board             1.453
+## 218                  National Labor Relations Board (Initial)             1.478
+## 219                                  National Mediation Board              1.24
+## 220                  National Nuclear Security Administration            -0.383
+## 221           National Oceanic and Atmospheric Administration            -0.648
+## 222                                     National Park Service             -0.52
+## 223          National Railroad Passenger Corporation (AMTRAK)             1.634
+## 224                            National Reconnaissance Office            -0.801
+## 225                               National Science Foundation             1.243
+## 226                                  National Security Agency            -0.641
+## 227                         National Security Education Board             0.803
+## 228               National Security Education Board (Initial)             0.686
+## 229                    National Technical Information Service            -0.624
+## 230         National Telecomm. and Information Administration            -0.644
+## 231                      National Transportation Safety Board              1.29
+## 232                    Natural Resources Conservation Service            -0.839
+## 233                                                      Navy            -0.533
+## 234                             Nuclear Regulatory Commission             1.848
+## 235             Occupational Safety and Health Administration            -0.835
+## 236          Occupational Safety and Health Review Commission              1.73
+## 237      Office of A. Sec. for Comm. Planning and Development            -0.778
+## 238       Office of A. Sec. for Elem. and Secondary Education             -0.66
+## 239      Office of A. Sec. for Fair Housing and Equal Opport.            -0.771
+## 240     Office of A. Sec. for Policy Development and Research            -0.774
+## 241            Office of A. Sec. for Post Secondary Education            -0.659
+## 242                              Office of Acquisition Policy             -0.38
+## 243           Office of Assistant Secretary for Fossil Energy            -0.797
+## 244                             Office of Economic Adjustment            -0.769
+## 245     Office of Electricity Delivery and Energy Reliability            -0.774
+## 246          Office of Energy Efficiency and Renewable Energy            -0.763
+## 247                      Office of Energy Policy and New Uses            -0.659
+## 248                        Office of Environmental Management            -0.761
+## 249            Office of Federal Contract Compliance Programs            -0.786
+## 250                      Office of Federal Procurement Policy            -0.205
+## 251                             Office of Financial Stability            -0.674
+## 252                                  Office of Fiscal Service            -0.637
+## 253                          Office of Foreign Assets Control            -0.649
+## 254                               Office of Government Ethics             0.467
+## 255                    Office of Health, Safety, and Security             -0.77
+## 256           Office of Healthy Homes and Lead Hazard Control            -0.774
+## 257                                Office of Justice Programs            -0.686
+## 258                      Office of Labor-Management Standards            -0.768
+## 259                           Office of Management and Budget             0.263
+## 260                        Office of Minority Economic Impact            -0.648
+## 261                    Office of National Drug Control Policy             0.424
+## 262               Office of Navajo and Hopi Indian Relocation             0.219
+## 263                                  Office of Nuclear Energy             -0.79
+## 264                      Office of Nuclear Reactor Regulation            -0.274
+## 265                            Office of Personnel Management             0.374
+## 266                  Office of Personnel Management (Initial)             0.374
+## 267                               Office of Rural Development            -0.801
+## 268                       Office of Safe and Healthy Students            -0.792
+## 269                          Office of Science and Technology             0.175
+## 270                                 Office of Special Counsel             0.847
+## 271                       Office of Special Counsel (Initial)             0.754
+## 272   Office of Special Education and Rehabilitative Services            -0.653
+## 273            Office of Special Trustee for American Indians            -0.476
+## 274                               Office of Surety Guarantees            -0.383
+## 275         Office of Surface Mining, Reclam. and Enforcement            -0.544
+## 276      Office of the A. Secretary of Defense Health Affairs            -0.774
+## 277   Office of the Assistant Secretary International Affairs            -0.783
+## 278              Office of the Assistant Secretary Tax Policy             -0.78
+## 279                 Office of the Comptroller of the Currency             0.031
+## 280           Office of the Director of National Intelligence             0.321
+## 281 Office of the Fed. Coor. for Alaska Nat. Gas Transp. Pr.             -0.139
+## 282   Office of the U. Sec. for Arms Control and Int’l Secur.            -0.664
+## 283  Office of the U. Sec. for Food, Nutr, and Cons. Services            -0.825
+## 284        Office of the Under Secretary for Domestic Finance            -0.762
+## 285          Office of the United States Trade Representative             0.457
+## 286                              Office of Thrift Supervision            -0.635
+## 287                  Office of Vocational and Adult Education            -0.664
+## 288                  Office of Workers&#39; Compensation Programs             -0.78
+## 289                     Oklahoma City National Memorial Trust            -0.603
+## 290                   Overseas Private Investment Corporation              1.67
+## 291         Overseas Private Investment Corporation (Initial)              1.42
+## 292                               Patent and Trademark Office            -0.335
+## 293                                               Peace Corps             0.084
+## 294                          Pentagon Force Protection Agency            -0.783
+## 295    Pipeline and Hazardous Materials Safety Administration              -0.5
+## 296                                Political-Military Affairs            -0.785
+## 297                              Postal Regulatory Commission             1.938
+## 298                                            Presidio Trust            -0.802
+## 299               Privacy and Civil Liberties Oversight Board             1.477
+## 300                                 Public and Indian Housing            -0.764
+## 301                                  Public Buildings Service            -0.382
+## 302                                     Public Health Service            -0.574
+## 303                                 Railroad Retirement Board             0.963
+## 304                    Rehabilitation Services Administration            -0.513
+## 305         Research and Innovative Technology Administration            -0.654
+## 306                                    Risk Management Agency            -0.655
+## 307        Rural Business and Cooperative Development Service            -0.828
+## 308                                     Rural Housing Service            -0.845
+## 309                                   Rural Utilities Service            -0.504
+## 310             Saint Lawrence Seaway Development Corporation            -0.418
+## 311                        Securities and Exchange Commission             1.312
+## 312              Securities and Exchange Commission (Initial)              1.44
+## 313                Securities Investor Protection Corporation             1.351
+## 314                                  Selective Service System             0.067
+## 315                   Small Business Administration (Initial)             0.384
+## 316                             Small Business Administration             0.191
+## 317                            Social Security Administration             0.623
+## 318                            Social Security Advisory Board             2.063
+## 319                                   State Justice Institute             1.719
+## 320         Substance Abuse and Mental Health Services Admin.            -0.753
+## 321                              Surface Transportation Board             1.062
+## 322       Task Force on Lead-Based Paint Haz. Reduc. and Fin.            -0.502
+## 323                                Tennessee Valley Authority             1.648
+## 324                    Transportation Security Administration             0.155
+## 325                               Tricare Management Activity            -0.648
+## 326                                          U.S. Coast Guard            -0.172
+## 327                            U.S. Fish and Wildlife Service            -0.404
+## 328                                    U.S. Geological Survey            -0.503
+## 329                                     U.S. Marshals Service            -0.676
+## 330                                                 U.S. Mint            -0.182
+## 331                                       U.S. Secret Service            -0.636
+## 332              United States African Development Foundation             1.981
+## 333        United States Agency for International Development             0.049
+## 334              United States Election Assistance Commission             1.706
+## 335                          United States Institute of Peace             1.884
+## 336              United States International Trade Commission             2.095
+## 337                           United States Parole Commission             -0.03
+## 338                              United States Postal Service             2.191
+## 339                    United States Postal Service (Initial)             2.328
+## 340                United States Trade and Development Agency             0.156
+## 341                          Veterans Benefits Administration            -0.511
+## 342                  Veterans Employment and Training Service            -0.669
+## 343                            Veterans Health Administration            -0.501
+## 344                                    Wage and Hour Division            -0.722
+## 345                          Washington Headquarters Services             -0.77
+## 346                         Western Area Power Administration            -0.781
+## 347                                            Womens&#39; Bureau            -0.487
+##             X        Dimension.2       X.1
+## 1             (Political Review)          
+## 2   Std. Dev.           Estimate Std. Dev.
+## 3        0.29             -0.447     0.445
+## 4       0.297             -0.441     0.454
+## 5       0.297             -0.638     0.451
+## 6       0.304             -0.675     0.441
+## 7       0.288             -0.339     0.458
+## 8       0.294             -0.474     0.455
+## 9        0.29             -0.449      0.45
+## 10      0.286             -0.484     0.441
+## 11      0.289             -0.324     0.453
+## 12      0.288             -0.436     0.448
+## 13       0.29              -0.46     0.455
+## 14      0.304             -0.309     0.469
+## 15      0.291             -0.321     0.457
+## 16      0.292             -0.309     0.442
+## 17        0.3             -0.562     0.436
+## 18      0.292             -0.581     0.453
+## 19      0.294              0.061     0.476
+## 20      0.299              0.401     0.455
+## 21      0.283              -0.16     0.442
+## 22      0.308             -0.563     0.447
+## 23      0.289             -0.456     0.453
+## 24      0.275              -0.53      0.44
+## 25      0.294             -0.465     0.453
+## 26      0.298             -0.526     0.456
+## 27      0.301             -0.256     0.461
+## 28      0.289             -0.403     0.447
+## 29      0.304             -0.473     0.453
+## 30      0.302             -0.449     0.462
+## 31      0.295             -0.464     0.449
+## 32      0.286             -0.265     0.438
+## 33       0.29             -0.506     0.455
+## 34      0.291             -0.444     0.449
+## 35      0.293             -0.418      0.46
+## 36       0.28             -0.279      0.45
+## 37       0.28             -0.464     0.454
+## 38      0.296             -0.359     0.449
+## 39      0.296             -0.472     0.447
+## 40      0.292             -0.441     0.424
+## 41      0.297             -0.475     0.451
+## 42      0.308             -0.143     0.472
+## 43      0.306              0.413     0.458
+## 44      0.305              1.941     0.502
+## 45      0.286             -0.372     0.468
+## 46      0.301             -0.487     0.445
+## 47      0.288             -0.456     0.438
+## 48      0.298              1.389     0.489
+## 49      0.296              3.624     0.461
+## 50      0.281              0.088     0.473
+## 51       0.29              -0.45     0.439
+## 52      0.283                4.1     0.471
+## 53      0.308               3.54     0.491
+## 54       0.29              1.763     0.471
+## 55      0.287              0.477     0.468
+## 56      0.303              0.247     0.475
+## 57      0.311             -0.981     0.467
+## 58      0.301             -0.754     0.491
+## 59      0.296             -0.903     0.473
+## 60      0.298             -0.465     0.458
+## 61      0.291             -0.318     0.459
+## 62      0.288             -0.461     0.471
+## 63      0.282             -0.449     0.436
+## 64      0.288             -0.442      0.44
+## 65      0.298             -0.438     0.436
+## 66      0.288             -0.454     0.443
+## 67      0.292             -0.439      0.45
+## 68      0.296             -0.448     0.438
+## 69       0.29              -0.45     0.458
+## 70      0.294             -0.272     0.453
+## 71      0.295             -0.448     0.453
+## 72      0.295             -0.425     0.445
+## 73      0.282             -0.474     0.473
+## 74      0.305              0.687     0.472
+## 75      0.293             -0.486     0.461
+## 76      0.288             -0.441     0.441
+## 77      0.304             -0.428     0.449
+## 78      0.294             -0.459     0.444
+## 79       0.28             -0.448     0.448
+## 80      0.292             -0.446     0.456
+## 81      0.294             -0.436     0.467
+## 82      0.293             -0.494     0.445
+## 83      0.294             -0.515      0.45
+## 84      0.295              0.043     0.462
+## 85      0.307              0.416     0.469
+## 86      0.288             -0.083     0.468
+## 87      0.284             -0.256     0.461
+## 88      0.294             -0.475      0.46
+## 89      0.291              0.745      0.47
+## 90      0.302              1.406     0.486
+## 91      0.293              0.754      0.46
+## 92      0.303              0.393     0.465
+## 93      0.301              0.526     0.461
+## 94      0.293              0.074     0.457
+## 95      0.295              0.372     0.456
+## 96      0.293              1.101      0.48
+## 97      0.293              0.449     0.469
+## 98        0.3             -0.544     0.445
+## 99      0.301             -0.095     0.449
+## 100     0.293              0.519     0.487
+## 101     0.287              0.218     0.453
+## 102     0.303              1.199     0.506
+## 103     0.294              0.294      0.48
+## 104     0.291             -0.436     0.432
+## 105      0.29             -0.544     0.454
+## 106     0.286             -0.436      0.45
+## 107     0.289             -0.089     0.467
+## 108     0.291             -0.485     0.439
+## 109     0.309             -0.465     0.446
+## 110     0.305             -0.437     0.434
+## 111     0.288             -0.327      0.44
+## 112     0.298             -0.449     0.427
+## 113     0.294             -0.487     0.466
+## 114       0.3             -0.458     0.444
+## 115     0.298             -0.459     0.459
+## 116     0.306              0.271     0.455
+## 117     0.306              0.804     0.477
+## 118     0.297              0.473     0.462
+## 119     0.287              -0.46     0.453
+## 120     0.294               0.09     0.455
+## 121     0.303             -0.457     0.458
+## 122     0.292             -0.429     0.446
+## 123     0.305              0.567     0.472
+## 124     0.295              1.681     0.486
+## 125     0.302             -0.334      0.45
+## 126     0.303              0.766     0.481
+## 127     0.292              2.256     0.495
+## 128     0.284             -0.499     0.436
+## 129     0.303              1.324     0.489
+## 130     0.313              2.658     0.487
+## 131     0.305              0.325     0.458
+## 132     0.302              2.221     0.507
+## 133     0.288             -0.335     0.434
+## 134     0.309              2.121     0.468
+## 135     0.297             -0.474     0.462
+## 136     0.297              -0.52     0.449
+## 137     0.294              -0.46     0.456
+## 138     0.305              2.939     0.484
+## 139     0.304              0.947     0.472
+## 140     0.292              0.881     0.469
+## 141     0.289             -0.406     0.443
+## 142     0.297               1.44     0.477
+## 143     0.287             -0.514     0.455
+## 144     0.299             -0.471     0.445
+## 145       0.3              0.996     0.482
+## 146     0.293             -0.479     0.436
+## 147     0.286             -0.542     0.462
+## 148     0.286             -0.508     0.438
+## 149     0.325              3.867     0.474
+## 150     0.306              0.182     0.468
+## 151     0.298              1.622     0.514
+## 152     0.288             -0.471     0.444
+## 153     0.291              -0.53     0.452
+## 154     0.297              -0.55     0.456
+## 155     0.297              2.269     0.483
+## 156     0.293             -0.477     0.452
+## 157     0.285             -0.471     0.444
+## 158      0.29             -0.473     0.448
+## 159     0.285             -0.433      0.45
+## 160     0.299             -0.364     0.467
+## 161     0.293              0.566     0.467
+## 162     0.292             -0.423     0.444
+## 163     0.297             -0.431     0.447
+## 164     0.301             -0.441     0.439
+## 165     0.303             -0.154     0.451
+## 166     0.298             -0.089     0.462
+## 167     0.292             -0.139     0.443
+## 168     0.303              1.308     0.478
+## 169     0.295             -0.257     0.449
+## 170     0.289             -0.442     0.462
+## 171     0.292             -0.457     0.445
+## 172       0.3             -0.506     0.455
+## 173     0.314             -0.177     0.467
+## 174     0.298             -0.291     0.454
+## 175       0.3             -0.216     0.456
+## 176     0.285              0.437     0.454
+## 177     0.308             -0.497     0.434
+## 178     0.298             -0.428      0.44
+## 179     0.298              0.153     0.478
+## 180     0.292              0.174     0.444
+## 181     0.305               -0.6     0.443
+## 182     0.299             -0.453     0.472
+## 183     0.303              0.339     0.486
+## 184     0.298             -0.456      0.43
+## 185     0.291              2.072      0.48
+## 186     0.297             -0.472      0.46
+## 187     0.311              2.971     0.474
+## 188     0.313             -0.194     0.452
+## 189     0.288             -0.181     0.459
+## 190     0.306             -0.485     0.456
+## 191     0.303             -0.223     0.452
+## 192     0.294             -0.483     0.462
+## 193     0.292             -0.455     0.451
+## 194     0.291             -0.464     0.436
+## 195     0.312             -0.462     0.463
+## 196     0.297             -0.235     0.457
+## 197     0.302             -0.368     0.457
+## 198     0.295             -0.147     0.468
+## 199     0.291             -0.451      0.44
+## 200     0.298             -0.268     0.467
+## 201     0.292             -0.147     0.449
+## 202     0.291              0.536      0.46
+## 203     0.294             -0.502     0.442
+## 204     0.309              1.547     0.468
+## 205      0.29              0.062     0.451
+## 206     0.302             -0.058     0.447
+## 207     0.285              -0.22     0.473
+## 208     0.291             -0.482     0.448
+## 209     0.311             -0.112     0.458
+## 210      0.29              -0.44     0.445
+## 211     0.287             -0.411     0.457
+## 212     0.309              -0.48     0.458
+## 213     0.297             -0.457     0.437
+## 214     0.305              -0.15     0.441
+## 215     0.287               -0.2     0.442
+## 216     0.288             -0.066     0.452
+## 217     0.303              1.543      0.49
+## 218     0.291              0.836     0.484
+## 219     0.313             -0.267     0.453
+## 220     0.287              0.231     0.478
+## 221     0.298              0.006     0.474
+## 222     0.292              0.023      0.45
+## 223     0.305              0.483     0.458
+## 224     0.301             -0.223     0.443
+## 225     0.292              0.142     0.459
+## 226     0.301             -0.265     0.442
+## 227     0.304             -0.545     0.439
+## 228     0.296             -0.376     0.468
+## 229     0.287             -0.002     0.455
+## 230     0.287             -0.072     0.443
+## 231     0.299              2.883     0.483
+## 232     0.288             -0.317     0.467
+## 233     0.302             -0.355     0.439
+## 234     0.299              1.922     0.485
+## 235     0.291             -0.126     0.472
+## 236       0.3              0.995     0.473
+## 237      0.29             -0.444     0.441
+## 238     0.292             -0.458     0.461
+## 239     0.305             -0.449     0.458
+## 240     0.287             -0.435     0.474
+## 241      0.28              -0.48     0.447
+## 242     0.303              -0.54     0.453
+## 243     0.281             -0.455     0.464
+## 244     0.296              -0.44     0.428
+## 245     0.294             -0.454     0.443
+## 246      0.29             -0.455     0.448
+## 247     0.301             -0.467     0.461
+## 248     0.305             -0.436     0.448
+## 249     0.292             -0.454      0.46
+## 250      0.31               -0.5     0.467
+## 251     0.301             -0.454      0.45
+## 252     0.296             -0.473     0.438
+## 253     0.284             -0.479     0.444
+## 254     0.295             -0.323     0.451
+## 255     0.295             -0.441     0.475
+## 256       0.3             -0.453     0.449
+## 257     0.289             -0.267      0.44
+## 258      0.29             -0.436     0.451
+## 259       0.3             -0.704     0.449
+## 260     0.301             -0.492     0.461
+## 261      0.31             -0.727     0.467
+## 262     0.304              -0.45     0.455
+## 263     0.293             -0.427     0.459
+## 264     0.294             -0.545     0.456
+## 265     0.292             -0.149     0.457
+## 266       0.3             -0.443     0.451
+## 267       0.3             -0.291     0.459
+## 268     0.295             -0.433     0.459
+## 269     0.308              -0.74     0.473
+## 270       0.3              1.074     0.487
+## 271     0.307              0.101     0.452
+## 272     0.295             -0.457     0.444
+## 273     0.289             -0.374     0.455
+## 274     0.304             -0.509     0.468
+## 275     0.282             -0.502     0.468
+## 276     0.299             -0.458     0.462
+## 277     0.284             -0.426     0.446
+## 278     0.295             -0.438     0.458
+## 279     0.284              1.643     0.504
+## 280     0.295             -0.289     0.457
+## 281     0.294             -0.145     0.465
+## 282     0.299             -0.456      0.45
+## 283     0.297             -0.436     0.439
+## 284       0.3             -0.438     0.455
+## 285     0.301             -0.988     0.482
+## 286     0.287              0.925     0.475
+## 287     0.291             -0.482     0.452
+## 288     0.287             -0.426     0.454
+## 289     0.308             -0.267     0.447
+## 290     0.306              0.269     0.474
+## 291     0.295              0.177     0.477
+## 292     0.288             -0.118     0.462
+## 293     0.306             -0.094     0.443
+## 294     0.304             -0.462     0.453
+## 295      0.29             -0.515     0.437
+## 296     0.293             -0.424     0.447
+## 297     0.311              0.549     0.464
+## 298     0.293             -0.321      0.46
+## 299     0.301             -0.469     0.465
+## 300     0.286             -0.455     0.446
+## 301      0.29             -0.539     0.452
+## 302     0.291             -0.113     0.462
+## 303     0.302              2.715     0.474
+## 304     0.294             -0.498     0.438
+## 305     0.299             -0.496     0.444
+## 306     0.289             -0.464     0.441
+## 307     0.305             -0.446     0.453
+## 308     0.292             -0.445     0.442
+## 309      0.29             -0.493     0.449
+## 310     0.291               0.29      0.48
+## 311     0.304              3.566     0.467
+## 312     0.307              -0.43     0.447
+## 313     0.292              0.244     0.455
+## 314       0.3             -0.491     0.443
+## 315     0.302             -0.138     0.448
+## 316     0.306              1.102     0.496
+## 317     0.308              1.127     0.452
+## 318     0.307             -0.709     0.462
+## 319     0.301              1.574     0.505
+## 320     0.291             -0.318     0.454
+## 321     0.316              1.927     0.461
+## 322     0.297             -0.515     0.445
+## 323     0.307              1.009     0.478
+## 324     0.289             -0.125     0.446
+## 325     0.286             -0.473      0.45
+## 326     0.292              0.601     0.492
+## 327     0.297             -0.379     0.464
+## 328     0.291             -0.217     0.426
+## 329     0.284             -0.461      0.47
+## 330     0.292             -0.377     0.466
+## 331     0.282             -0.485      0.44
+## 332     0.279              0.396     0.453
+## 333     0.294             -0.261      0.45
+## 334     0.296             -0.346     0.447
+## 335     0.293              1.824     0.462
+## 336     0.311              3.078      0.47
+## 337     0.298             -0.269     0.463
+## 338     0.305              1.715      0.48
+## 339     0.304              0.172     0.479
+## 340     0.314             -0.532     0.457
+## 341     0.296             -0.534     0.461
+## 342      0.29             -0.315     0.433
+## 343     0.293             -0.307     0.451
+## 344     0.298              0.168     0.451
+## 345     0.288             -0.434      0.46
+## 346     0.305             -0.462     0.434
+## 347      0.29             -0.504     0.466</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#library(knitr)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#kable(data1, caption = &quot;Selin Independence Estimates&quot;)</span></span></code></pre></div>
+<div id="hypothesis" class="section level1">
+<h1>Hypothesis</h1>
+<p>I believe that financial agencies with a higher estimate of agency independence will have lower evidence of congressional influence. Higher rated agencies will have a lower average level of success coded for members of Congress. In turn, those with a lower estimate of independence will have a higher average level of success coded for Congress members, and possibly from a higher level of success coded for members from the same party as the President.</p>
+</div>
 <div id="theory" class="section level1">
 <h1>Theory</h1>
 <p>I will attempt to answer two questions: first, have federal agencies become increasingly receptive to the demands of members of Congress? Second, are more independent agencies less likely to be influenced by members of Congress?</p>
 <p>I use data from a previous study conducted by Jennifer Selin. Selin’s data disseminates various structural features of agencies, such as if the agency is involved within an executive department, if the agency places a conflict of interest restriction on its members, if they provide some avenue for congressional input in the process it nominates its members, and if the agency is a commission or has a board of directors, whether the statute limits the number of members who may serve from the same party.</p>
 <p>With a Bayesian latent variable model, she estimates the level of independence for 321 federal agencies, where the higher the number, the more indendent the agency is in its rulemaking process. Extrapolating data from Selin, we find that financial agencies are generally rated higher in terms of level of independence, where the Consumer Financial Protection Bureau (CFPB) is rated one of the highest at 4.1 and the Federal Trade Commission (FTC) is 2.269. The CFPB’s rating is impacted by its 5-year term limit for members, commissioners, and agency heads, additional clauses in the statute that enable members to be removed due to “neglect of duty,” and a clause that enables the CFPB to fund a substantial amount of its funding from independent sources. The FTC’s rating is higher than most overall agencies because it has similar term limitations and an clause to limits the number of members serving from one party. It has a lower rating than the CFPB likely due to a lower reliance on independent funding sources, therefore making the policy decision process more reliant on government input.</p>
-<p>With this in mind, I believe that financial agencies with a higher estimate of agency independence will have lower evidence of congressional influence. Higher rated agencies will have a lower average level of success coded for members of Congress. In turn, those with a lower estimate of independence will have a higher average level of success coded for Congress members, and possibly from a higher level of success coded for members from the same party as the President.</p>
 </div>
 <div id="literature-review" class="section level1">
 <h1>Literature Review</h1>
