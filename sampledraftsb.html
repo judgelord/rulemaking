@@ -45,6 +45,109 @@
     </style>
 
 
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  { color: #cccccc; background-color: #303030; }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ffcfaf; } /* Alert */
+code span.an { color: #7f9f7f; font-weight: bold; } /* Annotation */
+code span.at { } /* Attribute */
+code span.bn { color: #dca3a3; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #f0dfaf; } /* ControlFlow */
+code span.ch { color: #dca3a3; } /* Char */
+code span.cn { color: #dca3a3; font-weight: bold; } /* Constant */
+code span.co { color: #7f9f7f; } /* Comment */
+code span.cv { color: #7f9f7f; font-weight: bold; } /* CommentVar */
+code span.do { color: #7f9f7f; } /* Documentation */
+code span.dt { color: #dfdfbf; } /* DataType */
+code span.dv { color: #dcdccc; } /* DecVal */
+code span.er { color: #c3bf9f; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #c0bed1; } /* Float */
+code span.fu { color: #efef8f; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #7f9f7f; font-weight: bold; } /* Information */
+code span.kw { color: #f0dfaf; } /* Keyword */
+code span.op { color: #f0efd0; } /* Operator */
+code span.ot { color: #efef8f; } /* Other */
+code span.pp { color: #ffcfaf; font-weight: bold; } /* Preprocessor */
+code span.sc { color: #dca3a3; } /* SpecialChar */
+code span.ss { color: #cc9393; } /* SpecialString */
+code span.st { color: #cc9393; } /* String */
+code span.va { } /* Variable */
+code span.vs { color: #cc9393; } /* VerbatimString */
+code span.wa { color: #7f9f7f; font-weight: bold; } /* Warning */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 <style type="text/css">
   p.abstract{
@@ -285,7 +388,74 @@ div.tocify {
 
 
 <p>#<code>{r analysis-preferences, echo=TRUE} # selin estimate data data1 &lt;- read.csv((&quot;/Users/samihabhushan/Downloads/selindatacsv.csv&quot;), header=T) data1 #library(knitr) #kable(data1, caption = &quot;Selin Independence Estimates&quot;)</code></p>
-<p>#<code>{r analysis-preferences, echo=TRUE} # congress sample code data2 &lt;- read.csv((&quot;/Users/samihabhushan/Downloads/congress.csv&quot;), header=T) data2 #library(knitr) #kable(data1, caption = &quot;Congress sample sheet&quot;)</code></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># congress sample code</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>data2 <span class="ot">&lt;-</span> <span class="fu">read.csv</span>((<span class="st">&quot;/Users/samihabhushan/Downloads/congress.csv&quot;</span>), <span class="at">header=</span>T)</span></code></pre></div>
+<pre><code>## Warning in read.table(file = file, header = header, sep = sep, quote = quote, :
+## incomplete final line found by readTableHeader on &#39;/Users/samihabhushan/
+## Downloads/congress.csv&#39;</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>data2</span></code></pre></div>
+<pre><code>##                                          docket_url             document_id
+## 1 https://www.regulations.gov/docket/CFPB-2019-0022    CFPB-2019-0022-12107
+## 2 https://www.regulations.gov/docket/CFPB-2019-0022    CFPB-2019-0022-14366
+## 3                                                   TREAS-DO-2007-0015-0112
+##   posted_date                                              comment_url
+## 1  2019-10-02 https://www.regulations.gov/comment/CFPB-2019-0022-12107
+## 2  2020-09-22 https://www.regulations.gov/comment/CFPB-2019-0022-14366
+## 3             https://regulations.gov/document/TREAS-DO-2007-0015-0112
+##   comment_text                  organization
+## 1 See attached Congress of the United States
+## 2 See attached                      Congress
+## 3                                   Congress
+##                                                                                                                                                                                   comment_title
+## 1                                                                                                                                            Various on behalf of Congress of the United States
+## 2                                                                                                                                                          Alex X. Mooney on behalf of Congress
+## 3 Joseph R. Pitts; Mike Pence; Doug Lamborn; Joe Wilson; Phil Gingrey; John T. Doolittle; Wally Herger; W. Todd Akin; Marilyn Musgrave; Bob Goodlatte Roger Wicker; Mark Souder Roscoe Bartlett
+##   attachment_count number_of_comments_received
+## 1                1                           1
+## 2                1                           1
+## 3                1                           1
+##                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        org_name
+## 1 Katie Porter; Ayanna P Leu; Maxine Waters; Bill Foster; Jim McGovern; Ilhan Omar; Alexandria Ocasio-Cortez; Jesus G. “Chuy” Garcia; Carolyn B. Maloney; Emmanuel Cleaver, II; Wm. Lacy Clay; Rashida Tlaib; Juan Vargas; Gregory W. Meeks; Jerrold Nadler; Al Lawson; Joyce Beatty; Cheri Bustos; Debbie Dingell; Bonnie Watson Coleman; Nydia M. Velazquez; Mark Takano; Rosa DeLauro; Tim Ryan;Betty McCollum;Don Beyer; Jan Schakowsky; Ro Khanna; Raul M. Grijalva; Jamie Raskin; Eleanor Holmes Norton;Lucille Roybal-Allard;Bill Pascrell;Anna G. Eshoo;Barbara Lee; Steve Cohen;Mary Gay Scanlon; Stephen Lynch; Mike Levin;Julia Brownley;Danny K. Davis; Tony Cardenas; Bobby L. Rush;Veronica Escobar; Marcia L. Fudge;Mark Pocan;Jennifer Wexton;Chellie Pingree;Deb Haaland;Joe Courtney;Sheila Jackson Lee; Elijah E. Cummings;Karen Bass;Sylvia Garcia;Peter Welch;Michael San Nicolas; Nanette Diaz Barragan;Katie Hill;Adriano Espaillat;Tulsi Gabbard; Pramila Jayapal Congressman Mike Quigley; Robin Kelly; Madeleine Dean; Suzanne Bonamici;Peter DeFazio
+## 2                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           Rep. Alex X. Mooney
+## 3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Joseph R. Pitts; Mike Pence; Doug Lamborn; Joe Wilson; Phil Gingrey; John T. Doolittle; Wally Herger; W. Todd Akin; Marilyn Musgrave; Bob Goodlatte Roger Wicker; Mark Souder Roscoe Bartlett
+##   position position_certainty     comment_type        coalition_comment
+## 1        1                 NA          elected                    NAACP
+## 2        3                 NA          elected American Bar Association
+## 3        4                 NA elected;congress              congressmen
+##   coalition_type org_name_short org_type
+## 1         public             NA   senate
+## 2         public             NA House-WV
+## 3         public             NA   senate
+##                                                                                                                                                                                                                                                       ask
+## 1                                                                                                                   call consumers seven times per week, per debt, potentially leading to scores of calls to consumers with multiple debts in collection,
+## 2                                                                                                     I respectfully urge you to remove the safe harbor provision for meaningful attorney involvement from the final version of the debt collection rule.
+## 3 In general, we commend you for your efforts to\nfaithfully carry out the intent of UIGEA. We particularly applaud you for not exempting any\npayment system from the regulations, because any such exemption would invite massive evasion\nof the law. 
+##                                                                                                                                                                                                                                                             ask1
+## 1                                                                                                text and email without clear limits and without consumers’ consent, and send legally required notices through hyperlinks consumers might be afraid to click on,
+## 2                                                                                                                                                                                                                                                               
+## 3 However, to the extent that persons of goodwill share this concern, we think it can be addressed\nwithout incorporating a state-by-state survey of gambling laws into your final regulations (a\nsuggestion that appears suspiciously like a stalling tactic).
+##                                                                                                                                                                                                                                                                                                                                                                                         ask2
+## 1                                                                                                                                                                                                                                                                                                decline to translate important notices into the language used for the original transaction,
+## 2                                                                                                                                                                                                                                                                                                                                                                                           
+## 3 As a matter of U.S. policy, gambling operations are strictly limited and regulated\nwherever they are not banned entirely. Therefore, we believe that a broad application of\ngambling enforcement laws such as UIGEA is necessary to effectuate the intent of the law. A\ngambling business should be required to prove it is operating legally in order to avoid the\nsanctions of UIGEA
+##                                                                                                                                                                                                                                                                         ask3
+## 1                                                                                                                                                                                                                  violate consumer privacy with “limited-content” messages,
+## 2                                                                                                                                                                                                                                                                           
+## 3 We urge you to clarify that the onus of interpreting and complying with state gambling\nlaws should rest primarily on the gambling operations that wish to do business there, not on the\nfinancial institutions or on the Treasury Department or Federal Reserve System. 
+##   success success_certainty sucess1 success2 success3
+## 1      -2                NA      -2       -1       -2
+## 2       2                NA      NA       NA       NA
+## 3       2                NA       2        2        2
+##                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             response
+## 1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+## 2                                                                                                                                                                                      The Bureau received a large number of comments on the proposed meaningful attorney involvement safe harbor from a variety of commenters, almost all of whom opposed the proposal. As discussed below, the Bureau has decided after considering the comments not to finalize the proposed provision regarding meaningful attorney involvement.
+## 3 The final rule also continues to place the responsibility for such due diligence on the participant that is establishing or maintaining the customer relationship with the commercial customer. In response to comments on the proposed rule, as discussed in more detail below, a new subsection __.6(b) of the final rule provides additional guidance on due diligence steps participants can take for commercial customers to have reasonably designed policies and procedures to prevent or prohibit restricted transactions.
+##   pressure_phrases accept_phrases compromise_phrases reject_phrases notes
+## 1               NA             NA                 NA             NA    NA
+## 2               NA             NA                 NA             NA    NA
+## 3               NA             NA                 NA             NA    NA</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#library(knitr)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#kable(data1, caption = &quot;Congress sample sheet&quot;)</span></span></code></pre></div>
 <div id="hypothesis" class="section level1">
 <h1>Hypothesis</h1>
 <p>I believe that financial agencies with a higher estimate of agency independence will have lower evidence of congressional influence. Higher rated agencies will have a lower average level of success coded for members of Congress. In turn, those with a lower estimate of independence will have a higher average level of success coded for Congress members, and possibly from a higher level of success coded for members from the same party as the President.</p>

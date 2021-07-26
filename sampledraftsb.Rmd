@@ -53,7 +53,7 @@ data1
 #kable(data1, caption = "Selin Independence Estimates")
 ```
 
-#```{r analysis-preferences, echo=TRUE}
+```{r analysis-preferences, echo=TRUE}
 # congress sample code
 data2 <- read.csv(("/Users/samihabhushan/Downloads/congress.csv"), header=T)
 data2
