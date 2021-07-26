@@ -12,14 +12,14 @@ affiliation:
 authornote: |
   Department of Political Science, University of Wisconsin-Madison
 output:
-    # pdf_document:
-    #   toc: true
-    #   keep_tex: true
     html_document:
       highlight: zenburn
       toc: true
       toc_float: true
       code_folding: hide
+    #   toc: true
+    #   keep_tex: true
+    # pdf_document:
 editor_options: 
   chunk_output_type: console
 abstract: |
@@ -45,7 +45,7 @@ library("papaja")
 r_refs("r-references.bib")
 ```
 
-```{r analysis-preferences, echo=TRUE}
+#```{r analysis-preferences, echo=TRUE}
 # selin estimate data
 data1 <- read.csv(("/Users/samihabhushan/Downloads/selindatacsv.csv"), header=T)
 data1
@@ -53,7 +53,13 @@ data1
 #kable(data1, caption = "Selin Independence Estimates")
 ```
 
-
+#```{r analysis-preferences, echo=TRUE}
+# congress sample code
+data2 <- read.csv(("/Users/samihabhushan/Downloads/congress.csv"), header=T)
+data2
+#library(knitr)
+#kable(data1, caption = "Congress sample sheet")
+```
 
 # Hypothesis
 I believe that financial agencies with a higher estimate of agency independence will have lower evidence of congressional influence. Higher rated agencies will have a lower average level of success coded for members of Congress. In turn, those with a lower estimate of independence will have a higher average level of success coded for Congress members, and possibly from a higher level of success coded for members from the same party as the President. 
@@ -74,9 +80,12 @@ With a Bayesian latent variable model, she estimates the level of independence f
 # Literature Review
 Jennifer Selin concludes that "a lack of influence is correlated with statutory provisions that insulate agency policy decisions from review by political principals" (Selin, 2015). This means the main indication of an agency's independence comes from additional clauses in its statute to ensure strict limitations on policy reviews and other decisions from political forces, as opposed to the number of oversight committees for instance. Likewise, the FTC has become more independent over time, according to Selin, due to additional policy features put in place to prevent political interference, including the employment of administrative law judges. Selin found that generally financial agencies had the largest increase in independence over time. 
 
-As stated by King et al. (1994), "the best way to understand a particular event may be by using the methods of scientific inference also to study systematic patterns in similar
-parallel events." The aforementioned trend should translate beyond the years the study was conducted, translating into the Trump administraton, with agencies such as the FTC and CFPB maintaining or increasing their level of agency independence as much of the structural clauses implemented to maintain agency independence were retained. For example, the U.S. Supreme Court maintained the clause that subject the removal of the director for the CFPB subject to the President's discretion, after a petitioner challenged its constitutionality (Seila Law v. CFPB, 2020). That is to say, while there a high estimate of independence for financial agencies, no agency is immune to political influence. Selin cited that while Securities and Exchange Commission’s (SEC’s) has high estimates, 3.566, SEC policy reflected presidential preferences during the financial crisis in 2008. As such, even with relatively high estimates of independence of financial agencies, we should see some evidence of political influence. 
+As stated by King et al. (1994), "the best way to understand a particular event may be by using the methods of scientific inference also to study systematic patterns in similar parallel events." The aforementioned trend should translate beyond the years the study was conducted, translating into the Trump administraton, with agencies such as the FTC and CFPB maintaining or increasing their level of agency independence as much of the structural clauses implemented to maintain agency independence were retained. For example, the U.S. Supreme Court maintained the clause that subject the removal of the director for the CFPB subject to the President's discretion, after a petitioner challenged its constitutionality (Seila Law v. CFPB, 2020). That is to say, while there a high estimate of independence for financial agencies, no agency is immune to political influence. Selin cited that while Securities and Exchange Commission’s (SEC’s) has high estimates, 3.566, SEC policy reflected presidential preferences during the financial crisis in 2008. As such, even with relatively high estimates of independence of financial agencies, we should see some evidence of political influence. 
 
+Wendy Wagner provides comprehensive insight into the phenomenon of "information capture" through a regulatory framework. According to her article, "information capture refers to the excessive use of information and related information costs as a means of gaining control over regulatory decisionmaking in informal
+rulemakings." This is often seen in sophisticated lobbying by corporations. For instance, they often use lawyers to use extremely advanced and often confusing language to pressure regulatory agencies into meeting their demands (Wagner, 2010). We can, in turn, see this happen to Congresspeople as well, where lawyers may use language to mislead them into thinking that they are advocating for the people as opposed to a profit-driven incentive. Therefore, more congresspeople that side with businesses not simple for a private purpose, but also because they believe they are serving the people. 
+
+Obtaining information is expensive, and entities with enough funding — often corporations — are able to achieve it. Further, agencies having to process all the information given also overstreches them to beyond their administrative capacity, making them more susceptable to simply giving into the demands. As such, the idea of information capture does play a role in agency independance, where agency that are better able to handle a multitude of information unloaded on them are going to be ranked higher in terms of agency independance. However, an increased presence of congresspeople lobbying alongside businesses may still pressure them into meeting the coalition's demands. 
 
 
 
@@ -94,6 +103,7 @@ We used `r cite_r("r-references.bib")` for all our analyses.
 
 
 # Results
+I found that there is an increased presence of congresspeople that lobby using more public-facing language. 
 
 # Discussion
 
