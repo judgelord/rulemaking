@@ -3,11 +3,12 @@ library(jsonlite)
 library(tidyverse)
 library(magrittr)
 
+source(here::here("api-key.R"))
+
 source(here::here("functions", "regulations-gov-API-search.R"))
 
 search_keyword_page <- search_keyword_page4
 
-source(here::here("api-key.R"))
 
 # RULES 
 rules <- search.docs(documenttype = "FR" , 
