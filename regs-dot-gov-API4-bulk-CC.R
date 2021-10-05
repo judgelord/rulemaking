@@ -152,6 +152,11 @@ climate2 %>%
   aes(x = as.Date(postedDate), fill = documentType) +
   geom_bar()
 
+
+
+# record 
+olddate <- climatecomments$lastModifiedDate %>% min()
+
 # JOIN 
 climatecomments %<>% full_join(climate2)
 
@@ -168,47 +173,50 @@ file = here::here("data",
                         ".Rdata"))
 
 save(climatecomments, file = file)
-beep(sound = 2)
-Sys.sleep(50)
+
 
 # if we are getting stuck on the same date
 if(climatecomments$lastModifiedDate %>%
-   min()  == date  &
-   climate2$lastModifiedDate %>% 
-   min()  == date){
+   min()  == date ){
   # date rounded down to the nearist 20:00 hrs
   date <- climatecomments$lastModifiedDate %>% min() %>% str_replace("T2.", "T20")
  
-if(climate2$lastModifiedDate %>% 
-     min()  == date){
+if(climatecomments$lastModifiedDate %>%
+   min()  == date){
     # date rounded down to the nearist 1X:00 hrs
     date <- climatecomments$lastModifiedDate %>% min() %>% str_replace("T2", "T1")
   } 
-if(climate2$lastModifiedDate %>% 
-       min()  == date){
+if(climatecomments$lastModifiedDate %>%
+   min()  == date){
       # date rounded down to the nearist 10:00 hrs
       date <- climatecomments$lastModifiedDate %>% min() %>% str_replace("T1.", "T10")
     }
-if(climate2$lastModifiedDate %>% 
-         min()  == date){
+if(climatecomments$lastModifiedDate %>%
+   min()  == date){
         # date rounded down to the nearist 0X:00 hrs
         date <- climatecomments$lastModifiedDate %>% min() %>% str_replace("T1", "T0")
       }
-if(climate2$lastModifiedDate %>% 
-           min()  == date){
+if(climatecomments$lastModifiedDate %>%
+   min()  == date){
           # date rounded down to the nearist 0:00 hrs
           date <- climatecomments$lastModifiedDate %>% min() %>% str_replace("T1.", "T10")
-} } else {
+} 
+  if(climatecomments$lastModifiedDate %>%
+     min()  == date){
+    # date rounded down to the nearist 0:00 hrs
+    date <- climatecomments$lastModifiedDate %>% min() %>% str_replace("T0.", "T00")
+  }
+  } else {
   # otherwise, the new date is the min
   date <- climatecomments$lastModifiedDate %>% min() 
 }
-date %>% paste(" = new date (should be current date unless it was the same as the old date)") %>% print()
+date %>% paste(" = new date (should be current date unless the old date didn't change)") %>% print()
 
-} else{
-  beep()
-  Sys.sleep(60)
-  }
 
+beep(sound = 2)
+} else{beep() }
+
+Sys.sleep(50)
 }
 
 # # up to .5m if needed (but as of 2020, n = 41,591k)
