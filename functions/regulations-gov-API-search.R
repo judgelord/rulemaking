@@ -325,7 +325,7 @@ search_keyword_page4 <- function(page = 1,
   # this works:
 if(FALSE){
   raw.result <- GET(url = "https://api.regulations.gov", 
-  path = "/v4/comments?filter[searchTerm]=environmental%2Bjustice&api_key=aynn8SLo5zdb2V0wqBKQwHQ5FmCLd2cIpWStzrZ0")
+                    path = paste0("/v4/comments?filter[searchTerm]=environmental%2Bjustice&api_key=", api_key))
 }
   
   # inspect path 

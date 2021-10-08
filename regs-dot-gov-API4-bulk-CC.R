@@ -129,7 +129,10 @@ unique(climatecomments$lastpage)
 
 date <- climatecomments$lastModifiedDate %>% min()
 
-while(climatecomments$lastModifiedDate %>% min() > as.Date("2005-01-01")){
+# over 5k climate comments before 1 AM 
+# date <- "2018-04-26T10:58:55Z"
+
+while(climatecomments$lastModifiedDate %>% min() > as.Date("1993-01-01")){
 # next 5k
 climate2 <- map_dfr(.x = c(1:20),
                .f = possibly(search_keyword_page4, otherwise = climatecomments1),
@@ -152,12 +155,8 @@ climate2 %>%
   aes(x = as.Date(postedDate), fill = documentType) +
   geom_bar()
 
-
-
-# record 
-olddate <- climatecomments$lastModifiedDate %>% min()
-
-# JOIN 
+############
+# JOIN  #
 climatecomments %<>% full_join(climate2)
 
 climatecomments %>% 
@@ -178,6 +177,8 @@ save(climatecomments, file = file)
 # if we are getting stuck on the same date
 if(climatecomments$lastModifiedDate %>%
    min()  == date ){
+  beep() 
+  
   # date rounded down to the nearist 20:00 hrs
   date <- climatecomments$lastModifiedDate %>% min() %>% str_replace("T2.", "T20")
  
@@ -196,11 +197,6 @@ if(climatecomments$lastModifiedDate %>%
         # date rounded down to the nearist 0X:00 hrs
         date <- climatecomments$lastModifiedDate %>% min() %>% str_replace("T1", "T0")
       }
-if(climatecomments$lastModifiedDate %>%
-   min()  == date){
-          # date rounded down to the nearist 0:00 hrs
-          date <- climatecomments$lastModifiedDate %>% min() %>% str_replace("T1.", "T10")
-} 
   if(climatecomments$lastModifiedDate %>%
      min()  == date){
     # date rounded down to the nearist 0:00 hrs
@@ -209,12 +205,15 @@ if(climatecomments$lastModifiedDate %>%
   } else {
   # otherwise, the new date is the min
   date <- climatecomments$lastModifiedDate %>% min() 
+  beep(sound = 2)
 }
 date %>% paste(" = new date (should be current date unless the old date didn't change)") %>% print()
 
 
-beep(sound = 2)
-} else{beep() }
+} else{
+  beep() 
+  print(nrow(climate2))
+  }
 
 Sys.sleep(50)
 }
