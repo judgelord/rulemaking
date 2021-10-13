@@ -9,6 +9,14 @@ ejFRnew <- ejFR %>% namingthings()
 load(here::here("data", "ejcomments2021-02-06.Rdata"))
 ejcommentsnew <- ejcomments %>% namingthings()
 
+#ej
+load(here::here("data", "ejPR2021-02-06.Rdata"))
+ejPRnew<- ejPR %>% namingthings()
+load(here::here("data", "ejFR2021-02-06.Rdata"))
+ejFRnew <- ejFR %>% namingthings()
+load(here::here("data", "ejcomments2021-02-06.Rdata"))
+ejcommentsnew <- ejcomments %>% namingthings()
+
 # all
 load(here::here("data", "rules2020-12-17.Rdata"))
 rulesnew <- rules %>% namingthings()

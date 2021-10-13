@@ -87,7 +87,7 @@ search.agency.docs <- function(agency, documenttype, n) {
 # create path
 path <- paste0("/regulations/v3/documents?api_key=", api_key, 
                "&rpp=", rpp, 
-               "&a=", agency,
+               #"&a=", agency,
                "&so=", order, 
                "&sb=", sortby, 
                "&dct=", documenttype)
@@ -295,7 +295,7 @@ path <- paste0("/regulations/v3/documents?api_key=", api_key,
 
 
 search_keyword_page4 <- function(page = 1, 
-                                 documenttype = "Rule", 
+                                 documenttype = "Rule", # default
                                  keyword, 
                                  lastModifiedDate = Sys.time() ){
   
@@ -310,7 +310,7 @@ search_keyword_page4 <- function(page = 1,
   
   endpoint = ifelse(documenttype == "Public Submission", "comments", "documents")
   
-  documentType = ifelse(documenttype == "Public Submission", "", "&filter[documentType]=documents")
+  documentType = ifelse(documenttype == "Public Submission", "", str_c("&filter[documentType]=", documenttype)) #"&filter[documentType]=documents")
 
   path <- paste0("/v4/", endpoint,
                  "?page[number]=", page,
@@ -323,9 +323,12 @@ search_keyword_page4 <- function(page = 1,
                  "&api_key=", api_key)
   
   # this works:
-  # raw.result <- GET(url = "https://api.regulations.gov", 
-  # path = "/v4/comments?filter[searchTerm]=environmental%2Bjustice&api_key=aynn8SLo5zdb2V0wqBKQwHQ5FmCLd2cIpWStzrZ0")
+if(FALSE){
+  raw.result <- GET(url = "https://api.regulations.gov", 
+                    path = paste0("/v4/comments?filter[searchTerm]=environmental%2Bjustice&api_key=", api_key))
+}
   
+  # inspect path 
   str_c("https://api.regulations.gov", path)
   
   raw.result <- GET(url = "https://api.regulations.gov", path = path)
@@ -347,9 +350,9 @@ search_keyword_page4 <- function(page = 1,
   return(d)
 }
 
-d <- search_keyword_page4(keyword = "environmental justice",
-                          documenttype = "Public Submission",
-                          lastModifiedDate =  "2020-05-15 18:39:57")
+d <- search_keyword_page4(keyword = "climate justice",
+                          documenttype = "Rule",
+                          lastModifiedDate =  Sys.time()) #NOT SYS DATE!!
 d$lastModifiedDate
 d$highlightedContent
 
@@ -433,3 +436,4 @@ search.doc <- function(docID) {
 # d$summary <- gsub("\n", "", d$summary)
 # d$commentText <- gsub("\n", "", d$commentText)
 # write.csv(names(d), paste(documenttype, keywords, ".csv"))
+
