@@ -4,12 +4,14 @@ title: "Proposed Rules Open for Comment"
 output:
     html_document:
       highlight: zenburn
-      toc: true
+      toc: false
       toc_float: true
       #code_folding: hide
 editor_options: 
   chunk_output_type: console
 ---
+
+as of 10-05-2021
 
 ```{r global.options, include=FALSE}
 source(here::here("setup.R"))
@@ -107,4 +109,4 @@ o %>% filter(is.na(Climate)) %>% select(-Climate) %>% kablebox()
 o %>% filter(is.na(EJ)) %>% select(-EJ) %>% kablebox()
 ```
 
-# Raw data [here](https://docs.google.com/spreadsheets/d/1Owte4nR18J92xxnPaTDnGgRALZm3-rScCe_co_ohuDU/edit?usp=sharing)
+### Raw data [here](https://docs.google.com/spreadsheets/d/1Owte4nR18J92xxnPaTDnGgRALZm3-rScCe_co_ohuDU/edit?usp=sharing) {-}
