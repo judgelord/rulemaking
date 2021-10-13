@@ -60,20 +60,25 @@ climate_open <- climatePR %>%
 open <- full_join(ej_open, climate_open) %>% 
   mutate(Notes = "")
 
-library(googlesheets4)
-# write_sheet(open, ss = "1Owte4nR18J92xxnPaTDnGgRALZm3-rScCe_co_ohuDU", sheet = "open")
 
 # clean up for presentation
 o <- open %>% 
     mutate(`Proposed Rule` = str_c("Comments due ", comment_end_date %>% str_remove("T.*"), " on ", title,
                                    "\n https://www.regulations.gov/document/", id, 
                                    "\n \n https://www.federalregister.gov/d/", fr_doc_num) ) %>%
-    select(`Proposed Rule`, EJ, Climate) %>% 
+    select(`Proposed Rule`, EJ, Climate, Notes) %>% 
   arrange(`Proposed Rule`)
 ```
 
+```{r googlesheet, eval= FALSE}
+library(googlesheets4)
+write_sheet(open, ss = "1Owte4nR18J92xxnPaTDnGgRALZm3-rScCe_co_ohuDU", sheet = "raw")
+
+write_sheet(o, ss = "1Owte4nR18J92xxnPaTDnGgRALZm3-rScCe_co_ohuDU", sheet = "formatted")
+```
 
 ```{r comments, eval=FALSE}
+
 load(here("data", "ejcommentsnew.Rdata"))
 
 ejcomments_open <- ejcommentsnew %>% 
