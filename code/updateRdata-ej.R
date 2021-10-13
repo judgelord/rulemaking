@@ -2,12 +2,12 @@
 # new data 
 
 #ej
-load(here::here("data", "ejPR2021-02-06.Rdata"))
-ejPRnew<- ejPR %>% namingthings()
-load(here::here("data", "ejFR2021-02-06.Rdata"))
-ejFRnew <- ejFR %>% namingthings()
-load(here::here("data", "ejcomments2021-02-06.Rdata"))
-ejcommentsnew <- ejcomments %>% namingthings()
+load(here::here("data", "ejPR2021-10-12.Rdata"))
+ejPRnew<- ejPR %<>% namingthings()
+load(here::here("data", "ejFR2021-10-12.Rdata"))
+ejFRnew <- ejFR %<>% namingthings()
+load(here::here("data", "ejcomments2021-10-12.Rdata"))
+ejcommentsnew <- ejcomments %<>% namingthings()
 
 # old data
 load(here::here("data", "rules_metadata.Rdata"))
