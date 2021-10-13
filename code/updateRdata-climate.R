@@ -2,11 +2,11 @@ source("setup.R")
 # new data 
 
 #climate
-load(here::here("data", "climatePR2021-10-04.Rdata"))
+load(here::here("data", "climatePR2021-10-13.Rdata"))
 climatePR %<>% namingthings()
-load(here::here("data", "climateFR2021-10-04.Rdata"))
+load(here::here("data", "climateFR2021-10-13.Rdata"))
 climateFR %<>% namingthings()
-load(here::here("data", "climatecomments2021-10-06.Rdata"))
+load(here::here("data", "climatecomments2021-10-13.Rdata"))
 climatecomments %<>% namingthings()
 
 # inspect 
