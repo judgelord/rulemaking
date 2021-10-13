@@ -113,7 +113,7 @@ ejFR <- map_dfr(.x = c(1:20),
                       .f = search_keyword_page,
                       documenttype = "Rule",
                       keyword = "environmental justice",
-                lastModifiedDate <-- Sys.time() %>% str_remove(" [A-Z]"))
+                lastModifiedDate = Sys.time() %>% str_remove(" [A-Z]"))
 
 # if(content$meta$lastPage){
 #   lastModifiedDate <-- content$data$attributes$lastModifiedDate %>% tail(1)

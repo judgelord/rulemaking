@@ -11,7 +11,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-as of 10-05-2021
+as of 10-13-2021
 
 ```{r global.options, include=FALSE}
 source(here::here("setup.R"))
@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = FALSE,
 
 library(kableExtra)
 kablebox <- . %>% 
-  head(100) %>% 
+  head(1000) %>% 
   knitr::kable(digits = 3) %>% 
   kable_styling() %>% 
   scroll_box(height = "400px")
@@ -44,36 +44,51 @@ clean_summary <- . %>%
 load(here("data", "ejPRnew.Rdata"))
 
 ej_open <- ejPRnew %>% 
-  filter(open_for_comment) %>% 
+  #filter(open_for_comment) %>% 
     select(-last_modified_date) %>% 
   mutate(EJ = highlighted_content %>% clean_summary() ) %>% 
-  select(-highlighted_content, -lastpage, -type, -links)
+  select(-highlighted_content, -lastpage, -type, -links) %>% 
+  arrange(rev(open_for_comment)) 
 
 load(here("data", "climatePR.Rdata"))
 
 climate_open <- climatePR %>% 
-  filter(open_for_comment)%>% 
-  select(-last_modified_date) %>% 
+  #filter(open_for_comment)%>% 
   mutate(Climate = highlighted_content %>% clean_summary() )%>% 
-  select(-highlighted_content, -lastpage, -type, -links)
+  select(-highlighted_content, -lastpage, -type, -links, -last_modified_date) %>% 
+  arrange(rev(open_for_comment)) 
 
 open <- full_join(ej_open, climate_open) %>% 
-  mutate(Notes = "")
-
-library(googlesheets4)
-# write_sheet(open, ss = "1Owte4nR18J92xxnPaTDnGgRALZm3-rScCe_co_ohuDU", sheet = "open")
+  mutate(Notes = "", Open = open_for_comment) %>% 
+  filter(comment_start_date > as.Date("2021-01-17")) %>% 
+  arrange(rev(as.Date(comment_end_date))) %>% 
+  mutate(open_for_comment = as.numeric(open_for_comment)) %>% 
+  arrange(-open_for_comment)
 
 # clean up for presentation
 o <- open %>% 
-    mutate(`Proposed Rule` = str_c("Comments due ", comment_end_date %>% str_remove("T.*"), " on ", title,
+    mutate(`Proposed Rule` = str_c("Comments due ", 
+                                   comment_end_date %>% 
+                                     str_remove("T.*") %>% 
+                                     replace_na("?"), " on ", title,
                                    "\n https://www.regulations.gov/document/", id, 
                                    "\n \n https://www.federalregister.gov/d/", fr_doc_num) ) %>%
-    select(`Proposed Rule`, EJ, Climate) %>% 
-  arrange(`Proposed Rule`)
+    select(`Proposed Rule`, EJ, Climate, Open, Notes) 
 ```
 
+```{r googlesheet, eval= FALSE}
+library(googlesheets4)
+gs4_auth()
+1
+1
+
+write_sheet(open, ss = "1Owte4nR18J92xxnPaTDnGgRALZm3-rScCe_co_ohuDU", sheet = "raw")
+
+write_sheet(o, ss = "1Owte4nR18J92xxnPaTDnGgRALZm3-rScCe_co_ohuDU", sheet = "formatted")
+```
 
 ```{r comments, eval=FALSE}
+
 load(here("data", "ejcommentsnew.Rdata"))
 
 ejcomments_open <- ejcommentsnew %>% 

@@ -174,7 +174,7 @@ file = here::here("data",
 save(climatecomments, file = file)
 
 
-# if we are getting stuck on the same date
+# if we are getting stuck on the same date (i.e. if there are >5000 comments on a date)
 if(climatecomments$lastModifiedDate %>%
    min()  == date ){
   beep() 
