@@ -1,7 +1,0 @@
-ssh -Y judgelord@linstat.ssc.wisc.edu
-cd /project/judgelord/rulemaking
-
-git pull
-ls
-R
-source("setup.R")

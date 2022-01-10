@@ -82,6 +82,8 @@ gs4_auth()
 1
 1
 
+open %<>% select(Notes, everything())
+
 write_sheet(open, ss = "1Owte4nR18J92xxnPaTDnGgRALZm3-rScCe_co_ohuDU", sheet = "raw")
 
 write_sheet(o, ss = "1Owte4nR18J92xxnPaTDnGgRALZm3-rScCe_co_ohuDU", sheet = "formatted")

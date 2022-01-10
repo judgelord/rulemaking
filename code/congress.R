@@ -7,6 +7,8 @@ nrow(d)
 
 # one string to search 
 library(tidyr)
+library(magrittr)
+library(tidyverse)
 d %<>% mutate(title_org = str_c(title, organization, sep =  " ") %>% replace_na(" "))
 
 d %<>% mutate(house = str_dct(title_org, "Congressm|Congressw|Representative|Rep\\."))
