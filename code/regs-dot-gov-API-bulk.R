@@ -98,15 +98,15 @@ save(ejPR, file = here::here("data",
 # EJ Rules 
 # test with first 10k
 ejFR <- map_dfr(.x = c(1:10),
-                      .f = search_keyword_page,
-                      documenttype = "FR",
+                      .f = search_keyword_page4,
+                      documenttype = "Rule",
                       keyword = "environmental justice")
 
 # up to 100k
-ejFR2 <- map_dfr(.x = c(60:100),
-                 .f = search_keyword_page,
-                 documenttype = "FR",
-                 keyword = "Environmental Justice")
+ejFR2 <- map_dfr(.x = c(11:100),
+                 .f = search_keyword_page4,
+                 documenttype = "Rule",
+                 keyword = "environmental justice")
 
 # inspect
 ejFR2 %>% 
@@ -139,14 +139,16 @@ save(ejFR, file = here::here("data",
 
 # test with first 10k
 ejcomments <- map_dfr(.x = c(1:10),
-                      .f = search_keyword_page,
-                      documenttype = "PS",
+                      .f = search_keyword_page4,
+                      documenttype = "Public Submission",
                       keyword = "environmental justice")
+
+range(ejcomments$postedDate)
 
 # up to 100k
 ej100 <- map_dfr(.x = c(11:100),
-                 .f = search_keyword_page,
-                 documenttype = "PS",
+                 .f = search_keyword_page4,
+                 documenttype = "Public Submission",
                  keyword = "environmental justice")
 
 # inspect
