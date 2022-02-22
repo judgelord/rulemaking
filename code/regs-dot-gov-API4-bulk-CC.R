@@ -76,7 +76,7 @@ climateFR <- map_dfr(.x = c(1:20),
 # up to 100k
 climateFR2 <- map_dfr(.x = c(1:20),
                  .f = search_keyword_page,
-                 documenttype = "FR",
+                 documenttype = "Rule",
                  keyword = "climate change")
 
 # inspect
