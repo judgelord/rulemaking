@@ -12,7 +12,7 @@ editor_options:
 ---
 
 
-*Not all documents classified as "Proposed Rules" open for comment on regulations.gov are true proposed rules on rulemaking dockets. Documents open for comment may also include Advanced Notices of Proposed Rulemaking, notices of hearings, and draft Environmental Impact Statements. In my [reasearch](https://judgelord.github.io/research/) on rulemaking, I only use true proposed rules on rulemaking dockets.
+*Not all documents classified as "Proposed Rules" open for comment on regulations.gov are true proposed rules on rulemaking dockets. Documents open for comment may also include Advanced Notices of Proposed Rulemaking, notices of hearings, and draft Environmental Impact Statements. My [reasearch](https://judgelord.github.io/research/) on rulemaking focuses on true proposed rules on rulemaking dockets.
 
 Due to API limits, comment counts are based on the most recent 5,000 comments.
 
@@ -55,8 +55,10 @@ climatepr %<>%
   mutate(Climate = highlightedContent %>% clean_summary() ) %>% 
   select(id, title, openForComment, docketId, frDocNum, commentEndDate, Climate)
 
-pr_open  %<>% 
-  select(id, title, openForComment, docketId, frDocNum, commentEndDate)
+# Can subset to PRs and Fed Reg docs, but not all agencies fill in this field (e.g. DOE EERE), leading many to be dropped in error
+# pr_open  %<>% 
+#   filter(subtype %>% str_dct("federal|NPRM")) %>% 
+#   select(id, title, openForComment, docketId, frDocNum, commentEndDate)
 
 
 open <- full_join(ejpr, climatepr) %>% 
@@ -189,9 +191,12 @@ o %>% filter(is.na(EJ), !is.na(Climate) ) %>% select(-EJ, -docketId) %>% kablebo
 ### Where Comments Raise "Environmental Justice" on Documents that Don't Mention It
 
 ```{r}
-o  %>% 
+oej <- o %>% drop_na(EJ)
+
+look <- o  %>% 
     inner_join(comments) %>% 
-  filter(is.na(Climate), is.na(EJ), !is.na(`EJ Comment`)) %>% 
+  filter(!docketId %in% oej$docketId) %>% 
+  filter( is.na(EJ), !is.na(`EJ Comment`)) %>% 
   mutate(`EJ Comment` = str_c("[", `EJ Comment`, "](", URL, ")")) %>% 
     select(`Proposed Rule`, `EJ Comment`) %>% 
   kablebox()
@@ -204,9 +209,12 @@ o  %>%
 ### Where Comments Raise "Climate Change" on Documents that Don't Mention It
 
 ```{r}
+oclimate <- o %>% drop_na(Climate)
+
 o  %>% 
     inner_join(comments) %>% 
-  filter(is.na(Climate), is.na(EJ), !is.na(`Climate Comment`)) %>% 
+    filter(!docketId %in% oclimate$docketId) %>% 
+  filter(is.na(Climate), !is.na(`Climate Comment`)) %>% 
   mutate(`Climate Comment` = str_c("[", `Climate Comment`, "](", URL, ")")) %>% 
     select(`Proposed Rule`, `Climate Comment`) %>% 
   kablebox()
