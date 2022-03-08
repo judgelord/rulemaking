@@ -26,13 +26,10 @@ unique(CFPBcomments$lastpage)
 ## begin loop, updating lastModifiedDate every batch of 5k
 # (as of 2022-03-08, there were ~122k CFPB comment endpoints, so loop will run 24+ times)
 #FIXME loop hangs on 2019-10-18 where > 5k comments were received in a 3 hour period
-# and on 2019-10-16 where > 5k comments were recievedi in a 1 hour period
+# and on 2019-10-16 where > 5k comments were received in a 1 hour period
 # (anti-hang correction did not deal with this because 0 comments were submitted on the rounded-down hour)
-
+# 
 date <- CFPBcomments$lastModifiedDate %>% min()
-
-# over 5k CFPB comments before 1 AM 
-# date <- "2018-04-26T10:58:55Z"
 
 while(CFPBcomments$lastModifiedDate %>% min() > as.Date("1993-01-01")){
   # next 5k

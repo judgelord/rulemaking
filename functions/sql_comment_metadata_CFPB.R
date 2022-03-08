@@ -26,34 +26,42 @@ comments_all %<>% mutate(source = "regulations.gov")
 
 # v3
 comments_all %<>% mutate(comment_id = document_id)
-
 # v4
 comments_all %<>% mutate(comment_id = id)
 
 comments_all %<>% mutate(comment_url = str_c("https://www.regulations.gov/comment", comment_id))
 
+#FIXME v4 does not return comment due date 
 comments_all %<>% mutate(late_comment = as.Date(posted_date) > as.Date(comment_due_date))
 
- # V4 no longer returns organization 
+ # V4 no longer returns organization or docket title 
+
+
+
+
 comments_all %<>% 
+  mutate(docket_id = str_remove(comment_id, "-[0-9]*$"))
+
+
+vars_to_keep <- c("fr_document_id", # need this from rules table joined in by document_id - comment_id
+                  "docket_title", # this may clash with docket title from attachments table
+                  "docket_type",
+                  "rin",
+                  "attachment_count",
+                  "posted_date",
+                  "submitter_name",
+                  "organization",
+                  "late_comment")
 
 # FIXME trim down to minimial variables
 comments_all %<>% select(source,
                          #fr_document_id, # need this from rules table joined in by document_id - comment_id
                          agency_acronym = agency_id,
                          docket_id, 
-                         docket_title, # this may clash with docket title from attachments table
-                         # docket_type,
-                         rin,
-                         attachment_count,
-                         posted_date,
-                         submitter_name,
                          comment_id,
                          comment_title = title, # rename
-                         organization,
                          comment_url,
-                         late_comment
-                         )
+                         any_of(vars_to_keep) )
 
 
 
