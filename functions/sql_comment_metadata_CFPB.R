@@ -1,7 +1,14 @@
-# This script joins data on all comments from regulations.gov
-# Completing missing from any one dataset
-# Create R data
-load(here::here("data", "comment_metadata.Rdata"))
+# This script creates a SQL table of CFPB comment metadata 
+# subset to Dodd-Frank dockets or RINs as identified by Davis Polk 
+
+## originally pulled from Devin's master data 
+# load(here::here("data", "comment_metadata.Rdata"))
+
+## now pulling from new search of API v4 for shits and giggles
+load(here::here("data", "CFPBcomments.Rdata"))
+
+comments_all <- CFPBcomments 
+
 nrow(comments_all)
 head(comments_all)
 names(comments_all)  
@@ -13,16 +20,27 @@ names(comments_all)  <- names(comments_all) %>%
 
 names(comments_all)
 
+
+
 comments_all %<>% mutate(source = "regulations.gov")
 
-comments_all %<>% mutate(comment_url = str_c("https://www.regulations.gov/document?D=", document_id))
+# v3
+comments_all %<>% mutate(comment_id = document_id)
+
+# v4
+comments_all %<>% mutate(comment_id = id)
+
+comments_all %<>% mutate(comment_url = str_c("https://www.regulations.gov/comment", comment_id))
 
 comments_all %<>% mutate(late_comment = as.Date(posted_date) > as.Date(comment_due_date))
+
+ # V4 no longer returns organization 
+comments_all %<>% 
 
 # FIXME trim down to minimial variables
 comments_all %<>% select(source,
                          #fr_document_id, # need this from rules table joined in by document_id - comment_id
-                         agency_acronym,
+                         agency_acronym = agency_id,
                          docket_id, 
                          docket_title, # this may clash with docket title from attachments table
                          # docket_type,
@@ -30,7 +48,7 @@ comments_all %<>% select(source,
                          attachment_count,
                          posted_date,
                          submitter_name,
-                         document_id,
+                         comment_id,
                          comment_title = title, # rename
                          organization,
                          comment_url,
@@ -96,7 +114,7 @@ names(df)
 head(df)
 df %<>% filter(str_detect(agency, "CFPB"))
 
-# Subset to Dodd-Frank rules
+# Subset to Dodd-Frank rules (by docket or RIN)
 df_rins <- df$RIN %>% na.omit() %>% unique()
 df_dockets <- df$identifier %>% na.omit() %>% unique()
 
