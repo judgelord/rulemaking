@@ -157,6 +157,8 @@ unmatched %>%
 # 10 NA        CFPB-2017-0027
 
 
+# NOTE see checks against fed reg doc numbers in functions/sql_actions_metadata_CFPB.R
+
 # save Rdata 
 save(comments_cfpb_df, file = here::here("data", "comment_metadata_CFPB_df.Rdata"))
 
