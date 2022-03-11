@@ -149,3 +149,147 @@ d$highlightedContent
 }
 
 
+#########
+
+search_page4 <- function(page = 1, 
+                         documenttype = "Rule", # default
+                         lastModifiedDate = Sys.time() ){
+  
+  
+  lastModifiedDate %<>% str_replace_all("[A-Z]", " ") %>%  str_squish()
+  
+  
+  endpoint = ifelse(documenttype == "Public Submission", "comments", "documents")
+  
+  documentType = ifelse(documenttype == "Public Submission", "", str_c("&filter[documentType]=", documenttype)) #"&filter[documentType]=documents")
+  
+  path <- paste0("/v4/", endpoint,
+                 "?page[number]=", page,
+                 "&page[size]=250", 
+                 documentType,
+                 #"&a=", agency,
+                 "&sort=-lastModifiedDate,documentId",
+                 "&filter[lastModifiedDate][le]=", lastModifiedDate,
+                 "&api_key=", api_key)
+  
+  # this works:
+  if(FALSE){
+    raw.result <- GET(url = "https://api.regulations.gov", 
+                      path = paste0("/v4/comments?filter[searchTerm]=environmental%2Bjustice&api_key=", api_key))
+  }
+  
+  # inspect path 
+  str_c("https://api.regulations.gov", path)
+  
+  raw.result <- GET(url = "https://api.regulations.gov", path = path)
+  
+  content <- fromJSON(rawToChar(raw.result$content))
+  
+  d <- content$data$attributes %>%  as_tibble()  %>%
+    mutate(id = content$data$id,
+           type = content$data$type,
+           links = content$data$links$self,
+           lastpage = content$meta$lastPage)
+  
+  #TODO loop this over batches of 5k documents
+  # if(content$meta$lastPage){
+  #   lastModifiedDate <-- content$data$attributes$lastModifiedDate %>% tail(1)
+  #   #lastModifiedDate <-- Sys.time() %>% str_remove(" [A-Z]")
+  # } 
+  
+  return(d)
+}
+
+
+
+
+
+search_keyword_page4_comment_loop <- function(data_comments, data_comments1, keyword){
+
+while(data_comments$lastModifiedDate %>% as.Date() %>% min() > as.Date("1993-01-01")){
+  
+  # next 5k
+  data_2 <- map_dfr(.x = c(1:20),
+                   .f = possibly(search_keyword_page4, otherwise = data_comments1),
+                   keyword = keyword, 
+                   documenttype = "Public Submission",
+                   # starting at the last modified date (the function arranges by last modified date)
+                   lastModifiedDate =  date
+  )
+  
+  # if we get some, add them 
+  if(nrow(data_2) > 0){
+    print(nrow(data_2))
+    data_comments$lastModifiedDate %>% min() %>% paste(" = old date") %>% print()
+    data_2$lastModifiedDate %>% min()  %>% paste(" = current date")  %>% print() 
+    # inspect
+    
+    data_2 %>% 
+      ggplot() + 
+      aes(x = as.Date(postedDate), fill = documentType) +
+      geom_bar()
+    
+    ############
+    # JOIN  #
+    data_comments %<>% full_join(data_2)
+    
+    data_comments %>% 
+      ggplot() + 
+      aes(x = as.Date(postedDate), fill = documentType) +
+      geom_bar()
+    
+    # Repeat above 
+    # TODO make while loop in function 
+    file = here::here("data", 
+                      str_c("temp_data_comments", 
+                            Sys.Date(), 
+                            ".Rdata"))
+    
+    save(data_comments, file = file)
+    
+    
+    # if we are getting stuck on the same date (i.e. if there are >5000 comments on a date)
+    if(data_comments$lastModifiedDate %>%
+       min()  == date ){
+      beep() 
+      
+      # date rounded down to the nearist 20:00 hrs
+      date <- data_comments$lastModifiedDate %>% min() %>% str_replace("T2.", "T20")
+      
+      if(data_comments$lastModifiedDate %>%
+         min()  == date){
+        # date rounded down to the nearist 1X:00 hrs
+        date <- data_comments$lastModifiedDate %>% min() %>% str_replace("T2", "T1")
+      } 
+      if(data_comments$lastModifiedDate %>%
+         min()  == date){
+        # date rounded down to the nearist 10:00 hrs
+        date <- data_comments$lastModifiedDate %>% min() %>% str_replace("T1.", "T10")
+      }
+      if(data_comments$lastModifiedDate %>%
+         min()  == date){
+        # date rounded down to the nearist 0X:00 hrs
+        date <- data_comments$lastModifiedDate %>% min() %>% str_replace("T1", "T0")
+      }
+      if(data_comments$lastModifiedDate %>%
+         min()  == date){
+        # date rounded down to the nearist 0:00 hrs
+        date <- data_comments$lastModifiedDate %>% min() %>% str_replace("T0.", "T00")
+      }
+    } else {
+      # otherwise, the new date is the min
+      date <- data_comments$lastModifiedDate %>% min() 
+      beep(sound = 2)
+    }
+    date %>% paste(" = new date (should be current date unless the old date didn't change)") %>% print()
+    
+    
+  } else{
+    beep() 
+    print(nrow(data_2))
+  }
+  
+  Sys.sleep(50)
+}
+
+}

@@ -10,23 +10,13 @@ library(jsonlite)
 library(tidyverse)
 library(magrittr)
 
+source("api-key.R")
+
 
 # defaults 
 url  <- "https://api.regulations.gov"
-rpp <- 1000 # results per page
-order <- "DESC" # DESC: Decending, ASC: Ascending 
 sortby <- "postedDate" #docketId (Docket ID) docId (Document ID) title (Title) postedDate (Posted Date) agency (Agency) documentType (Document Type) submitterName (Submitter Name) organization (Organization)
 page <- c(0, seq(1000)*rpp) # up to 1,000,0000 results
-status <- "O" # O for open docket
-n <- 2000 # max number of results
-start <- 1000 # result number on which to resume partial search (e.g. due to api limits )
-documenttype <- "N%2BPR%2BFR%2BPS%2BSR%2BO"
-## N: Notice, 
-## PR: Proposed Rule, 
-## FR: Rule, 
-## O: Other, 
-## SR: Supporting & Related Material, 
-## PS: Public Submission
 
 # this works:
 if(FALSE){

@@ -1,5 +1,5 @@
 ---
-title: "Proposed Rules Open for Comment on `r Sys.Date()`"
+title: "Proposed Federal Agency Rules Open for Public Comment on `r Sys.Date()`"
 #author: "Devin Judge-Lord"
 output:
     html_document:
@@ -45,7 +45,7 @@ clean_summary <- . %>%
   str_remove_all("`") %>%
   str_squish() %>% str_c("...") %>% str_replace("^", "...")
 
-load(here("data", "open.Rdata"))
+load(here::here("data", str_c("open-", Sys.Date(), ".Rdata")))
 
 ejpr %<>% 
   mutate(EJ = highlightedContent %>% clean_summary() ) %>% 
@@ -99,7 +99,7 @@ climatecount <- climatecomments %>% group_by(docketId) %>%
 ```
 
 
-```{r open, fig.height= 4, fig.width=4.5}
+```{r open, fig.height= 6, fig.width=4.5}
 open %<>% mutate(Agency = str_remove(docketId, "(-|_).*"),
                  Contains = case_when(
                    !is.na(Climate) & !is.na(EJ) ~ "Both",
@@ -167,7 +167,7 @@ write_sheet(comments, ss = "1Owte4nR18J92xxnPaTDnGgRALZm3-rScCe_co_ohuDU", sheet
 ### Mentioning "Environmental Justice" and "Climate Change"
 
 ```{r}
-o %>% drop_na(EJ, Climate) %>% select(-docketId) %>% kablebox()
+o %>% drop_na() %>% select(-docketId) %>% kablebox()
 ```
 
 ---
@@ -175,7 +175,7 @@ o %>% drop_na(EJ, Climate) %>% select(-docketId) %>% kablebox()
 ### Mentioning "Environmental Justice" but not "Climate Change"
 
 ```{r}
-o %>% filter(is.na(Climate), !is.na(EJ)) %>% select(-Climate, -docketId) %>% kablebox()
+o %>% drop_na(`Proposed Rule`) %>% filter(is.na(Climate), !is.na(EJ)) %>% select(-Climate, -docketId) %>% kablebox()
 ```
 
 ---
@@ -183,7 +183,7 @@ o %>% filter(is.na(Climate), !is.na(EJ)) %>% select(-Climate, -docketId) %>% kab
 ### Mentioning "Climate Change" but not "Environmental Justice"
 
 ```{r}
-o %>% filter(is.na(EJ), !is.na(Climate) ) %>% select(-EJ, -docketId) %>% kablebox()
+o%>% drop_na(`Proposed Rule`)  %>% filter(is.na(EJ), !is.na(Climate) ) %>% select(-EJ, -docketId) %>% kablebox()
 ```
 
 ---
@@ -211,7 +211,7 @@ look <- o  %>%
 ```{r}
 oclimate <- o %>% drop_na(Climate)
 
-o  %>% 
+o %>% drop_na(`Proposed Rule`)  %>% 
     inner_join(comments) %>% 
     filter(!docketId %in% oclimate$docketId) %>% 
   filter(is.na(Climate), !is.na(`Climate Comment`)) %>% 
