@@ -227,3 +227,6 @@ Sys.sleep(50)
 # climatecomments %<>% full_join(climate500)
 # 
 # save(climatecomments, file =  here::here("data", "climatecomments.Rdata"))
+
+
+

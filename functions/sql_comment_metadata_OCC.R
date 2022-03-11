@@ -1,21 +1,16 @@
-# This script creates a SQL table of CFPB comment metadata 
+# This script creates a SQL table of OCC comment metadata 
 # subset to Dodd-Frank dockets or RINs as identified by Davis Polk 
-library(DBI)
-library(RSQLite)
-library(tidyverse)
 
 # API version 
 v4 = FALSE
 
-
+## originally pulled from Devin's master data 
+load(here::here("data", "comment_metadata.Rdata"))
 
 ## now pulling from new search of API v4
 if(v4){
-  load(here::here("data", "CFPBcomments.Rdata"))
-  comments_all <- CFPBcomments 
-} else{
-  ## originally pulled from Devin's master data 
-  load(here::here("data", "comment_metadata.Rdata"))
+  load(here::here("data", "OCCcomments.Rdata"))
+  comments_all <- OCCcomments 
 }
 
 
@@ -51,7 +46,7 @@ comments_all %<>% mutate(late_comment = as.Date(posted_date) > as.Date(comment_d
 
 count(comments_all, is.na(late_comment))
 
-# V4 no longer returns organization or docket title 
+ # V4 no longer returns organization or docket title 
 
 comments_all %<>% 
   mutate(docket_id = str_remove(comment_id, "-[0-9]*$"))
@@ -83,38 +78,38 @@ comments_all %<>% select(source,
 
 
 
-# filter to only CFPB comments
-comments_CFPB <- comments_all %>% filter(agency_acronym == "CFPB")
-nrow(comments_CFPB)
-head(comments_CFPB)
+# filter to only OCC comments
+comments_OCC <- comments_all %>% filter(agency_acronym == "OCC")
+nrow(comments_OCC)
+head(comments_OCC)
 
 
 # save Rdata 
-save(comments_CFPB, file = here::here("data", "comment_metadata_CFPB.Rdata"))
+save(comments_OCC, file = here::here("data", "comment_metadata_OCC.Rdata"))
 
-# convert dates to character for SQL
-comments_CFPB %<>% mutate(across(where(is.numeric.Date), as.character) )
+# convert dates to character 
+comments_OCC %<>% mutate(across(where(is.numeric.Date), as.character) )
 
 
-# Create RSQLite database for all CFPB comment metadata 
+# Create RSQLite database for all OCC comment metadata 
 library(DBI)
 # install.packages("RSQLite")
 1
 library(RSQLite)
-con <- dbConnect(RSQLite::SQLite(), here::here("data", "comment_metadata_CFPB.sqlite"))
+con <- dbConnect(RSQLite::SQLite(), here::here("data", "comment_metadata_OCC.sqlite"))
 
 # check 
 list.files("data")
 
 dbListTables(con)
-dbWriteTable(con, "comments", comments_CFPB, overwrite = T)
+dbWriteTable(con, "comments", comments_OCC, overwrite = T)
 dbListTables(con)
 
 dbListFields(con, "comments")
-# dbReadTable(con, "comments_CFPB") # oops
+# dbReadTable(con, "comments_OCC") # oops
 
 # fetch results:
-res <- dbSendQuery(con, "SELECT * FROM comments WHERE agency_acronym = 'CFPB'")
+res <- dbSendQuery(con, "SELECT * FROM comments WHERE agency_acronym = 'OCC'")
 
 dbFetch(res) %>% head()
 dbClearResult(res)
@@ -124,89 +119,78 @@ dbDisconnect(con)
 
 ###################################################
 # Subset to Davis Polk Dodd-Frank rules 
-# load(here::here("data", "comment_metadata_CFPB.Rdata"))
-names(comments_CFPB)
+# load(here::here("data", "comment_metadata_OCC.Rdata"))
+names(comments_OCC)
 
 # Dodd-Frank rules from Davis Polk Data
 df <- read_csv(here::here("data", "dockets_to_scrape.csv"))
 names(df)
 head(df)
-df %<>% filter(str_detect(agency, "CFPB"))
+df %<>% filter(str_detect(agency, "OCC"))
 
 # Subset to Dodd-Frank rules (by docket or RIN)
 df_rins <- df$RIN %>% na.omit() %>% unique()
 df_dockets <- df$identifier %>% na.omit() %>% unique()
 
-comments_CFPB_df <- comments_CFPB %>% 
+comments_OCC_df <- comments_OCC %>% 
   filter(docket_id %in% df_dockets | rin %in% df_rins)
 
 # rins not in dockets to scrape
-comments_CFPB_df %>% 
+comments_OCC_df %>% 
   filter(!rin %in% df_rins) %>% 
   select(docket_id, rin) %>% 
   distinct()
 
 # dockets not in dockets to scrape
-comments_CFPB_df %>% 
+comments_OCC_df %>% 
   filter(!docket_id %in% df_dockets) %>% 
   select(docket_id, rin) %>% 
   distinct() %>% knitr::kable()
 
 
-comments_CFPB_df$docket_id %>% unique()
-comments_CFPB_df$rin %>% unique()
+comments_OCC_df$docket_id %>% unique()
+comments_OCC_df$rin %>% unique()
 
 # look back to see how many we matched 
-matched <- df %>% filter(RIN %in% na.omit(comments_CFPB_df$rin) | identifier %in% na.omit(comments_CFPB_df$docket_id))
+matched <- df %>% filter(RIN %in% na.omit(comments_OCC_df$rin) | identifier %in% na.omit(comments_OCC_df$docket_id))
 unmatched <- df %>% anti_join(matched)
 unmatched %>% 
   select(RIN, identifier) %>% 
   distinct()
 
-# # 0 comments
-# RIN       identifier    
-# <chr>     <chr>         
-#   1 NA        CFPB-2013-0038
-# 2 3170-AA30 CFPB-2012-0040
-# 3 NA        CFPB-2014-0030
-# 4 3170-AA36 CFPB-2013-0006
-# 5 NA        CFPB-2012-0042
-# 6 NA        CFPB-2013-0034
-# 7 NA        CFPB-2017-0026
-# 8 NA        CFPB-2012-0043
-# 9 NA        CFPB-2013-0035
-# 10 NA        CFPB-2017-0027
+# # 0 comments 
+# RIN       identifier   
+# <chr>     <chr>        
+# 1 1557-AD33 OCC-2011-0009
+# 2 1557-AC99 OCC-2012-0002
+# 3 1557-AD41 OCC-2011-0018
+# 4 1557–AD42 OCC-2011-0010
+# 5 1557-AD90 OCC-2014-0027
+# 6 1557-AD34 OCC-2010-0021
 
 
-# NOTE see checks against fed reg doc numbers in functions/sql_actions_metadata_CFPB.R
+# NOTE see checks against fed reg doc numbers in functions/sql_actions_metadata_OCC.R
 
 # save Rdata 
-save(comments_CFPB_df, file = here::here("data", "comment_metadata_CFPB_df.Rdata"))
+save(comments_OCC_df, file = here::here("data", "comment_metadata_OCC_df.Rdata"))
 
 
 # Create RSQLite database
-con <- dbConnect(RSQLite::SQLite(), here::here("data", "comment_metadata_CFPB_df.sqlite"))
+con <- dbConnect(RSQLite::SQLite(), here::here("data", "comment_metadata_OCC_df.sqlite"))
 
 # check 
 list.files("data")
 
 dbListTables(con)
-dbWriteTable(con, "comments", comments_CFPB_df, overwrite = T)
+dbWriteTable(con, "comments", comments_OCC_df, overwrite = T)
 dbListTables(con)
 
 dbListFields(con, "comments")
 
 # fetch results:
-res <- dbSendQuery(con, "SELECT * FROM comments WHERE agency_acronym = 'CFPB'")
+res <- dbSendQuery(con, "SELECT * FROM comments WHERE agency_acronym = 'OCC'")
 
-result <- dbFetch(res) 
-
-result |> head()
-
-count(result, posted_date, sort = T)
-
-count(result, is.na(posted_date), sort = T)
-
+dbFetch(res) %>% head()
 dbClearResult(res)
 dbDisconnect(con)
 
