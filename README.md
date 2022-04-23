@@ -190,4 +190,12 @@ dbGetQuery(con, "SELECT * FROM comments WHERE docket_id = 'CFPB-2018-0023-0006'"
 [36] "UNFUNDED_MANDATES"
 ```
 
-More about these data in [Why Do Agencies (sometimes) Get So Much Mail? Lobbying Coalitions, Mass Comments, and Political Information in Bureaucratic Policymaking](https://judgelord.github.io/research/whymail/), [Data and Methods Analyzing Special Interests Influence in Rulemaking](https://link.springer.com/article/10.1057%2Fs41309-020-00094-w), and this [collaborative repository](https://github.com/libgober/regdata/blob/master/README.md)
+More about these data in: 
+- [Why Do Agencies (Sometimes) Get So Much Mail? Lobbying Coalitions, Mass Comments, and Political Information in Bureaucratic Policymaking](https://judgelord.github.io/research/whymail/)
+- [The Environmental Justice Movement’s Impact on Technocratic Policymaking](https://judgelord.github.io/research/ej/)
+- [The Climate Movement's Impact on Technocratic Policymaking](https://judgelord.github.io/research/cj/)
+- [Inequality in Administrative Democracy](https://judgelord.github.io/research/finreg/)
+- [Data and Methods Analyzing Special Interests Influence in Rulemaking](https://link.springer.com/article/10.1057%2Fs41309-020-00094-w)
+- This [collaborative repository](https://github.com/libgober/regdata/blob/master/README.md)
+
+Much of the analayses using these data would not be possible without a tenacious [team of research assistants](https://judgelord.github.io/rulemaking/lab) who have read and coded many thousands of these documents.
