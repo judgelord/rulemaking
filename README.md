@@ -198,4 +198,4 @@ More about these data in:
 - [Data and Methods Analyzing Special Interests Influence in Rulemaking](https://link.springer.com/article/10.1057%2Fs41309-020-00094-w)
 - This [collaborative repository](https://github.com/libgober/regdata/blob/master/README.md)
 
-Much of the analayses using these data would not be possible without a tenacious [team of research assistants](https://judgelord.github.io/rulemaking/lab) who have read and coded many thousands of these documents.
+Much of the analysis using these data would not be possible without a [team of research assistants](https://judgelord.github.io/rulemaking/lab) who have read and coded many thousands of these documents.
