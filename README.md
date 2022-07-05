@@ -78,6 +78,7 @@ dbGetQuery(con, "SELECT * FROM comments WHERE docket_id = 'CFPB-2018-0023-0006'"
 
 - [XML versions available from 1995 until present](https://www.reginfo.gov/public/do/eAgendaXmlReport)
 - [Transformed to Rdata. Some errors corrected for 2000-2018](https://github.com/judgelord/rulemaking/blob/master/data/UnifiedAgenda.Rdata)
+- [Summary plots](https://judgelord.github.io/dissertation/rulemaking-appendix)
 
 ```
  [1] "ABSTRACT"                
