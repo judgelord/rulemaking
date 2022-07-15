@@ -19,13 +19,13 @@ I have collected two datasets from regulations.gov, one for all rules, proposed 
 |document_id                 |FDA-1976-N-0020-0005                                                                                                     |
 |document_status             |Posted                                                                                                                   |
 |document_type               |Notice                                                                                                                   |
+|fr_document_id              |NA                                                                                                                       |
 |fr_number                   |NA                                                                                                                       |
 |number_of_comments_received |0                                                                                                                        |
 |open_for_comment            |0                                                                                                                        |
 |posted_date                 |1978-07-10T00:00:00-04:00                                                                                                |
 |rin                         |NA                                                                                                                       |
 |title                       |Part 433 - Exemptions from Antibiotic Certification and Labeling Requirements - Notice of Confirmation of Effective Date |
-|fr_document_id              |NA                                                                                                                       |
 
 ### 2. Metadata for all public comments on regulations.gov ([.Rdata](https://drive.google.com/file/d/1iryaZo4W4-mPnsNC535HPl2KbSt5RKav/view?usp=sharing),[SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing))
 
@@ -43,14 +43,17 @@ I have collected two datasets from regulations.gov, one for all rules, proposed 
 |document_id                 |CFPB-2018-0023-0006                                                                        |
 |document_status             |Posted                                                                        |
 |document_type               |Public Submission                                                                        |
-|number_of_comments_received |1                                                                        |
 |posted_date                 |2018-10-11T00:00:00-04:00                                                                        |
 |submitter_name              |Michael Day                                                                        |
 |title                       |Comment Submitted by Michael Day, OLA                                                                        |
 |rin                         |NA                                                                        |
 |organization                |OLA                                                                        |
-| attachment_1                    | CFPB-2018-0023-0006-1.doc                                                                                                                                                                                                     |
-| comment_url                     | https://www.regulations.gov/document?D=CFPB-2018-0023-0006                                                                                                                                 |
+
+<!-- not currently in data 
+|number_of_comments_received |1                                                                        |
+|comment_url                 | https://www.regulations.gov/document?D=CFPB-2018-0023-0006               |
+|attachment_1                | CFPB-2018-0023-0006-1.doc                                                                                                                                                                                                     |
+-->
 
 ### Both tables are also available in [SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing) ([instructions for using SQL](https://judgelord.github.io/rulemaking/sql))
 
