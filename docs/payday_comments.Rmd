@@ -21,8 +21,10 @@ knitr::opts_chunk$set(echo = TRUE,
                       cache = TRUE, 
                       fig.width=8.5, 
                       split = T,
+                      fig.retina = 8,
                       fig.align = 'center', 
                       fig.path='figs/',
+                      #dev = "pdf",
                       warning=FALSE, 
                       message=FALSE)
 
@@ -197,7 +199,7 @@ Comments [95976 and 95977](https://www.regulations.gov/document?D=CFPB-2016-0025
 
 Comment [90980](https://www.regulations.gov/document?D=CFPB-2016-0025-90980) was a policy brief from the LBJ School of Public Affairs, which contained text that also appeared in the NPRM: 
 
-```{r}
+```{r, eval=FALSE}
 d %>% 
   filter(document_id == "CFPB-2016-0025-90980-1") %>% 
   select(text) %>% 
@@ -236,19 +238,47 @@ comment_percent_match <- d %>%
   summarise(percent_match = sum(match)/n() )
 ```
 
-```{r comment_percent_match_plot, fig.width=9.5, fig.height=7.5}
+```{r comment_percent_match_plot, fig.width=2.9, fig.height=2}
+n = sqrt(nrow(comment_percent_match))
+
+LETTERS[1:n] %>% rep(n) %>% sort()
+
 comment_percent_match %>% 
+  ungroup() %>% 
   mutate(document_id = document_id %>% str_remove(".*0025-"), 
          document_id2 = document_id2 %>% str_remove(".*0025-") ) %>% 
   ggplot() +
-  aes(x = document_id, 
-      y = document_id2, 
-      fill = percent_match) + 
+  aes(y = document_id, 
+      x = document_id2, 
+      fill = percent_match*100) + 
   geom_tile(color = "grey") + 
   scale_fill_gradient(low = "white", high = "black") + 
   theme(panel.grid = element_blank(),
         panel.border = element_blank(),
-        axis.text.x = element_text(angle = 90, vjust = 1))
+        axis.text.x = element_text(angle = 90, vjust = 1)) + 
+  labs(x = "Document",
+       y = "Document",
+       fill = "Percent\nMatch")
+
+
+comment_percent_match %>% 
+  ungroup() %>% 
+  mutate(document_id = LETTERS[1:n] %>% rep(n) %>% sort(),
+         document_id2 = LETTERS[1:n] %>% rep(n) 
+         ) %>% 
+  ggplot() +
+  aes(y = document_id, 
+      x = document_id2, 
+      fill = percent_match*100) + 
+  geom_tile(color = "grey") + 
+  scale_fill_gradient(low = "white", high = "black") + 
+  theme(panel.grid = element_blank(),
+        panel.border = element_blank(),
+        #axis.text.x = element_text(angle = 90, vjust = 1)
+        ) + 
+  labs(x = "Document",
+       y = "Document",
+       fill = "Percent\nMatch")
 ```
 
 Notice that 100% of the words from CFPB-2016-0025-95976 ([pdf](https://www.regulations.gov/document?D=CFPB-2016-0025-95976), [txt](https://ssc.wisc.edu/~judgelord/comment_text/CFPB-2016-0025/CFPB-2016-0025-95976-1.txt)
