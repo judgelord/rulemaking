@@ -32,7 +32,10 @@ search_keyword_page4 <- function(page = 1,
                                  lastModifiedDate = Sys.time() ){
   
   # sys.time to fit required format
-  lastModifiedDate %<>% str_replace_all("[A-Z]", " ") %>%  str_squish()
+  lastModifiedDate %<>% str_replace_all("[A-Z]", " ") %>% 
+    str_replace(" ", "T") %>% 
+    str_squish() %>% 
+    str_c("Z")
   
   # format string (add quotes, replace space with unicode)
   search <- #keyword %>% 
@@ -45,7 +48,9 @@ search_keyword_page4 <- function(page = 1,
   # filter document types, unless endpoint is comments
   documentType <- ifelse(endpoint == "documents", 
                          str_c("&filter[documentType]=", documenttype),
-                         "") # previously required "&filter[documentType]=documents")
+                         "") %>% 
+    str_replace(" ", "%2B")
+    # previously required "&filter[documentType]=documents")
   
   path <- paste0("/v4/", endpoint,
                  "?page[number]=", page,
@@ -54,7 +59,7 @@ search_keyword_page4 <- function(page = 1,
                  #"&a=", agency, #FIXME provide empty string when agency is set to "all" (default)
                  "&sort=-lastModifiedDate,documentId",
                  "&filter[searchTerm]=", search,
-                 "&filter[lastModifiedDate][le]=", lastModifiedDate,
+                 #"&filter[lastModifiedDate][le]=", lastModifiedDate,
                  "&api_key=", api_key)
   
 

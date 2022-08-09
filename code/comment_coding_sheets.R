@@ -1,17 +1,38 @@
 
 source("setup.R")
 
+done <- list.files(here::here("data", "datasheets")) %>% 
+  str_remove("_.*")
+
+library(DBI)
+library(RSQLite)
+library(tidyverse)
+
+#######################################
+# Database location on linux 
+master_location <- here::here("db", "comment_metadata.sqlite") 
+master_con = dbConnect(SQLite(), dbname=master_location)
+dbListTables(master_con)
+
+#######################################
+# Database location mac
+master_location <- here::here("data", "rulemaking_metadata.sqlite") 
+master_con = dbConnect(SQLite(), dbname=master_location)
+dbListTables(master_con)
+
+rules <- dbSendQuery(master_con, 'SELECT * FROM rules')
+
+###########
+# Rdata 
 # rules and proposed rules 
 load(here::here("data", "rules_metadata.Rdata"))
 rules %<>% as_tibble()
 names(rules)
 dim(rules)
 
-
 rules$posted_date %<>% as.Date()
 max(rules$posted_date, na.rm = T)
 min(rules$posted_date, na.rm = T)
-
 
 rules %<>% mutate(year = str_sub(posted_date, 0, 4) %>% as.integer())
 unique(rules$year)
@@ -25,14 +46,21 @@ rules %>% filter(document_type =="Proposed Rule") %>% count(year)
 
 #FIXME
 # Sampling
+if(ej_sample){
 load(here::here("data", "ejdockets.Rdata"))
 head(ejdockets)
-
 rules %<>% filter(docket_id %in% ejdockets$docket_id)
+}
+
+if(mass_sample){
+  rules %<>% filter(number_of_comments_received  > 99)
+}
+
+
 nrow(rules)
 
-done <- list.files(here::here("data", "datasheets")) %>% 
-  str_remove("_.*")
+
+
 
 # rules %<>% filter(docket_id %in% done)
 nrow(rules)
@@ -40,7 +68,21 @@ nrow(rules)
 
 
 # comments 
-load(here::here("data", "comment_metadata2020.Rdata"))
+# load(here::here("data", "comment_metadata.rdata"))
+# load(here::here("data", "comment_metadata2020.Rdata"))
+
+
+call <- 'SELECT * FROM comments WHERE docket_id = "EPA-HQ-OAR-2008-0699"'
+call <- 'SELECT * FROM comments WHERE docket_id = "FNS-2011-0019"'
+call <- 'SELECT * FROM comments WHERE docket_id = "WHD-2017-0003"'
+
+dockets <-   rules %<>% filter(number_of_comments_received  > 99) %>% pull(docket_id)
+
+call <- paste('SELECT * FROM comments WHERE docket_id IN', dockets)
+
+
+comment_metadata <-  dbSendQuery(master_con, call) %>% dbFetch(Master_Query, n = -1)
+
 dim(comment_metadata)
 ls()
 names(comment_metadata)
@@ -51,6 +93,7 @@ d$posted_date %<>% as.Date()
 max(d$posted_date, na.rm = T)
 min(d$posted_date, na.rm = T)
 
+if(sample){
 topdockets <- rules %>% 
   group_by(docket_id) %>% 
   mutate(number_of_comments_received = sum(number_of_comments_received)) %>%
@@ -77,40 +120,24 @@ dim(topdockets)
 
 count(topdockets, docket_id, number_of_comments_received)
 
-agencies <- unique(rules$agency_id)
-
-# agencies = c("EPA","ATF",
-#              "NLRB",
-#              "OFCCP",
-#              "OJP",
-#              "USCG",
-#              "CIS",
-#              "USCBP",
-#              "PHMSA",
-#              "DOS",
-#              "ED",
-#              "MSHA",
-#              "BSEE",
-#              "DOJ-CRT",
-#              "DOL",
-#              "BIA",
-#              "FEMA",
-#              "BLM",
-#              "DOI",
-#              "DEA",
-#              "OSHA",
-#              "DARS",
-#              "DHS")
-
 d %<>% 
   # filter to top dockets
-  filter(docket_id %in% topdockets$docket_id) %>% 
-  # selecting agencies for hand codeing
-  filter(agency_id %in% agencies) 
+  filter(docket_id %in% topdockets$docket_id) 
 
 dim(d)
 
+}
 
+# selecting agencies for hand codeing
+agencies <- unique(rules$agency_id)
+
+
+d %<>% mutate(agency_acronym = agency_id)
+d %<>% mutate(document_id = id)
+
+
+d %<>% 
+  filter(agency_acronym %in% agencies) 
 
 # filter to mass dockets
 d %<>% group_by(docket_id) %>% 
@@ -123,12 +150,9 @@ dim(d)
 
 names(d)
 d %<>% filter(attachment_count > 0,
-       !str_detect(organization, "^.\\. |illegible|surname|last name|forename|no name|^unknown$"),
+       #!str_detect(organization, "^.\\. |illegible|surname|last name|forename|no name|^unknown$"),
        !str_detect(title, "illegible|surname|last name|forename|no name") ) 
 dim(d)
-
-d %<>% mutate(agency_acronym = agency_id)
-d %<>% mutate(document_id = id)
 
 # apply auto-coding 
 #FIXME with updated org_names from hand-coding 
@@ -282,7 +306,7 @@ d %>%
 
 d %>% distinct(docket_id, org_comments)%>% knitr::kable()
 
-d %<>%  filter(org_comments < 1000)
+d %>%  filter(org_comments < 1000)
 
 ## AUGMENT FUNCTION
 # ad document name and link
