@@ -27,7 +27,9 @@ requires <- c("gmailr",
               #"textreadr",
               "pdftools",
               "beepr",
-              "tidyverse")
+              "tidyverse",
+              "googledrive",
+              "googlesheets4")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
 install.packages(c(requires[to_install], "NA"), repos = "https://cloud.r-project.org/" )
 rm(requires, to_install)
@@ -62,6 +64,8 @@ library(pdftools)
 library(beepr)
 library(tidyverse)
 library(purrr)
+library(googledrive)
+library(googlesheets4)
 # library(textreadr)
 
 knitr::opts_chunk$set(echo = TRUE, 
