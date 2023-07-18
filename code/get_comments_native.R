@@ -64,14 +64,14 @@ nonorgs <- "me, myself, and i|ladyfreethinker|not applicable|a youtuber|retired 
 
 orgs %<>% 
   filter(nchar(organization_clean) > 2,
-         !str_detect(organization, nonorgs)) %>% 
+         !str_dct(organization, nonorgs)) %>% 
   drop_na(organization_clean)
   
 orgs %>% head(100)
 
 # make a flag for commenting orgs in list of native orgs 
 native_org_comments <- orgs %>% #head(10000) %>% 
-  filter(str_detect(organization_clean, native_group_strings))
+  filter(str_dct(organization_clean, native_group_strings))
 
 native_org_comments      
 
@@ -86,7 +86,9 @@ native_org_comments %<>%
 
 # load comment metadata 
 # load comment metadata 
+if(!exists("comments_all")){
 load(here::here("data", "comment_metadata.rdata"))
+}
 
 # format for merging 
 comment_metadata <- comments_all %>% 
@@ -103,4 +105,41 @@ save(native_org_comments,
 
 native_org_comments %>% add_count(Name, name = "n_comments") %>% distinct(organization, `Text Strings`, Name, n_comments ) %>% arrange(-n_comments) %>% #view
   write_csv(here::here("data", "native_org_matches.csv"))
-        
+
+
+
+################ 
+# OTHER CANDIDATE ORGS 
+######################
+search <- "tribe|band of|indian(s| )|indigenous|\bnative|confed|pueblo|apache|mowhawk"
+
+unmatched <- orgs %>% filter(str_detect(organization_clean, search),
+                         !organization_clean %in% native_org_comments$organization_clean)%>% 
+  distinct(organization_clean)
+
+write_csv(unmatched, file = here::here("data", "native_org_not_matched.csv") )
+
+sheet_write(unmatched, "1HqI6MSMxCeMdcmrhivFlSmzeazpD-ioTjWcoa3GH4Fk",
+            sheet = "unmatched")
+
+
+### 
+# FROM NONPROFITS DATA 
+load("~/Dropbox/FINREGRULEMAKE2/finreg/data/nonprofit_resources_clean.Rdata")
+
+nonprofit_resources %<>% 
+  mutate(organization_clean = org_name %>% 
+           str_to_lower() %>% 
+           str_squish() %>% 
+           clean() %>%
+           str_squish()) 
+
+unmatched_ngos <- nonprofit_resources %>% 
+  filter(str_detect(organization_clean, search),
+         !organization_clean %in% native_org_comments$organization_clean) %>% 
+  distinct(organization_clean)
+
+sheet_write(unmatched_ngos, "1H3n8kchClaeFoznD9QJadNKi5FSDvERziQiobVNLG0I",
+            sheet = "unmatched_ngos")
+
+write_csv(unmatched_ngos, file = here::here("data", "native_ngos_not_matched.csv") )
