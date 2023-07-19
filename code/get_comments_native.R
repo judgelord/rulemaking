@@ -123,13 +123,13 @@ native_org_commenters %>% #view
 
 native_org_commenters %>%
 sheet_write("1HqI6MSMxCeMdcmrhivFlSmzeazpD-ioTjWcoa3GH4Fk",
-            sheet = "matched_orgs")
+            sheet = "matched_commenters")
 
 
 ########################
 # OTHER CANDIDATE ORGS #
 ########################
-search <- "tribe|tribal|reservation|rancheria|band of|indian(s| )|indigenous|\bnative|confed|pueblo|apache|mowhawk|ponca trib"
+search <- "\\btribe|\\btribal\\b|\\breservation|rancheria|band of|indian(s| )|indigenous|\\bnative|confed|pueblo|apache|mowhawk|ponca trib"
 
 unmatched <- orgs %>% filter(str_dct(organization_clean, search),
                          !organization_clean %in% native_org_comments$organization_clean)%>% 
@@ -138,7 +138,7 @@ unmatched <- orgs %>% filter(str_dct(organization_clean, search),
 write_csv(unmatched, file = here::here("data", "native_org_not_matched.csv") )
 
 sheet_write(unmatched, "1HqI6MSMxCeMdcmrhivFlSmzeazpD-ioTjWcoa3GH4Fk",
-            sheet = "unmatched")
+            sheet = "unmatched_commenters")
 
 
 ###################################
@@ -159,7 +159,13 @@ nonprofit_resources %<>%
 # subset to nonprofits that match a native group 
 matched_ngos <- nonprofit_resources %>% 
   filter(str_dct(organization_clean, native_group_strings)) %>% 
-  distinct(organization_clean)
+  distinct(organization_clean, SUBSECTION) 
+
+matched_ngos  %<>% 
+  mutate(string = str_extract(organization_clean, native_group_strings))
+
+matched_ngos %<>% 
+  left_join(native_groups)
 
 # write matched ngos to google sheet
 sheet_write(matched_ngos, "1H3n8kchClaeFoznD9QJadNKi5FSDvERziQiobVNLG0I",
@@ -169,7 +175,7 @@ sheet_write(matched_ngos, "1H3n8kchClaeFoznD9QJadNKi5FSDvERziQiobVNLG0I",
 unmatched_ngos <- nonprofit_resources %>% 
   filter(str_dct(organization_clean, search),
          !organization_clean %in% matched_ngos$organization_clean) %>% 
-  distinct(organization_clean)
+  distinct(organization_clean, SUBSECTION)
 
 # write unmatched ngos to google sheet
 sheet_write(unmatched_ngos, "1H3n8kchClaeFoznD9QJadNKi5FSDvERziQiobVNLG0I",
