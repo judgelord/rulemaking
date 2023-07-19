@@ -48,15 +48,14 @@ d %<>% mutate(org_type = ifelse(str_dct(org_type, "Tribe"),
                                 paste0("gov;", org_type),
                                 paste0("ngo;", org_type)))
 
+
 # add blanks
-d %<>% mutate(position = "",
+d %<>% mutate(org_name_short = "",
+              position = "",
               position_certainty = "",
               comment_type = "org",
               coalition_comment = "",
               coalition_type = "",
-              # org_name = organization, # run scratchpad/orgnames.R until this is a function
-              org_name_short = "",
-              #org_type = "",
               ask = "",
               ask1 = "",
               ask2 = "",
@@ -102,6 +101,31 @@ write_csv(d,
 
 # how many dockets
 unique(d$docket_id)
+unique(d$agency)
+
+sheet_write(d, "1wVvmKZ8KzY7LMP_cAvls21nw7oE05NOeUVWVoBUA0Hs",
+            sheet = paste(Sys.Date(), "version"))
 
 
+d %>% 
+  mutate(agency = str_remove_all(docket_id, "-.*|_.*")) %>% 
+  count(agency) %>% 
+  ggplot() +
+  aes(x= n, y = reorder(agency, n) )+ 
+  geom_col() +
+  labs(y = "",
+       x = "Comments to Agency 2005-2020")
 
+ggsave("native-comments-by-agency.png", width = 4, height = 9)
+
+d %>% 
+  mutate(agency = str_remove_all(docket_id, "-.*|_.*")) %>% 
+  distinct(agency, docket_id) %>% 
+  count(agency) %>% 
+  ggplot() +
+  aes(x= n, y = reorder(agency, n) )+ 
+  geom_col() +
+  labs(y = "",
+       x = "Rules, 2005-2020")
+
+ggsave("rules-by-agency.png", width = 4, height = 9)
