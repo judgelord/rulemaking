@@ -26,7 +26,7 @@ names(d)
 d %<>% select(#agency_acronym, 
               docket_id, 
               docket_url,
-              #docket_title, 
+              docket_title, 
               document_id, 
               posted_date,
               comment_url, 
