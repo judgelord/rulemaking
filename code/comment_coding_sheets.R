@@ -25,10 +25,9 @@ rules %>% filter(document_type =="Proposed Rule") %>% count(year)
 
 #FIXME
 # Sampling
-load(here::here("data", "ejdockets.Rdata"))
-head(ejdockets)
-
-rules %<>% filter(docket_id %in% ejdockets$docket_id)
+# load(here::here("data", "ejdockets.Rdata"))
+# head(ejdockets)
+# rules %<>% filter(docket_id %in% ejdockets$docket_id)
 nrow(rules)
 
 done <- list.files(here::here("data", "datasheets")) %>%
@@ -41,10 +40,8 @@ nrow(rules)
 
 # comments
 load(here::here("data", "comment_metadata_2020.Rdata"))
-
 # Rename if loading from old comment metadata (but this will cause other problems)
 # comment_metadata <- comments_all
-
 
 dim(comment_metadata)
 ls()
@@ -144,6 +141,7 @@ d %<>% mutate(document_id = id)
 # apply auto-coding
 #FIXME with updated org_names from hand-coding
 source(here::here("code", "org_name.R"))
+
 #FIXME source(here::here("code", "comment_position.R"))
 
 save(d, file = here::here("data", "comments4datasheets.Rdata"))
