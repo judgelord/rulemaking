@@ -23,8 +23,14 @@ dbListTables(master_con)
 rules <- dbSendQuery(master_con, 'SELECT * FROM rules')
 
 ###########
+<<<<<<< HEAD
 # Rdata
 # rules and proposed rules
+=======
+# Rdata
+# rules and proposed rules
+
+>>>>>>> 337b296f99ef0d90f1b128611321f142d60f2a98
 load(here::here("data", "rules_metadata.Rdata"))
 rules %<>% as_tibble()
 names(rules)
@@ -46,6 +52,7 @@ rules %>% filter(document_type =="Proposed Rule") %>% count(year)
 
 #FIXME
 # Sampling
+
 if(ej_sample){
 load(here::here("data", "ejdockets.Rdata"))
 head(ejdockets)
@@ -60,7 +67,13 @@ if(mass_sample){
 nrow(rules)
 
 
+# load(here::here("data", "ejdockets.Rdata"))
+# head(ejdockets)
+# rules %<>% filter(docket_id %in% ejdockets$docket_id)
+nrow(rules)
 
+done <- list.files(here::here("data", "datasheets")) %>%
+  str_remove("_.*")
 
 # rules %<>% filter(docket_id %in% done)
 nrow(rules)
@@ -86,6 +99,12 @@ call <- paste('SELECT * FROM comments WHERE docket_id IN', dockets)
 
 comment_metadata <-  dbSendQuery(master_con, call) %>% dbFetch(Master_Query, n = -1)
 
+# comments
+load(here::here("data", "comment_metadata_2020.Rdata"))
+# Rename if loading from old comment metadata (but this will cause other problems)
+# comment_metadata <- comments_all
+
+
 dim(comment_metadata)
 ls()
 names(comment_metadata)
@@ -96,7 +115,12 @@ d$posted_date %<>% as.Date()
 max(d$posted_date, na.rm = T)
 min(d$posted_date, na.rm = T)
 
+
 if(sample){
+topdockets <- rules %>%
+  group_by(docket_id) %>%
+
+
 topdockets <- rules %>%
   group_by(docket_id) %>%
   mutate(number_of_comments_received = sum(number_of_comments_received)) %>%
@@ -113,6 +137,7 @@ topdockets <- rules %>%
   # SAMPLE
   slice_sample(weight_by = number_of_comments_received,
             n = 5)
+}
 
 nrow(topdockets)
 
@@ -126,6 +151,43 @@ count(topdockets, docket_id, number_of_comments_received)
 d %<>%
   # filter to top dockets
   filter(docket_id %in% topdockets$docket_id)
+
+agencies <- unique(rules$agency_id)
+
+agencies = c(#"EPA",
+             "ATF", "BIA", "HUD"
+#              "NLRB",
+#              "OFCCP",
+#              "OJP",
+#              "USCG",
+#              "CIS",
+#              "USCBP",
+#              "PHMSA",
+#              "DOS",
+#              "ED",
+#              "MSHA",
+#              "BSEE",
+#              "DOJ-CRT",
+#              "DOL",
+#              "BIA",
+#              "FEMA",
+#              "BLM",
+#              "DOI",
+#              "DEA",
+#              "OSHA",
+#              "DARS",
+#              "DHS"
+)
+
+d %<>%
+  # filter to top dockets
+  filter(docket_id %in% topdockets$docket_id)
+
+d %<>%
+  # selecting agencies for hand codeing
+  filter(agency_id %in% agencies)
+
+d %<>% filter(docket_type == "Rulemaking")
 
 dim(d)
 
@@ -145,7 +207,11 @@ d %<>%
 # filter to mass dockets
 d %<>% group_by(docket_id) %>%
   # mass dockets
+<<<<<<< HEAD
   mutate(comments_on_docket = sum(number_of_comments_received),
+=======
+  mutate(comments_on_docket = as.numeric(number_of_comments_received) %>% sum(),
+>>>>>>> 337b296f99ef0d90f1b128611321f142d60f2a98
          max = max(number_of_comments_received) ) %>%
   ungroup() %>%
   filter(max > 99 | comments_on_docket > 999)
@@ -157,9 +223,25 @@ d %<>% filter(attachment_count > 0,
        !str_detect(title, "illegible|surname|last name|forename|no name") )
 dim(d)
 
+<<<<<<< HEAD
 # apply auto-coding
 #FIXME with updated org_names from hand-coding
+=======
+# apply auto-coding
+#FIXME with updated org_names from hand-coding
+       !str_detect(organization, "^.\\. |illegible|surname|last name|forename|no name|^unknown$"),
+       !str_detect(title, "illegible|surname|last name|forename|no name") )
+dim(d)
+
+d %<>% mutate(agency_acronym = agency_id)
+d %<>% mutate(document_id = id)
+
+# apply auto-coding
+#FIXME with updated org_names from hand-coding
+
+>>>>>>> 337b296f99ef0d90f1b128611321f142d60f2a98
 source(here::here("code", "org_name.R"))
+
 #FIXME source(here::here("code", "comment_position.R"))
 
 save(d, file = here::here("data", "comments4datasheets.Rdata"))

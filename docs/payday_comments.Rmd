@@ -36,6 +36,7 @@ library(xml2)
 library(knitr)
 library(kableExtra)
 library(pryr)
+library(here)
 
 library(ggplot2); theme_set(theme_bw())
   options(
@@ -145,12 +146,23 @@ agency <- "CFPB"
 docket <- "CFPB-2016-0025"
 nprm <- "https://www.federalregister.gov/documents/full_text/xml/2016/07/22/2016-13490.xml"
 
+folder <- here("data", "comment_text", agency,  docket)
+
+files <- list.files(folder, full.names = T)
+
+# file.rename(files, files %>% str_replace(".docx", ".txt"))
+
+readLines(files[1])
+
 # get txt file names from a directory, here called "comment_text"
-comments <- tibble( path = list.files( here::here("comment_text", agency, docket), full.names = T) ) 
+comments <- tibble(path = list.files(folder, full.names = T) ) 
+
+# just a few comments for now 
+comments %<>% top_n(50)
 
 # apply comment_tengrams function
 d <- comment_tengrams(nprm, 
-                      comments %>% top_n(50) # just a few comments for now 
+                      comments 
                       )
 
 
@@ -239,6 +251,7 @@ comment_percent_match <- d %>%
 ```
 
 ```{r comment_percent_match_plot, fig.width=2.9, fig.height=2}
+#  comment_percent_match_plot, fig.width=7.5, fig.height=5.5}
 n = sqrt(nrow(comment_percent_match))
 
 LETTERS[1:n] %>% rep(n) %>% sort()
@@ -251,6 +264,9 @@ comment_percent_match %>%
   aes(y = document_id, 
       x = document_id2, 
       fill = percent_match*100) + 
+  labs(x = "Comments",
+       y = "Comments",
+       fill = "Percent\nMatching\Text")
   geom_tile(color = "grey") + 
   scale_fill_gradient(low = "white", high = "black") + 
   theme(panel.grid = element_blank(),

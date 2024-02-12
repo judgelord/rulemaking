@@ -1,9 +1,11 @@
 
 agencies <- d$agencyAcronym %>% unique()
+agencies <- d$agency_id %>% unique()
 
-dir <- "agencies"
 
-if (!dir.exists(here::here(dir) ) ){
+dir <-"data/datasheets"
+
+if (!dir.exists(here::here( dir) ) ){
   dir.create(here::here(dir), showWarnings = FALSE)
 }
 
