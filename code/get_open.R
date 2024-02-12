@@ -13,7 +13,7 @@ source(here::here("code", "search_keyword_page4.R"))
 pr <- map_dfr(.x = c(1:20),
                 .f = search_page4,
                 documenttype = "Proposed Rule",
-                lastModifiedDate = Sys.time() %>% str_remove(" [A-Z]"))
+                lastModifiedDate = Sys.time() )
 
 
 pr_open <- pr %>% filter(openForComment)

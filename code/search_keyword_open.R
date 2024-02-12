@@ -10,13 +10,23 @@ library(jsonlite)
 library(tidyverse)
 library(magrittr)
 
-source("api-key.R")
-
 
 # defaults 
 url  <- "https://api.regulations.gov"
+rpp <- 1000 # results per page
+order <- "DESC" # DESC: Decending, ASC: Ascending 
 sortby <- "postedDate" #docketId (Docket ID) docId (Document ID) title (Title) postedDate (Posted Date) agency (Agency) documentType (Document Type) submitterName (Submitter Name) organization (Organization)
 page <- c(0, seq(1000)*rpp) # up to 1,000,0000 results
+status <- "O" # O for open docket
+n <- 2000 # max number of results
+start <- 1000 # result number on which to resume partial search (e.g. due to api limits )
+documenttype <- "N%2BPR%2BFR%2BPS%2BSR%2BO"
+## N: Notice, 
+## PR: Proposed Rule, 
+## FR: Rule, 
+## O: Other, 
+## SR: Supporting & Related Material, 
+## PS: Public Submission
 
 # this works:
 if(FALSE){
@@ -26,16 +36,13 @@ if(FALSE){
 
 
 
-search_keyword_page4 <- function(page = 1, 
-                                 documenttype = "Rule", # default
+search_keyword_open <- function(page = 1, 
+                                 documenttype = "Proposed Rule", # default
                                  keyword, 
                                  lastModifiedDate = Sys.time() ){
   
   # sys.time to fit required format
-  lastModifiedDate %<>% str_replace_all("[A-Z]", " ") %>% 
-    str_replace(" ", "T") %>% 
-    str_squish() %>% 
-    str_c("Z")
+  lastModifiedDate %<>% str_replace_all("[A-Z]", " ") %>%  str_squish()
   
   # format string (add quotes, replace space with unicode)
   search <- #keyword %>% 
@@ -48,9 +55,7 @@ search_keyword_page4 <- function(page = 1,
   # filter document types, unless endpoint is comments
   documentType <- ifelse(endpoint == "documents", 
                          str_c("&filter[documentType]=", documenttype),
-                         "") %>% 
-    str_replace(" ", "%2B")
-    # previously required "&filter[documentType]=documents")
+                         "") # previously required "&filter[documentType]=documents")
   
   path <- paste0("/v4/", endpoint,
                  "?page[number]=", page,
@@ -59,7 +64,9 @@ search_keyword_page4 <- function(page = 1,
                  #"&a=", agency, #FIXME provide empty string when agency is set to "all" (default)
                  "&sort=-lastModifiedDate,documentId",
                  "&filter[searchTerm]=", search,
-                 #"&filter[lastModifiedDate][le]=", lastModifiedDate,
+                 "&filter[lastModifiedDate][le]=", lastModifiedDate,
+                 # "&status=0", # old FIXME
+                 #"&filter[openForComment]=TRUE",
                  "&api_key=", api_key)
   
 
@@ -82,13 +89,16 @@ search_keyword_page4 <- function(page = 1,
   #   #lastModifiedDate <-- Sys.time() %>% str_remove(" [A-Z]")
   # } 
   
+  d %>% filter(openForComment)
+  
   return(d)
 }
 
-
+if(FALSE){
 # EXAMPLE 
-d <- search_keyword_page4(keyword = "climate justice",
-                          documenttype = "Rule",
+d <- search_keyword_open(keyword = "environmental justice",
+                          documenttype = "Public Submission",
                           lastModifiedDate =  Sys.time()) #NOT SYS DATE!!
 d$lastModifiedDate
 d$highlightedContent
+} 

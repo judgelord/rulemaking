@@ -1,11 +1,14 @@
 # This script creates a SQL table of OCC comment metadata 
 # subset to Dodd-Frank dockets or RINs as identified by Davis Polk 
+library(tidyverse)
+library(magrittr)
 
 # API version 
 v4 = FALSE
 
 ## originally pulled from Devin's master data 
-load(here::here("data", "comment_metadata.Rdata"))
+comments_all <- dbSendQuery(master_con, "SELECT * FROM comments WHERE agency_acronym == 'OCC'") |>
+  dbFetch(Master_Query, n = -1)
 
 ## now pulling from new search of API v4
 if(v4){
@@ -31,6 +34,11 @@ if(v4){
   comments_all %<>% mutate(comment_id = id)
   comments_all %<>% rename(agency_acronym = agency_id)
   
+  
+  # V4 no longer returns organization or docket title 
+  comments_all %<>% 
+    mutate(docket_id = str_remove(comment_id, "-[0-9]*$"))
+  
 } else {
   # v3
   comments_all %<>% mutate(comment_id = document_id)
@@ -46,10 +54,7 @@ comments_all %<>% mutate(late_comment = as.Date(posted_date) > as.Date(comment_d
 
 count(comments_all, is.na(late_comment))
 
- # V4 no longer returns organization or docket title 
 
-comments_all %<>% 
-  mutate(docket_id = str_remove(comment_id, "-[0-9]*$"))
 
 
 vars_to_keep <- c("fr_document_id", # need this from rules table joined in by document_id - comment_id
@@ -57,6 +62,7 @@ vars_to_keep <- c("fr_document_id", # need this from rules table joined in by do
                   "docket_type",
                   "rin",
                   "attachment_count",
+                  "comment_text",
                   "posted_date",
                   "submitter_name",
                   "organization",

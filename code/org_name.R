@@ -1,4 +1,15 @@
 # this script extracts some basic org_name info, prior to hand coding
+# 
+# # FIXME 
+# source("setup.R")
+# 
+# 
+# d <- filter(comments_all) %>% 
+#   #FIXME
+#   filter(!is.na(organization), organization != "")
+# filter(is.na(organization & is.na(title))) %>% 
+#   filter(organization != "" & title != "")
+# # FIXME 
 
 # start with existing self-identified organization
 d %<>% mutate(org_name = organization)
