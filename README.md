@@ -4,7 +4,7 @@ This is a project to collect and join various data on US federal agency rulemaki
 
 I have collected two datasets from regulations.gov, one for all rules, proposed rules, and notices and a second for all public comments:
 
-### 1. Metadata for all rules, proposed rules, and notices on regulations.gov ([.Rdata](https://drive.google.com/file/d/1LrafvpLDC2vBjO8DxEyCsGCEXhlwlKEe/view?usp=sharing),[SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing))
+### 1. Metadata for all rules, proposed rules, and notices on regulations.gov ([.Rdata](https://drive.google.com/file/d/1LrafvpLDC2vBjO8DxEyCsGCEXhlwlKEe/view?usp=sharing),[SQL](https://drive.google.com/file/d/1uheB1U9fI9B1F5DeMMPuPlBl4WzqIZwM/view?usp=sharing))
 
 |name                        |value                                                                                                                    |
 |:---------------------------|:------------------------------------------------------------------------------------------------------------------------|
@@ -19,15 +19,15 @@ I have collected two datasets from regulations.gov, one for all rules, proposed 
 |document_id                 |FDA-1976-N-0020-0005                                                                                                     |
 |document_status             |Posted                                                                                                                   |
 |document_type               |Notice                                                                                                                   |
+|fr_document_id              |NA                                                                                                                       |
 |fr_number                   |NA                                                                                                                       |
 |number_of_comments_received |0                                                                                                                        |
 |open_for_comment            |0                                                                                                                        |
 |posted_date                 |1978-07-10T00:00:00-04:00                                                                                                |
 |rin                         |NA                                                                                                                       |
 |title                       |Part 433 - Exemptions from Antibiotic Certification and Labeling Requirements - Notice of Confirmation of Effective Date |
-|fr_document_id              |NA                                                                                                                       |
 
-### 2. Metadata for all public comments on regulations.gov ([.Rdata](https://drive.google.com/file/d/1iryaZo4W4-mPnsNC535HPl2KbSt5RKav/view?usp=sharing),[SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing))
+### 2. Metadata for all public comments on regulations.gov ([.Rdata](https://drive.google.com/file/d/1xPnxEa-n73vVt08IU5UgU8ykM0H9VlOM/view?usp=sharing),[SQL](https://drive.google.com/file/d/1uheB1U9fI9B1F5DeMMPuPlBl4WzqIZwM/view?usp=sharing))
 
 |name                        |value                                                                        |
 |:---------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -43,14 +43,17 @@ I have collected two datasets from regulations.gov, one for all rules, proposed 
 |document_id                 |CFPB-2018-0023-0006                                                                        |
 |document_status             |Posted                                                                        |
 |document_type               |Public Submission                                                                        |
-|number_of_comments_received |1                                                                        |
 |posted_date                 |2018-10-11T00:00:00-04:00                                                                        |
 |submitter_name              |Michael Day                                                                        |
 |title                       |Comment Submitted by Michael Day, OLA                                                                        |
 |rin                         |NA                                                                        |
 |organization                |OLA                                                                        |
-| attachment_1                    | CFPB-2018-0023-0006-1.doc                                                                                                                                                                                                     |
-| comment_url                     | https://www.regulations.gov/document?D=CFPB-2018-0023-0006                                                                                                                                 |
+
+<!-- not currently in data 
+|number_of_comments_received |1                                                                        |
+|comment_url                 | https://www.regulations.gov/document?D=CFPB-2018-0023-0006               |
+|attachment_1                | CFPB-2018-0023-0006-1.doc                                                                                                                                                                                                     |
+-->
 
 ### Both tables are also available in [SQL](https://drive.google.com/file/d/1hSl9MxjzO4R40QjFoh8TPmbCAUpJW372/view?usp=sharing) ([instructions for using SQL](https://judgelord.github.io/rulemaking/sql))
 
@@ -78,6 +81,7 @@ dbGetQuery(con, "SELECT * FROM comments WHERE docket_id = 'CFPB-2018-0023-0006'"
 
 - [XML versions available from 1995 until present](https://www.reginfo.gov/public/do/eAgendaXmlReport)
 - [Transformed to Rdata. Some errors corrected for 2000-2018](https://github.com/judgelord/rulemaking/blob/master/data/UnifiedAgenda.Rdata)
+- [Summary plots](https://judgelord.github.io/dissertation/rulemaking-appendix)
 
 ```
  [1] "ABSTRACT"                
@@ -190,4 +194,12 @@ dbGetQuery(con, "SELECT * FROM comments WHERE docket_id = 'CFPB-2018-0023-0006'"
 [36] "UNFUNDED_MANDATES"
 ```
 
-More about these data in [Why Do Agencies (sometimes) Get So Much Mail? Lobbying Coalitions, Mass Comments, and Political Information in Bureaucratic Policymaking](https://judgelord.github.io/research/whymail/), [Data and Methods Analyzing Special Interests Influence in Rulemaking](https://link.springer.com/article/10.1057%2Fs41309-020-00094-w), and this [collaborative repository](https://github.com/libgober/regdata/blob/master/README.md)
+More about these data in: 
+- [Why Do Agencies (Sometimes) Get So Much Mail? Lobbying Coalitions, Mass Comments, and Political Information in Bureaucratic Policymaking](https://judgelord.github.io/research/whymail/)
+- [The Environmental Justice Movement’s Impact on Technocratic Policymaking](https://judgelord.github.io/research/ej/)
+- [The Climate Movement's Impact on Technocratic Policymaking](https://judgelord.github.io/research/cj/)
+- [Inequality in Administrative Democracy](https://judgelord.github.io/research/finreg/)
+- [Data and Methods Analyzing Special Interests Influence in Rulemaking](https://link.springer.com/article/10.1057%2Fs41309-020-00094-w)
+- This [collaborative repository](https://github.com/libgober/regdata/blob/master/README.md)
+
+Much of the analysis using these data would not be possible without a [team of research assistants](https://judgelord.github.io/rulemaking/lab) who have read and coded many thousands of these documents.
