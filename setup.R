@@ -1,15 +1,16 @@
 options(stringsAsFactors = FALSE)
 
-requires <- c("gmailr", 
-              "tidyverse", 
+requires <- c("gmailr",
+              "DescTools",
+              "tidyverse",
               "dplyr",
-              "gdata", 
+              "gdata",
               "magrittr",
               "reshape2",
               "scales",
               "magrittr",
               "XML",
-              "stringr", 
+              "stringr",
               "here",
               "gridExtra",
               "httr",
@@ -17,7 +18,7 @@ requires <- c("gmailr",
               "tm",
               "tidytext",
               "topicmodels",
-              "textfeatures",
+              #"textfeatures",
               "cleanNLP",
               # "clusters",
               # "rjags",
@@ -58,7 +59,7 @@ library(httr)
 library(tm)
 library(tidytext)
 #library(topicmodels)
-library(textfeatures)
+#library(textfeatures)
 library(cleanNLP)
 library(pdftools)
 library(beepr)
@@ -68,8 +69,8 @@ library(googledrive)
 library(googlesheets4)
 # library(textreadr)
 
-knitr::opts_chunk$set(echo = TRUE, 
-                      cache = FALSE, 
+knitr::opts_chunk$set(echo = TRUE,
+                      cache = FALSE,
                       fig.width=8.5, fig.align = 'center', fig.path='Figs/',
                       warning=FALSE, message=FALSE)
 
@@ -78,14 +79,14 @@ library(tidyverse)
 library(magrittr)
 library(tidytext)
 
-# load required functions from functions directory 
+# load required functions from functions directory
 source(here::here("functions", "clean_string.R"))
 source(here::here("functions", "xml_rule_text.R"))
 source(here::here("functions", "tengram.R"))
 
 
 # function to fill NAs
-# FIXME 
+# FIXME
 # replace with fill()
 CopyIfNA <- function(x, na.rm = FALSE, ...) na.locf(x, na.rm = na.rm, ...)
 
@@ -118,23 +119,33 @@ str_spl <- function(string, pattern) {
 
 # rename regulations.gov
 namingthings <- function(x){
-  names(x)  <- names(x) %>% 
-    str_replace_all("([A-Z])", "_\\1") %>% 
-    str_to_lower() %>% 
+  names(x)  <- names(x) %>%
+    str_replace_all("([A-Z])", "_\\1") %>%
+    str_to_lower() %>%
     # rename old data for new API results
-    str_replace("agency_acronym", "agency_id") %>% 
-    str_replace("document_id", "id") 
-  
-  
+    str_replace("agency_acronym", "agency_id") %>%
+    str_replace("document_id", "id")
+
+
   x %<>% mutate(across(where(is.factor), as.character))
-  
+
   # x$allow_late_comment %<>% as.logical()
-  # x$attachment_count %<>% as.integer() #TODO get this from metadata 
+  # x$attachment_count %<>% as.integer() #TODO get this from metadata
   # x$number_of_comments_received %<>% as.integer()
   # x$open_for_comment <- NA %>% as.logical()
   x$posted_date %<>% as.Date()
-  
+
   return(x)
 }
 
+
+# from diss setup file
+
+# Table formatting
+library(kableExtra)
+kablebox <- . %>%
+  slice_head(n = 100) %>%
+  knitr::kable() %>%
+  kable_styling() %>%
+  scroll_box(height = "400px")
 

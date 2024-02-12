@@ -1,7 +1,7 @@
 
 source("setup.R")
 
-done <- list.files(here::here("data", "datasheets")) %>% 
+done <- list.files(here::here("data", "datasheets")) %>%
   str_remove("_.*")
 
 library(DBI)
@@ -9,22 +9,22 @@ library(RSQLite)
 library(tidyverse)
 
 #######################################
-# Database location on linux 
-master_location <- here::here("db", "comment_metadata.sqlite") 
+# Database location on linux
+master_location <- here::here("db", "comment_metadata.sqlite")
 master_con = dbConnect(SQLite(), dbname=master_location)
 dbListTables(master_con)
 
 #######################################
 # Database location mac
-master_location <- here::here("data", "rulemaking_metadata.sqlite") 
+master_location <- here::here("data", "rulemaking_metadata.sqlite")
 master_con = dbConnect(SQLite(), dbname=master_location)
 dbListTables(master_con)
 
 rules <- dbSendQuery(master_con, 'SELECT * FROM rules')
 
 ###########
-# Rdata 
-# rules and proposed rules 
+# Rdata
+# rules and proposed rules
 load(here::here("data", "rules_metadata.Rdata"))
 rules %<>% as_tibble()
 names(rules)
@@ -67,9 +67,12 @@ nrow(rules)
 #/FIXME
 
 
-# comments 
+# comments
 # load(here::here("data", "comment_metadata.rdata"))
-# load(here::here("data", "comment_metadata2020.Rdata"))
+names(comments_all)
+# load(here::here("data", "comment_metadata_2020.Rdata"))
+names(comment_metadata)
+
 
 
 call <- 'SELECT * FROM comments WHERE docket_id = "EPA-HQ-OAR-2008-0699"'
@@ -94,20 +97,20 @@ max(d$posted_date, na.rm = T)
 min(d$posted_date, na.rm = T)
 
 if(sample){
-topdockets <- rules %>% 
-  group_by(docket_id) %>% 
+topdockets <- rules %>%
+  group_by(docket_id) %>%
   mutate(number_of_comments_received = sum(number_of_comments_received)) %>%
-  ungroup() %>% 
+  ungroup() %>%
   filter(docket_type == "Rulemaking",
-         number_of_comments_received > 99, # dockets with 100 comments 
+         number_of_comments_received > 99, # dockets with 100 comments
          document_type == "Rule") %>% # dockets with a final rule (initially sampled all dockets)
   # drop ones with more than one FR
-  add_count(docket_id) %>% filter(n == 1) %>% 
+  add_count(docket_id) %>% filter(n == 1) %>%
   group_by(agency_id) %>%
   # agencie that have mass dockets
   mutate(max_comments = max(number_of_comments_received)) %>%
-  #filter(max_comments > 100) %>%  
-  # SAMPLE 
+  #filter(max_comments > 100) %>%
+  # SAMPLE
   slice_sample(weight_by = number_of_comments_received,
             n = 5)
 
@@ -120,9 +123,9 @@ dim(topdockets)
 
 count(topdockets, docket_id, number_of_comments_received)
 
-d %<>% 
+d %<>%
   # filter to top dockets
-  filter(docket_id %in% topdockets$docket_id) 
+  filter(docket_id %in% topdockets$docket_id)
 
 dim(d)
 
@@ -136,26 +139,26 @@ d %<>% mutate(agency_acronym = agency_id)
 d %<>% mutate(document_id = id)
 
 
-d %<>% 
-  filter(agency_acronym %in% agencies) 
+d %<>%
+  filter(agency_acronym %in% agencies)
 
 # filter to mass dockets
-d %<>% group_by(docket_id) %>% 
+d %<>% group_by(docket_id) %>%
   # mass dockets
-  mutate(comments_on_docket = sum(number_of_comments_received), 
-         max = max(number_of_comments_received) ) %>% 
-  ungroup() %>% 
+  mutate(comments_on_docket = sum(number_of_comments_received),
+         max = max(number_of_comments_received) ) %>%
+  ungroup() %>%
   filter(max > 99 | comments_on_docket > 999)
 dim(d)
 
 names(d)
 d %<>% filter(attachment_count > 0,
        #!str_detect(organization, "^.\\. |illegible|surname|last name|forename|no name|^unknown$"),
-       !str_detect(title, "illegible|surname|last name|forename|no name") ) 
+       !str_detect(title, "illegible|surname|last name|forename|no name") )
 dim(d)
 
-# apply auto-coding 
-#FIXME with updated org_names from hand-coding 
+# apply auto-coding
+#FIXME with updated org_names from hand-coding
 source(here::here("code", "org_name.R"))
 #FIXME source(here::here("code", "comment_position.R"))
 
@@ -279,29 +282,29 @@ save(d, file = here::here("data", "comments4datasheets.Rdata"))
 # load(here::here("data", "comments4datasheets.Rdata"))
 
 # filter down to org comments
-d %<>% 
-  group_by(docket_id, org_name) %>% 
-  add_count(name = "org_total") %>% 
+d %<>%
+  group_by(docket_id, org_name) %>%
+  add_count(name = "org_total") %>%
   ungroup() %>%
-  arrange(-number_of_comments_received) %>% 
+  arrange(-number_of_comments_received) %>%
   filter(attachment_count > 0,
          str_detect(str_c(title, org_name), "Congress|Senat|Rep\\.|Sen\\.|Representative") |
          # individual names
          !str_detect(org_name, "^.\\.$|^.\\. |^.\\.[A-Z][a-z]|^.\\. [A-Z][a-z]|^\\w+ .\\.|illegible|no surname"),
          !str_detect(title, "illegible|surname| suranme |last name|forename|no name"),
-         nchar(org_name) > 1) %>% 
-  mutate(org_name = org_name %>% replace_na("NA") ) %>% 
-  filter(number_of_comments_received > 9 | !org_name %in% c("NA", "na", "","unknown")) %>% 
+         nchar(org_name) > 1) %>%
+  mutate(org_name = org_name %>% replace_na("NA") ) %>%
+  filter(number_of_comments_received > 9 | !org_name %in% c("NA", "na", "","unknown")) %>%
   add_count(docket_id, name = "org_comments")
 
 
 d %>% count(org_name, sort = T)
 
-# random sample 
+# random sample
 d %>% distinct(org_name,title) %>% slice_sample(n = 100) %>% knitr::kable()
 
-d %>% 
-  #filter(n > 10, n < 20) %>% 
+d %>%
+  #filter(n > 10, n < 20) %>%
   count(docket_id, sort = T) %>% knitr::kable()
 
 d %>% distinct(docket_id, org_comments)%>% knitr::kable()
@@ -310,18 +313,18 @@ d %>%  filter(org_comments < 1000)
 
 ## AUGMENT FUNCTION
 # ad document name and link
-d %<>% 
-  mutate(file_1 = ifelse(attachment_count > 0,  
-                         str_c(document_id, "-1.pdf"), 
+d %<>%
+  mutate(file_1 = ifelse(attachment_count > 0,
+                         str_c(document_id, "-1.pdf"),
                          NA),
-         attachment_txt = ifelse(attachment_count > 0,  
+         attachment_txt = ifelse(attachment_count > 0,
                       str_c("https://ssc.wisc.edu/~judgelord/comment_text/",
                             document_id %>% str_remove("-.*$"), # agency folder
                             "/",
                             document_id %>% str_remove("-[A-z1-9]*$"), # docket folder
                             "/",
                             document_id,
-                            "-1.txt"), 
+                            "-1.txt"),
                       NA),
          comment_url = str_c("https://www.regulations.gov/comment/",
                              document_id),
@@ -335,18 +338,18 @@ d$docket_url[1]
 d %<>% rename(comment_title = title)
 names(d)
 ## PREP SHEETS
-d %<>% select(#agency_acronym, 
-              docket_id, 
+d %<>% select(#agency_acronym,
+              docket_id,
               docket_url,
-              #docket_title, 
-              document_id, 
+              #docket_title,
+              document_id,
               posted_date,
-              comment_url, 
+              comment_url,
               comment_text,
               #attachment_txt,
-              organization, 
+              organization,
               comment_title,
-              attachment_count, 
+              attachment_count,
               number_of_comments_received,
               org_name)
 
@@ -392,11 +395,11 @@ if (!dir.exists(here::here("data", "datasheets") ) ){
 
 
 write_comment_sheets <- function(docket){
-  d %>% 
-    filter(docket_id == docket) %>% 
+  d %>%
+    filter(docket_id == docket) %>%
     write_csv(file = here::here("data",
                                 "datasheets",
-                              #str_extract("^[A-Z]"), # agency  
+                              #str_extract("^[A-Z]"), # agency
                               str_c(docket, "_org_comments.csv")))
 }
 
