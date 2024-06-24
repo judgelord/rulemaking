@@ -29,6 +29,7 @@ requires <- c("gmailr",
               "pdftools",
               "beepr",
               "tidyverse",
+              "kableExtra",
               "googledrive",
               "googlesheets4")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
