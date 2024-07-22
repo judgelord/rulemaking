@@ -18,4 +18,6 @@ comment_text
 BLM_comments_cache
 mastersql_cache
 META-INF
+data/
+reports/
 rules_metadata.Rdata

@@ -1,7 +1,7 @@
 
 source("setup.R")
 
-done <- list.files(here::here("data", "datasheets")) %>% 
+done <- list.files(here::here("data", "datasheets")) %>%
   str_remove("_.*")
 
 library(DBI)
@@ -9,23 +9,28 @@ library(RSQLite)
 library(tidyverse)
 
 #######################################
-# Database location on linux 
-master_location <- here::here("db", "comment_metadata.sqlite") 
+# Database location on linux
+master_location <- here::here("db", "comment_metadata.sqlite")
 master_con = dbConnect(SQLite(), dbname=master_location)
 dbListTables(master_con)
 
 #######################################
 # Database location mac
-master_location <- here::here("data", "rulemaking_metadata.sqlite") 
+master_location <- here::here("data", "rulemaking_metadata.sqlite")
 master_con = dbConnect(SQLite(), dbname=master_location)
 dbListTables(master_con)
 
 rules <- dbSendQuery(master_con, 'SELECT * FROM rules')
 
 ###########
-# Rdata 
-# rules and proposed rules 
+<<<<<<< HEAD
+# Rdata
+# rules and proposed rules
+=======
+# Rdata
+# rules and proposed rules
 
+>>>>>>> 337b296f99ef0d90f1b128611321f142d60f2a98
 load(here::here("data", "rules_metadata.Rdata"))
 rules %<>% as_tibble()
 names(rules)
@@ -75,9 +80,12 @@ nrow(rules)
 #/FIXME
 
 
-# comments 
+# comments
 # load(here::here("data", "comment_metadata.rdata"))
-# load(here::here("data", "comment_metadata2020.Rdata"))
+names(comments_all)
+# load(here::here("data", "comment_metadata_2020.Rdata"))
+names(comment_metadata)
+
 
 
 call <- 'SELECT * FROM comments WHERE docket_id = "EPA-HQ-OAR-2008-0699"'
@@ -109,9 +117,9 @@ min(d$posted_date, na.rm = T)
 
 
 if(sample){
-topdockets <- rules %>% 
-  group_by(docket_id) %>% 
-}
+topdockets <- rules %>%
+  group_by(docket_id) %>%
+
 
 topdockets <- rules %>%
   group_by(docket_id) %>%
@@ -129,6 +137,7 @@ topdockets <- rules %>%
   # SAMPLE
   slice_sample(weight_by = number_of_comments_received,
             n = 5)
+}
 
 nrow(topdockets)
 
@@ -139,9 +148,9 @@ dim(topdockets)
 
 count(topdockets, docket_id, number_of_comments_received)
 
-d %<>% 
+d %<>%
   # filter to top dockets
-  filter(docket_id %in% topdockets$docket_id) 
+  filter(docket_id %in% topdockets$docket_id)
 
 agencies <- unique(rules$agency_id)
 
@@ -192,13 +201,17 @@ d %<>% mutate(agency_acronym = agency_id)
 d %<>% mutate(document_id = id)
 
 
-d %<>% 
-  filter(agency_acronym %in% agencies) 
+d %<>%
+  filter(agency_acronym %in% agencies)
 
 # filter to mass dockets
 d %<>% group_by(docket_id) %>%
   # mass dockets
+<<<<<<< HEAD
+  mutate(comments_on_docket = sum(number_of_comments_received),
+=======
   mutate(comments_on_docket = as.numeric(number_of_comments_received) %>% sum(),
+>>>>>>> 337b296f99ef0d90f1b128611321f142d60f2a98
          max = max(number_of_comments_received) ) %>%
   ungroup() %>%
   filter(max > 99 | comments_on_docket > 999)
@@ -207,11 +220,15 @@ dim(d)
 names(d)
 d %<>% filter(attachment_count > 0,
        #!str_detect(organization, "^.\\. |illegible|surname|last name|forename|no name|^unknown$"),
-       !str_detect(title, "illegible|surname|last name|forename|no name") ) 
+       !str_detect(title, "illegible|surname|last name|forename|no name") )
 dim(d)
 
-# apply auto-coding 
-#FIXME with updated org_names from hand-coding 
+<<<<<<< HEAD
+# apply auto-coding
+#FIXME with updated org_names from hand-coding
+=======
+# apply auto-coding
+#FIXME with updated org_names from hand-coding
        !str_detect(organization, "^.\\. |illegible|surname|last name|forename|no name|^unknown$"),
        !str_detect(title, "illegible|surname|last name|forename|no name") )
 dim(d)
@@ -222,6 +239,7 @@ d %<>% mutate(document_id = id)
 # apply auto-coding
 #FIXME with updated org_names from hand-coding
 
+>>>>>>> 337b296f99ef0d90f1b128611321f142d60f2a98
 source(here::here("code", "org_name.R"))
 
 #FIXME source(here::here("code", "comment_position.R"))
