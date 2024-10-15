@@ -1,6 +1,7 @@
 options(stringsAsFactors = FALSE)
 
 requires <- c("gmailr",
+              "DescTools",
               "tidyverse",
               "dplyr",
               "gdata",
@@ -17,7 +18,7 @@ requires <- c("gmailr",
               "tm",
               "tidytext",
               "topicmodels",
-              "textfeatures",
+              #"textfeatures",
               "cleanNLP",
               # "clusters",
               # "rjags",
@@ -28,6 +29,7 @@ requires <- c("gmailr",
               "pdftools",
               "beepr",
               "tidyverse",
+              "kableExtra",
               "googledrive",
               "googlesheets4")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
@@ -137,4 +139,14 @@ namingthings <- function(x){
   return(x)
 }
 
+
+# from diss setup file
+
+# Table formatting
+library(kableExtra)
+kablebox <- . %>%
+  slice_head(n = 100) %>%
+  knitr::kable() %>%
+  kable_styling() %>%
+  scroll_box(height = "400px")
 

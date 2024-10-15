@@ -11,63 +11,65 @@ dim(all)
 comments_all <- all %>% full_join(all2)
 dim(all)
 
-# drop open for comment 
+# drop open for comment
 comments_all %<>% select(-openForComment)
 
 # Rename to fit https://docs.google.com/spreadsheets/d/1i8t_ZMAhjddg7cQz06Z057BqnNQEsC4Gur6p17Uz0i4/edit#gid=1357829693
-names(comments_all)  <- names(comments_all) %>% 
-  str_replace_all("([A-Z])", "_\\1") %>% 
+names(comments_all)  <- names(comments_all) %>%
+  str_replace_all("([A-Z])", "_\\1") %>%
   str_to_lower()
 names(comments_all)
 
-docket_info <- comments_all %>% select(docket_id, 
+docket_info <- comments_all %>% select(docket_id,
                                        docket_type,
-                                       docket_title, 
-                                       comment_start_date, 
-                                       comment_due_date, 
-                                       allow_late_comment) %>% 
+                                       docket_title,
+                                       comment_start_date,
+                                       comment_due_date,
+                                       allow_late_comment) %>%
   distinct()
 
 # should be the same if docket info is unique to docket_id
 nrow(docket_info)
 comments_all$docket_id %>% unique() %>% length()
 
-# #FIXME 
+# #FIXME
 # # keeping these for now because docket info is not unique to docket_id
 # #TODO investigate
 # comments_all %<>% select(-docket_title, # in principle, this should go
 #                          -docket_type, # in principle, this should go
 #                          -comment_start_date,
-#                          -comment_due_date, 
+#                          -comment_due_date,
 #                          -allow_late_comment)
 
-comments_all %>% head() 
+comments_all %>% head()
 
 # an example obs for the docs
 comments_all %>% filter(agency_acronym == "CFPB",
                         attachment_count > 0,
                         #docketType == "Rulemaking",
-                        nchar(comment_text) > 200) %>% 
-  slice(1) %>% 
+                        nchar(comment_text) > 200) %>%
+  slice(1) %>%
   gather(key = "field", value = "example") %>% # knitr::kable()
   write_csv(path = "comment_metadata_example.csv")
 
 comments <- comments_all
 # Update R data
-save(comments, file = "comments_metadata.Rdata")
+save(comments, file = "comments_metadata_2020.Rdata")
 # load("comments_metadata.Rdata")
 nrow(comments)
 head(comments)
 
-# LOAD RULES DATA FROM API 
-load(here::here("data", "AllRegsGovRules.Rdata"))
-names(d)
+# LOAD RULES DATA FROM API
+# load(here::here("data", "AllRegsGovRules.Rdata"))
+# rules <- d %>% select(-X)
 
-rules <- d %>% select(-X)
+load(here::here("data", "rules_metadata.Rdata"))
+names(rules)
+
 
 # Reformat
-names(rules)  <- names(rules) %>% 
-  str_replace_all("([A-Z])", "_\\1") %>% 
+names(rules)  <- names(rules) %>%
+  str_replace_all("([A-Z])", "_\\1") %>%
   str_to_lower()
 names(rules)
 head(rules)
@@ -76,16 +78,16 @@ head(rules)
 # THIS SHOULD BE A FUNCTION clean_fr_number
 # standardize fr_document_id
 rules %<>% #mutate_all(as.character) %>%
-  mutate(fr_document_id = fr_number %>% 
+  mutate(fr_document_id = fr_number %>%
            as.character() %>%
-           str_replace_all(" - |- |- | -| FR, ISSUE |, ISSUE #|  NO\\. | FR, NO. |, NO\\. |\\. NO. |, NO\\.| NO\\. |\\. NO | NO | FR |FR|\\):|\\(|\\)", "-") %>% 
-           str_replace_all("E-", "E") %>% 
+           str_replace_all(" - |- |- | -| FR, ISSUE |, ISSUE #|  NO\\. | FR, NO. |, NO\\. |\\. NO. |, NO\\.| NO\\. |\\. NO | NO | FR |FR|\\):|\\(|\\)", "-") %>%
+           str_replace_all("E-", "E") %>%
            # extract fed reg vol pattern
            str_extract("[0-9][0-9]+(-| |=)[0-9]+") %>%
            # replace space with dash
            str_replace(" |=", "-"),
          fr_document_id2 = fr_number %>%
-           str_replace_all(" - |- |- | -| FR, ISSUE |, ISSUE #|  NO\\. | FR, NO. |, NO\\. |\\. NO. |, NO\\.| NO\\. |\\. NO | NO | FR |FR|\\):|\\(|\\)", "-") %>% 
+           str_replace_all(" - |- |- | -| FR, ISSUE |, ISSUE #|  NO\\. | FR, NO. |, NO\\. |\\. NO. |, NO\\.| NO\\. |\\. NO | NO | FR |FR|\\):|\\(|\\)", "-") %>%
            # extract fed reg vol pattern
            str_extract("(C|E|R|Z)[0-9]+(-| |=)[0-9]+") %>%
            # replace space with dash
@@ -143,10 +145,10 @@ nrow(comments_docket)
 
 # fetch results for a comment
 res <- DBI::dbSendQuery(con, "SELECT * FROM comments WHERE document_id = 'CFPB-2018-0023-0006'")
-comment_example <- dbFetch(res)  
+comment_example <- dbFetch(res)
 comment_example %>%
-  mutate_all(as.character) %>% 
-  pivot_longer( everything() ) %>% 
+  mutate_all(as.character) %>%
+  pivot_longer( everything() ) %>%
   knitr::kable()
 
 dbClearResult(res)
@@ -160,7 +162,7 @@ rules$number_of_comments_received %>% sum()
 ##################################################################
 # Create RSQLite database
 con <- dbConnect(SQLite(), here::here("comment_metadata_CFPB.sqlite"))
-# check 
+# check
 list.files()
 
 dbListTables(con)

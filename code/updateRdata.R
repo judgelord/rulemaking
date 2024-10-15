@@ -1,5 +1,5 @@
 
-# new data 
+# new data
 
 #ej
 load(here::here("data", "ejPR2021-02-06.Rdata"))
@@ -24,7 +24,7 @@ rulesnew <- rules %>% namingthings()
 load(here::here("data", "nprms2020-12-17.Rdata"))
 nprmsnew <- nprms %>% namingthings()
 
-load(here::here("data", "notices2020-12-17.Rdata")) #FIXME THESE ARE ONLY 2020. go back for 2019 and 2018 
+load(here::here("data", "notices2020-12-17.Rdata")) #FIXME THESE ARE ONLY 2020. go back for 2019 and 2018
 noticesnew <- notices %>% namingthings()
 
 # old data
@@ -41,47 +41,47 @@ rules %<>% namingthings()
 
 # join new
 
-ejFR %<>% full_join(ejFRnew) %>% 
-  #select(-page,-code, -`content[[1]]`, -message) %>% 
+ejFR %<>% full_join(ejFRnew) %>%
+  #select(-page,-code, -`content[[1]]`, -message) %>%
   distinct()
 
-ejPR %<>% full_join(ejPRnew)  %>% 
-  #select(-page,-code, -`content[[1]]`, -message) %>% 
+ejPR %<>% full_join(ejPRnew)  %>%
+  #select(-page,-code, -`content[[1]]`, -message) %>%
   distinct()
 
-ejcomments %<>% full_join(ejcommentsnew) %>% 
-  #select(-code, -`content[[1]]`, -message) %>% 
+ejcomments %<>% full_join(ejcommentsnew) %>%
+  #select(-code, -`content[[1]]`, -message) %>%
   distinct()
 
-rules %<>% 
-  full_join(rulesnew) %>% 
-  full_join(nprmsnew) %>% 
-  full_join(noticesnew) %>% 
-  #select(-page,-code, -`content[[1]]`, -message) %>% 
+rules %<>%
+  full_join(rulesnew) %>%
+  full_join(nprmsnew) %>%
+  full_join(noticesnew) %>%
+  #select(-page,-code, -`content[[1]]`, -message) %>%
   distinct() %>%
   arrange(rev(posted_date))
 
 max(rules$posted_date)
 
-rules %>% 
-  filter(posted_date > as.Date("2000-01-01")) %>% 
-  mutate(year = str_sub(posted_date, 1,4) %>% as.numeric()) %>% 
-  ggplot() + 
+rules %>%
+  filter(posted_date > as.Date("2000-01-01")) %>%
+  mutate(year = str_sub(posted_date, 1,4) %>% as.numeric()) %>%
+  ggplot() +
   aes(x = year, fill = document_type) +
   geom_bar()
 
-ejPR %>% 
-  full_join(ejFR) %>% 
-  filter(posted_date > as.Date("2000-01-01")) %>% 
-  mutate(year = str_sub(posted_date, 1,4) %>% as.numeric()) %>% 
-  ggplot() + 
+ejPR %>%
+  full_join(ejFR) %>%
+  filter(posted_date > as.Date("2000-01-01")) %>%
+  mutate(year = str_sub(posted_date, 1,4) %>% as.numeric()) %>%
+  ggplot() +
   aes(x = year, fill = document_type) +
   geom_bar()
 
-ejcomments %>% 
-  filter(posted_date > as.Date("2000-01-01")) %>% 
-  mutate(year = str_sub(posted_date, 1,4) %>% as.numeric()) %>% 
-  ggplot() + 
+ejcomments %>%
+  filter(posted_date > as.Date("2000-01-01")) %>%
+  mutate(year = str_sub(posted_date, 1,4) %>% as.numeric()) %>%
+  ggplot() +
   aes(x = year, fill = document_type) +
   geom_bar()
 
@@ -97,8 +97,8 @@ save(ejcommentsnew, file = here::here("data", "ejcommentsnew.Rdata"))
 
 
 dim(comment_metadata)
-# subset comments 
-load(here::here("data", "comment_metadata2020.Rdata"))
+# subset comments
+load(here::here("data", "comment_metadata.Rdata"))
 names(comment_metadata)
 
 org_comments <- comment_metadata %>% filter(!is.na(organization)) %>% distinct(organization, docket_id, number_of_comments_received)
@@ -109,16 +109,18 @@ dim(org_comments)
 save(org_comments, file = here::here("data", "org_comments.Rdata"))
 
 
-# Minimal comment data 
+# Minimal comment data
 
 class(comment_metadata$posted_date)
 class(comment_metadata$comment_due_date)
 class(comment_metadata$comment_start_date)
 
-# to Date 
+# to Date
+comment_metadata$posted_date %<>% as.Date()
 comment_metadata$comment_due_date %<>% as.Date()
 comment_metadata$comment_start_date %<>% as.Date()
 
+# check for errors
 range(comment_metadata$posted_date, na.rm = T)
 range(comment_metadata$comment_due_date, na.rm = T)
 range(comment_metadata$comment_start_date, na.rm = T)
@@ -128,7 +130,7 @@ sum(is.na(comment_metadata$comment_due_date))
 sum(is.na(comment_metadata$comment_start_date))
 
 
-# on some older dockets, comments were uploaded later, so date posted not the date submitted, so I approximate with due date 
+# on some older dockets, comments were uploaded later, so date posted not the date submitted, so I approximate with due date
 comment_metadata %<>%
   mutate(docket_date = str_extract(docket_id,"(19|20)[0-9][0-9]") %>% str_c("-01-01") %>% as.Date())
 
@@ -140,14 +142,19 @@ comment_metadata %<>% # head() %>%
          comment_start_date = if_else(comment_start_date < docket_date, as.Date(NA), comment_start_date),
          comment_due_date = if_else(comment_due_date < docket_date, as.Date(NA), comment_due_date)) #%>% select(ends_with("date"))
 
+comment_metadata$posted_date %>% class()
+comment_metadata$comment_due_date %>% class()
+
+# make date variable as min of posted and comment due date
 comment_metadata %<>%
-  mutate(date = pmin(posted_date, comment_due_date, na.rm = T) %>% 
+  mutate(date = pmin(posted_date, comment_due_date, na.rm = T) %>%
            # if still missing fill in comment start date (at least we should get the right admin)
            coalesce(comment_start_date, docket_date)) %>%
   ungroup() #%>% select(ends_with("date"))
 
 comment_metadata %<>% arrange(-date)
 
+# check earliest dates
 comment_metadata %>% tail() %>% select(docket_id, ends_with("date"))
 
 range(comment_metadata$date, na.rm = T)
@@ -155,11 +162,13 @@ range(comment_metadata$docket_date, na.rm = T)
 sum(is.na(comment_metadata$docket_date))
 sum(is.na(comment_metadata$date))
 
-comment_metadata %>% filter(is.na(docket_date)) %>% #count(posted_date, sort = T) %>% 
+comment_metadata %>% filter(is.na(docket_date)) %>% #count(posted_date, sort = T) %>%
   head(10)
 
-# trim down to minimals vars 
-comments_min <- comment_metadata %>% distinct(id, organization,submitter_name, number_of_comments_received, date)
+
+
+# trim down to minimals vars
+comments_min <- comment_metadata %>% distinct(document_id, organization,submitter_name, number_of_comments_received, date)
 
 head(comments_min)
 dim(comment_metadata)
